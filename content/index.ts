@@ -1,6 +1,7 @@
 import { twoPointers } from "./patterns/01-two-pointers"
 import { slidingWindow } from "./patterns/02-sliding-window"
 import { intervals } from "./patterns/03-intervals"
+import { stack } from "./patterns/04-stack"
 import { linkedList } from "./patterns/05-linked-list"
 import { heap } from "./patterns/07-heap"
 import { bfs } from "./patterns/09-bfs"
@@ -14,7 +15,7 @@ export const patterns: Pattern[] = [
   twoPointers,
   slidingWindow,
   intervals,
-  // 04-stack (coming)
+  stack,
   linkedList,
   // 06-binary-search (coming)
   heap,

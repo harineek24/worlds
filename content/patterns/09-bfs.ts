@@ -9,12 +9,12 @@ export const bfs: Pattern = {
     text: "Spread love everywhere you go. Let no one ever come to you without leaving happier.",
     source: "Mother Teresa",
     connection:
-      "BFS radiates outward from a source, touching every neighbor before going deeper. It explores in waves — level by level — ensuring the shortest path is always found first. Like kindness that spreads in all directions equally, BFS gives every neighbor the same attention before moving further away.",
+      "BFS radiates outward from a source, touching every neighbor before going deeper. It explores in waves — level by level — ensuring the shortest path is always found first. Like kindness that spreads one ring at a time, BFS guarantees that no closer node is ever skipped.",
   },
 
   template: {
     description:
-      "Queue-based exploration that processes nodes level by level. Guarantees shortest path in unweighted graphs. Use a visited set to avoid revisiting. Snapshot queue length at the start of each level for level-order processing.",
+      "Use a queue for standard BFS. Mark nodes visited before enqueuing to avoid duplicates. For level-order traversal, snapshot the queue length at the start of each level to know when one wave ends and the next begins.",
     snippet: `from collections import deque
 
 queue = deque([start])
@@ -41,27 +41,16 @@ while queue:
 
   pythonTools: [
     {
-      name: "collections.deque — O(1) popleft vs list's O(n)",
-      snippet: `from collections import deque
-queue = deque([start])
-node = queue.popleft()  # O(1) — not queue.pop(0) which is O(n)`,
+      name: "collections.deque",
+      snippet: "from collections import deque\nqueue = deque([start])  # O(1) popleft vs list's O(n)",
     },
     {
-      name: "visited = set() — never revisit",
-      snippet: `visited = {start}
-if neighbor not in visited:
-    visited.add(neighbor)
-    queue.append(neighbor)`,
+      name: "visited = set()",
+      snippet: "visited = {start}  # never revisit; add before enqueue, not after dequeue",
     },
     {
-      name: "Level-order: snapshot len(queue) at start of each level",
-      snippet: `level = 0
-while queue:
-    level_size = len(queue)  # freeze size — new nodes added this iteration belong to next level
-    for _ in range(level_size):
-        node = queue.popleft()
-        # process
-    level += 1`,
+      name: "Level-order snapshot",
+      snippet: "level_size = len(queue)  # freeze current level count before processing",
     },
   ],
 
@@ -71,151 +60,155 @@ while queue:
       title: "Binary Tree Level Order Traversal",
       difficulty: "medium",
       prompt:
-        "Given the root of a binary tree, return the level order traversal of its nodes' values (i.e., from left to right, level by level) as a list of lists.",
-      patternKeywords: ["level by level", "layer", "breadth", "row by row"],
+        "Given the root of a binary tree, return an array of arrays where each inner array contains the values of nodes at that depth, left to right.",
+      patternKeywords: ["bfs", "level-order", "tree", "queue"],
       solution: `from collections import deque
 
-def levelOrder(root):
+def level_order(root):
     if not root:
         return []
+
     result = []
     queue = deque([root])
+
     while queue:
         level_size = len(queue)
         level = []
+
         for _ in range(level_size):
             node = queue.popleft()
             level.append(node.val)
+
             if node.left:
                 queue.append(node.left)
             if node.right:
                 queue.append(node.right)
+
         result.append(level)
+
     return result`,
       solutionExplanation: [
-        "I handle the empty tree edge case immediately — nothing to traverse.",
-        "I seed the queue with the root. The queue is always the 'frontier' — the set of nodes we're about to process.",
-        "At the start of each iteration, I snapshot the queue's length. This is the exact count of nodes on the current level. Any nodes added during this iteration belong to the next level — snapshotting before the inner loop is what separates levels cleanly.",
-        "I process exactly level_size nodes, collecting their values into a level list. For each node I also enqueue its children — they'll be processed in the next outer iteration.",
-        "Once the inner loop finishes, every node on this level has been visited and its children queued. I append the completed level list to the result.",
-        "When the queue empties, every level has been processed. Return the accumulated result.",
+        "I'm seeding the queue with just the root — that's level 0. If the tree is empty I return early because there's nothing to process.",
+        "I'm snapshotting `len(queue)` at the top of each `while` iteration. That count tells me exactly how many nodes belong to the current level before I start enqueuing the next one.",
+        "Inside the inner loop I pop a node, record its value, then push its children. The children land in the queue after the current level's nodes, so the snapshot keeps the levels cleanly separated.",
+        "I append the completed `level` list to `result` after the inner loop finishes — that's when the entire wave has been processed.",
       ],
       testCase: {
-        input: `root = [3, 9, 20, null, null, 15, 7]`,
+        input: "root = [3, 9, 20, null, null, 15, 7]",
         expected: "[[3], [9, 20], [15, 7]]",
         trace: [
-          "queue=[3]  level_size=1",
-          "  pop 3 → level=[3]  enqueue 9, 20",
-          "  result=[[3]]  queue=[9, 20]",
-          "queue=[9, 20]  level_size=2",
-          "  pop 9 → level=[9]   no children",
-          "  pop 20 → level=[9, 20]  enqueue 15, 7",
-          "  result=[[3], [9, 20]]  queue=[15, 7]",
-          "queue=[15, 7]  level_size=2",
-          "  pop 15 → level=[15]  no children",
-          "  pop 7  → level=[15, 7]  no children",
-          "  result=[[3], [9, 20], [15, 7]]  queue=[]",
-          "queue empty → return [[3], [9, 20], [15, 7]]",
+          "queue = [3], result = []",
+          "level_size = 1 → pop 3, level = [3], enqueue 9 and 20",
+          "result = [[3]], queue = [9, 20]",
+          "level_size = 2 → pop 9, level = [9]; pop 20, level = [9, 20], enqueue 15 and 7",
+          "result = [[3], [9, 20]], queue = [15, 7]",
+          "level_size = 2 → pop 15, pop 7, level = [15, 7]",
+          "result = [[3], [9, 20], [15, 7]], queue empty → done",
         ],
         traceExplanations: [
-          "Only the root is in the queue. level_size=1 means we'll process exactly one node this round.",
-          "Pop the root, record its value. Enqueue both children — they join the queue but won't be processed until the next outer loop.",
-          "Level 0 complete. result now has one entry. Queue holds the two level-1 nodes.",
-          "Two nodes on this level. level_size=2 freezes the count before we start adding level-2 children.",
-          "Pop 9 — it's a leaf, nothing to enqueue.",
-          "Pop 20 — has two children. Enqueue 15 and 7. They go to the back of the queue.",
-          "Level 1 complete. Queue now holds exactly the level-2 nodes.",
-          "Two nodes on level 2. level_size=2 again.",
-          "Pop 15 — leaf node.",
-          "Pop 7 — leaf node. Queue is now empty.",
-          "Level 2 complete. No more nodes remain.",
-          "Queue is empty — BFS is done. Return all three levels.",
+          "We start with only the root in the queue — it is the entire first level.",
+          "Snapshot says 1 node on this level. We drain exactly that many, recording values and enqueuing children.",
+          "Level 0 is sealed. The queue now holds exactly the level-1 nodes that were enqueued as children.",
+          "Snapshot says 2 nodes. We drain both and push their children (15, 7) which belong to level 2.",
+          "Level 1 is sealed. The queue holds the two leaf nodes.",
+          "Snapshot says 2 nodes. We drain both — they have no children, nothing new is enqueued.",
+          "Queue is empty so the while-loop exits. Each wave is captured as its own subarray.",
         ],
       },
       blanks: [
-        { line: `level_size = len(___)`, answer: "queue" },
-        { line: `for _ in range(___):`, answer: "level_size" },
-        { line: `node = queue.___()`, answer: "popleft" },
-        { line: `level.___(node.val)`, answer: "append" },
-        { line: `result.___(level)`, answer: "append" },
+        {
+          line: "        level_size = ___",
+          answer: "level_size = len(queue)",
+        },
+        {
+          line: "        for _ in range(___):",
+          answer: "for _ in range(level_size):",
+        },
+        {
+          line: "            level.append(___)",
+          answer: "level.append(node.val)",
+        },
       ],
     },
-
     {
       id: "rightmost-node",
       title: "Find Rightmost Node at Each Level",
       difficulty: "medium",
       prompt:
-        "Given the root of a binary tree, imagine yourself standing on the right side of it. Return the values of the nodes you can see ordered from top to bottom. (LeetCode: Binary Tree Right Side View)",
-      patternKeywords: ["right side", "last node per level", "visible from right", "level order"],
+        "Given the root of a binary tree, return a list of the values of the rightmost node at each level (right side view).",
+      patternKeywords: ["bfs", "level-order", "tree", "rightmost"],
       solution: `from collections import deque
 
-def rightSideView(root):
+def right_side_view(root):
     if not root:
         return []
+
     result = []
     queue = deque([root])
+
     while queue:
         level_size = len(queue)
+
         for i in range(level_size):
             node = queue.popleft()
+
             if i == level_size - 1:
                 result.append(node.val)
+
             if node.left:
                 queue.append(node.left)
             if node.right:
                 queue.append(node.right)
+
     return result`,
       solutionExplanation: [
-        "I run standard level-order BFS — the level_size snapshot is what allows me to know exactly when I'm at the last node of a level.",
-        "I track the loop index i. When i == level_size - 1, I'm processing the last node of the current level — that's the rightmost visible node. I record it.",
-        "I still enqueue all children regardless. The visibility logic only applies to which node's value I record — the traversal itself is complete BFS.",
-        "The result collects one value per level — the last node processed in that level's inner loop, which is always the rightmost node.",
+        "I'm doing standard level-order BFS — snapshot the level size, drain exactly that many nodes, enqueue their children.",
+        "I'm using the loop index `i` to detect the last node in each level: when `i == level_size - 1`, that's the rightmost node processed, so I record it.",
+        "By appending only the last node of each level, I naturally get the right side view without any extra bookkeeping.",
       ],
       testCase: {
-        input: `root = [1, 2, 3, null, 5, null, 4]`,
+        input: "root = [1, 2, 3, null, 5, null, 4]",
         expected: "[1, 3, 4]",
         trace: [
-          "queue=[1]  level_size=1",
-          "  i=0  pop 1  i==level_size-1 → record 1  enqueue 2, 3",
-          "queue=[2, 3]  level_size=2",
-          "  i=0  pop 2  not last → skip  enqueue 5",
-          "  i=1  pop 3  i==level_size-1 → record 3  no children",
-          "queue=[5, 4]  level_size=2",
-          "  i=0  pop 5  not last → skip  no children",
-          "  i=1  pop 4  i==level_size-1 → record 4  no children",
-          "return [1, 3, 4]",
+          "queue = [1]",
+          "level_size = 1 → i=0, last node: record 1",
+          "enqueue 2, 3; queue = [2, 3]",
+          "level_size = 2 → i=0 pop 2 (not last); i=1 pop 3 (last): record 3",
+          "enqueue 5 (from 2), 4 (from 3); queue = [5, 4]",
+          "level_size = 2 → i=0 pop 5; i=1 pop 4 (last): record 4",
+          "result = [1, 3, 4]",
         ],
         traceExplanations: [
-          "Level 0 has one node. level_size=1, so the first (and only) node is also the last.",
-          "i=0 equals level_size-1=0. Root is both the first and last — it's visible. Enqueue its children for level 1.",
-          "Level 1 has two nodes. The rightmost one (3) will be the last processed.",
-          "i=0: node 2 is not the last. We still process it fully (enqueue children) but don't record it — it's hidden behind node 3.",
-          "i=1: node 3 is the last on this level — record it. No children to enqueue.",
-          "Level 2 has nodes 5 and 4. Note: 4 is the right child of 3, so it's to the right of 5.",
-          "i=0: node 5 is not last — skip recording.",
-          "i=1: node 4 is last — record it. It's the rightmost visible node at this depth.",
-          "One value per level, always the rightmost. Done.",
+          "Root is the sole node on level 0.",
+          "level_size is 1, so i=0 is also the last index — root is recorded.",
+          "Root's children are enqueued for level 1.",
+          "Level has 2 nodes. Only the last one (index 1, value 3) is the rightmost.",
+          "Node 2 had child 5; node 3 had child 4. Both are pushed for level 2.",
+          "Again 2 nodes. Node 4 is at index 1, the last — it is recorded.",
+          "Queue is empty. Result holds the rightmost value from each wave.",
         ],
       },
       blanks: [
-        { line: `level_size = len(___)`, answer: "queue" },
-        { line: `for i in range(___):`, answer: "level_size" },
-        { line: `if i == level_size - ___:`, answer: "1" },
-        { line: `result.append(node.___)`, answer: "val" },
+        {
+          line: "            if i == ___:",
+          answer: "if i == level_size - 1:",
+        },
+        {
+          line: "                result.append(___)",
+          answer: "result.append(node.val)",
+        },
       ],
     },
-
     {
       id: "rotting-oranges",
       title: "Rotting Oranges",
       difficulty: "medium",
       prompt:
-        "You are given an m x n grid where each cell can have one of three values: 0 (empty), 1 (fresh orange), or 2 (rotten orange). Every minute, any fresh orange that is 4-directionally adjacent to a rotten orange becomes rotten. Return the minimum number of minutes that must elapse until no cell has a fresh orange. If it is impossible, return -1.",
-      patternKeywords: ["multi-source BFS", "simultaneous spread", "grid", "minimum time"],
+        "You are given an m×n grid. Each cell is 0 (empty), 1 (fresh orange), or 2 (rotten orange). Every minute, any fresh orange adjacent (4-directionally) to a rotten orange becomes rotten. Return the minimum number of minutes until no fresh orange remains, or -1 if it is impossible.",
+      patternKeywords: ["bfs", "multi-source", "grid", "shortest-path"],
       solution: `from collections import deque
 
-def orangesRotting(grid):
+def oranges_rotting(grid):
     rows, cols = len(grid), len(grid[0])
     queue = deque()
     fresh = 0
@@ -227,13 +220,19 @@ def orangesRotting(grid):
             elif grid[r][c] == 1:
                 fresh += 1
 
+    if fresh == 0:
+        return 0
+
     minutes = 0
-    directions = [(0,1),(0,-1),(1,0),(-1,0)]
+    directions = [(1,0),(-1,0),(0,1),(0,-1)]
 
     while queue and fresh > 0:
         minutes += 1
-        for _ in range(len(queue)):
+        level_size = len(queue)
+
+        for _ in range(level_size):
             r, c = queue.popleft()
+
             for dr, dc in directions:
                 nr, nc = r + dr, c + dc
                 if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 1:
@@ -243,54 +242,60 @@ def orangesRotting(grid):
 
     return minutes if fresh == 0 else -1`,
       solutionExplanation: [
-        "I scan the entire grid upfront to seed the queue with ALL rotten oranges and count all fresh ones. This multi-source initialization is the key insight — all rotten oranges rot their neighbors simultaneously, not one at a time.",
-        "I use level-order BFS. Each outer loop iteration is one minute. Within each minute, I process exactly the oranges that were rotten at the start of that minute.",
-        "For each rotten orange, I check all 4 neighbors. If a neighbor is fresh, it becomes rotten: I mark it in the grid (so it's not double-counted), decrement fresh, and enqueue it for the next minute.",
-        "The loop stops when there are no more rotten oranges to spread from, or when all fresh oranges are gone. If fresh > 0 at the end, some orange was unreachable — return -1. Otherwise return the minute count.",
+        "I'm seeding the queue with ALL rotten oranges at once — that's the multi-source trick. Every rotten orange is a simultaneous starting point, so BFS spreads from all of them in parallel rather than one at a time.",
+        "I'm counting fresh oranges upfront. This lets me detect impossibility: if fresh > 0 after BFS, some oranges were isolated.",
+        "Each BFS level represents one minute. I snapshot the queue length to process exactly the oranges that turned rotten in the previous minute, then spread to their fresh neighbors.",
+        "When a fresh neighbor is infected, I mutate the grid to 2 to mark it visited and decrement `fresh`. Using the grid itself as the visited set avoids a separate data structure.",
+        "I return `minutes` if fresh hit zero, otherwise -1 — those oranges were unreachable.",
       ],
       testCase: {
-        input: `grid = [[2,1,1],[1,1,0],[0,1,1]]`,
+        input: "grid = [[2,1,1],[1,1,0],[0,1,1]]",
         expected: "4",
         trace: [
-          "init: queue=[(0,0)]  fresh=6  minutes=0",
-          "minute 1: process (0,0) → rot (0,1) and (1,0)  fresh=4  queue=[(0,1),(1,0)]",
-          "minute 2: process (0,1) → rot (0,2),(1,1)  process (1,0) → (1,1) already rotten  fresh=2  queue=[(0,2),(1,1)]",
-          "minute 3: process (0,2) → no fresh neighbors  process (1,1) → rot (2,1)  fresh=1  queue=[(2,1)]",
-          "minute 4: process (2,1) → rot (2,2)  fresh=0  queue=[(2,2)]",
-          "fresh==0 → return 4",
+          "queue = [(0,0)], fresh = 6, minutes = 0",
+          "minute 1: spread from (0,0) → infect (0,1),(1,0); fresh = 4",
+          "minute 2: spread from (0,1),(1,0) → infect (0,2),(1,1); fresh = 2",
+          "minute 3: spread from (0,2),(1,1) → infect (2,1); fresh = 1",
+          "minute 4: spread from (2,1) → infect (2,2); fresh = 0",
+          "fresh == 0 → return 4",
         ],
         traceExplanations: [
-          "One rotten orange at (0,0). Six fresh oranges total. BFS starts from a single source here, but the pattern extends naturally to multiple sources.",
-          "Minute 1: the single rotten orange spreads to its two fresh neighbors. Both become rotten and join the queue for minute 2.",
-          "Minute 2: both newly rotten oranges spread. (0,1) reaches (0,2) and (1,1). (1,0) tries (1,1) but it was already just marked rotten — the grid check prevents double-counting.",
-          "Minute 3: (0,2) is a corner with no more fresh neighbors. (1,1) spreads down to (2,1). One fresh orange remains at (2,2).",
-          "Minute 4: (2,1) reaches (2,2) — last fresh orange gone. fresh hits 0.",
-          "All oranges rotted in 4 minutes. fresh==0 so we return minutes, not -1.",
+          "Only one rotten orange initially. It is the sole BFS source.",
+          "First wave: (0,0) can reach (0,1) and (1,0). Both are fresh so they become rotten and join the queue.",
+          "Second wave processes both newly rotten cells. Each spreads to its fresh neighbors.",
+          "Third wave: newly rotten cells infect the remaining reachable fresh orange.",
+          "Fourth wave clears the last fresh orange.",
+          "Since fresh is now 0, the answer is the number of BFS levels (minutes) elapsed.",
         ],
       },
       blanks: [
-        { line: `if grid[r][c] == ___:  queue.append((r, c))`, answer: "2" },
-        { line: `elif grid[r][c] == ___:  fresh += 1`, answer: "1" },
-        { line: `while queue and fresh ___ 0:`, answer: ">" },
-        { line: `for _ in range(len(___)):`, answer: "queue" },
-        { line: `if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == ___:`, answer: "1" },
-        { line: `return minutes if fresh ___ 0 else -1`, answer: "==" },
+        {
+          line: "            if grid[r][c] == 2:",
+          answer: "if grid[r][c] == 2:\n                queue.append((r, c))",
+        },
+        {
+          line: "                if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == ___:",
+          answer: "grid[nr][nc] == 1",
+        },
+        {
+          line: "    return ___ if fresh == 0 else -1",
+          answer: "return minutes if fresh == 0 else -1",
+        },
       ],
     },
-
     {
       id: "01-matrix",
       title: "01 Matrix",
       difficulty: "medium",
       prompt:
-        "Given an m x n binary matrix mat, return the distance of the nearest 0 for each cell. The distance between two adjacent cells is 1.",
-      patternKeywords: ["multi-source BFS", "distance from nearest 0", "grid distance", "simultaneous expansion"],
+        "Given an m×n binary matrix of 0s and 1s, return a matrix of the same size where each cell contains the distance to the nearest 0.",
+      patternKeywords: ["bfs", "multi-source", "grid", "distance"],
       solution: `from collections import deque
 
-def updateMatrix(mat):
+def update_matrix(mat):
     rows, cols = len(mat), len(mat[0])
-    queue = deque()
     dist = [[float('inf')] * cols for _ in range(rows)]
+    queue = deque()
 
     for r in range(rows):
         for c in range(cols):
@@ -298,67 +303,74 @@ def updateMatrix(mat):
                 dist[r][c] = 0
                 queue.append((r, c))
 
-    directions = [(0,1),(0,-1),(1,0),(-1,0)]
+    directions = [(1,0),(-1,0),(0,1),(0,-1)]
+
     while queue:
         r, c = queue.popleft()
+
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
             if 0 <= nr < rows and 0 <= nc < cols:
-                if dist[r][c] + 1 < dist[nr][nc]:
+                if dist[nr][nc] > dist[r][c] + 1:
                     dist[nr][nc] = dist[r][c] + 1
                     queue.append((nr, nc))
 
     return dist`,
       solutionExplanation: [
-        "I initialize a distance matrix filled with infinity and seed the BFS queue with ALL zeros simultaneously. This is the multi-source BFS insight: instead of running BFS from each cell to find the nearest 0, I run BFS outward from all 0s at once. The first time BFS reaches a cell, it's guaranteed to be from the nearest 0.",
-        "I process the queue with standard BFS. For each cell, I check its 4 neighbors. If I can reach the neighbor through the current cell with a shorter distance than what's recorded, I update and enqueue the neighbor.",
-        "Because BFS expands in order of distance, each cell is settled the first time it's reached — but I use the relaxation condition (dist[r][c]+1 < dist[nr][nc]) to handle the general case cleanly. Cells already settled at their minimum distance won't be re-enqueued because the condition won't be true.",
-        "When the queue empties, every reachable cell has its exact distance to the nearest 0. Return the distance matrix.",
+        "I'm initializing all distances to infinity, then setting every 0-cell to distance 0 and loading them all into the queue. This is multi-source BFS — every zero is a simultaneous origin.",
+        "BFS guarantees that the first time we reach a cell, it's via the shortest path. So when I see `dist[nr][nc] > dist[r][c] + 1`, I know I've found a shorter route and I relax the distance.",
+        "The relaxation condition `dist[nr][nc] > dist[r][c] + 1` doubles as the visited check — if a cell already has a distance ≤ current + 1, we don't re-enqueue it.",
+        "The result matrix `dist` fills in naturally as BFS waves ripple outward from all zeros simultaneously.",
       ],
       testCase: {
-        input: `mat = [[0,0,0],[0,1,0],[1,1,1]]`,
+        input: "mat = [[0,0,0],[0,1,0],[1,1,1]]",
         expected: "[[0,0,0],[0,1,0],[1,2,1]]",
         trace: [
-          "init: queue=[(0,0),(0,1),(0,2),(1,0),(1,2)]  all 0-cells with dist=0",
-          "process (0,0): neighbor (1,0) dist=0+1=1 < inf → dist[1][0]=1  enqueue (1,0)  [already 0, skip]",
-          "process (0,1): neighbors already 0 or just updated",
-          "process (0,2): neighbor (1,2) dist=1 < inf → dist[1][2]=1  enqueue",
-          "process (1,0): neighbor (2,0) dist=2 < inf → dist[2][0]=1? wait — (1,0) is a 0-cell, dist=0 → (2,0)=1",
-          "process (1,2): neighbor (2,2) dist=0+1=1 → dist[2][2]=1",
-          "process (1,1) when reached: dist=1  neighbor (2,1) dist=1+1=2 → dist[2][1]=2",
-          "return [[0,0,0],[0,1,0],[1,2,1]]",
+          "queue = [(0,0),(0,1),(0,2),(1,0),(1,2)], all zeros at dist 0",
+          "Process (0,0): neighbors (0,1) dist 0 already, (1,0) dist 0 already — no updates",
+          "Process (1,0): neighbor (2,0) is 1-cell, dist[2][0] = 1, enqueue (2,0)",
+          "Process (1,2): neighbor (2,2) is 1-cell, dist[2][2] = 1, enqueue (2,2)",
+          "Process (2,0): neighbor (2,1) dist inf > 2, dist[2][1] = 2, enqueue (2,1)",
+          "Process (2,2): neighbor (2,1) dist 2, not less than 2 — no update",
+          "Final dist[2][1] = 2",
         ],
         traceExplanations: [
-          "All five 0-cells start at distance 0 simultaneously. This is the power of multi-source BFS — every 0 is a source, and they all expand at the same rate.",
-          "The top-left 0 spreads to its neighbor (1,0). But (1,0) is already a 0-cell — its distance stays 0. (0,0)'s right neighbor (0,1) is also 0.",
-          "The center-top 0 is surrounded by other 0s — no infinity cells nearby to update yet.",
-          "(0,2) reaches (1,2) which is a 0-cell — no update needed. But conceptually all 0-cells are settled.",
-          "(1,0) is a 0-cell with dist=0. Its bottom neighbor (2,0) is a 1-cell at infinity — gets distance 1.",
-          "(1,2) is a 0-cell. Its bottom neighbor (2,2) gets distance 1.",
-          "When (1,1) is dequeued, it has dist=1. It updates (2,1) to distance 2 — this cell is furthest from any 0.",
-          "The result matrix reflects true minimum distances from each cell to the nearest 0.",
+          "All zero-cells are sources with distance 0 — they are all in the queue from the start.",
+          "Zero-cells adjacent to other zero-cells produce no updates since distances are already optimal.",
+          "The first 1-cell (2,0) gets reached from its nearest zero (1,0) — distance 1.",
+          "Similarly (2,2) is reached from (1,2) at distance 1.",
+          "(2,1) is surrounded by 1-cells. Its nearest zero is 2 steps away. It gets relaxed to 2.",
+          "When (2,2) tries to update (2,1), the existing distance 2 is already optimal.",
+          "BFS from all zeros simultaneously ensures every cell gets the shortest possible distance.",
         ],
       },
       blanks: [
-        { line: `dist = [[float('inf')] * cols for _ in range(___)]`, answer: "rows" },
-        { line: `if mat[r][c] == ___:`, answer: "0" },
-        { line: `dist[r][c] = ___`, answer: "0" },
-        { line: `if dist[r][c] + 1 ___ dist[nr][nc]:`, answer: "<" },
-        { line: `dist[nr][nc] = dist[r][c] + ___`, answer: "1" },
+        {
+          line: "            if mat[r][c] == 0:",
+          answer: "if mat[r][c] == 0:\n                dist[r][c] = 0\n                queue.append((r, c))",
+        },
+        {
+          line: "                if dist[nr][nc] > ___:",
+          answer: "if dist[nr][nc] > dist[r][c] + 1:",
+        },
+        {
+          line: "                    dist[nr][nc] = ___",
+          answer: "dist[nr][nc] = dist[r][c] + 1",
+        },
       ],
     },
-
     {
       id: "minimum-knight-moves",
       title: "Minimum Knight Moves",
       difficulty: "medium",
       prompt:
-        "In an infinite chessboard with coordinates from -infinity to +infinity, you have a knight at square [0, 0]. A knight has 8 possible moves. Return the minimum number of moves to reach the square [x, y].",
-      patternKeywords: ["BFS on grid", "minimum moves", "shortest path", "8 directions"],
+        "A knight starts at (0, 0) on an infinite chessboard. Return the minimum number of moves to reach (x, y).",
+      patternKeywords: ["bfs", "grid", "shortest-path", "2d"],
       solution: `from collections import deque
 
-def minKnightMoves(x: int, y: int) -> int:
-    x, y = abs(x), abs(y)  # use symmetry
+def min_knight_moves(x: int, y: int) -> int:
+    # Exploit symmetry: work in first quadrant
+    x, y = abs(x), abs(y)
 
     queue = deque([(0, 0, 0)])  # (row, col, moves)
     visited = {(0, 0)}
@@ -370,8 +382,10 @@ def minKnightMoves(x: int, y: int) -> int:
 
     while queue:
         r, c, moves = queue.popleft()
+
         if r == x and c == y:
             return moves
+
         for dr, dc in directions:
             nr, nc = r + dr, c + dc
             if (nr, nc) not in visited and nr >= -2 and nc >= -2:
@@ -380,37 +394,41 @@ def minKnightMoves(x: int, y: int) -> int:
 
     return -1`,
       solutionExplanation: [
-        "I exploit symmetry first: a knight's minimum move count from (0,0) to (x,y) is the same as to (-x,y), (x,-y), or (-x,-y). By taking absolute values I only search the first quadrant, cutting the search space by up to 4x.",
-        "I use BFS because BFS guarantees the first time I reach the target is via the minimum number of moves. Dijkstra or DFS would be wrong here — only BFS finds shortest paths in unweighted graphs.",
-        "Each state is a (row, col, moves) triple. I track visited cells to avoid cycles — without this the BFS would loop forever on an infinite board.",
-        "The boundary constraint nr >= -2 and nc >= -2 is a pruning trick: since the target is in the first quadrant (after abs), the optimal path never needs to go further than 2 steps into negative territory. This bounds the search space on an otherwise infinite board.",
-        "The first time the BFS reaches (x, y), the move count is minimal by BFS's guarantee. Return immediately.",
+        "I'm using `abs(x), abs(y)` to fold the problem into the first quadrant. By symmetry, the minimum moves to (x, y) equals the minimum to (|x|, |y|), which cuts the search space dramatically.",
+        "I seed BFS from (0,0) with 0 moves. Each node carries its move count so I don't need a separate distance map.",
+        "The 8 knight-move deltas are all combinations of (±1, ±2) and (±2, ±1). BFS guarantees the first time we reach the target, it's with the fewest moves.",
+        "I allow coordinates down to -2 to handle edge cases near the origin — a knight sometimes needs to step slightly negative before reaching a small positive target.",
+        "The `visited` set prevents re-processing. I add before enqueuing, not after dequeuing, to avoid duplicate entries in the queue.",
       ],
       testCase: {
-        input: `x = 2, y = 1`,
+        input: "x = 2, y = 1",
         expected: "1",
         trace: [
-          "abs(2,1) → target=(2,1)  queue=[(0,0,0)]  visited={(0,0)}",
-          "pop (0,0,0): not target. Try all 8 moves.",
-          "  (2,1) → in bounds, not visited → enqueue (2,1,1)  add to visited",
-          "  (2,-1),(−2,1),(−2,-1),(1,2),(1,-2),(−1,2),(−1,-2) → enqueue valid ones",
-          "pop (2,1,1): r==x and c==y → return 1",
+          "queue = [(0,0,0)], visited = {(0,0)}",
+          "Pop (0,0,0). Not target. Enqueue all valid knight moves from origin.",
+          "(2,1) is a valid neighbor, enqueue (2,1,1)",
+          "Pop (2,1,1). r==x and c==y → return 1",
         ],
         traceExplanations: [
-          "Target is at (2,1). After taking absolute values, we're in the first quadrant. BFS starts at origin with 0 moves.",
-          "Process the start position. It's not the target so we explore all 8 knight moves from here.",
-          "One of the 8 moves lands directly on (2,1) — the target! It gets enqueued with moves=1.",
-          "Other moves also get enqueued — they're all valid first moves — but BFS processes in FIFO order.",
-          "(2,1,1) is at the front of the queue (first neighbor enqueued). It matches the target. Return 1 immediately.",
+          "We start at the origin with 0 moves.",
+          "From (0,0) a knight can reach 8 squares; we enqueue all that pass the bounds check.",
+          "(2,1) is one of the 8 legal knight destinations and matches our target.",
+          "BFS pops nodes in order of increasing move count, so the first time we hit the target it is the minimum.",
         ],
       },
       blanks: [
-        { line: `x, y = ___(x), ___(y)`, answer: "abs, abs" },
-        { line: `queue = deque([(0, 0, ___)])`, answer: "0" },
-        { line: `visited = {(0, ___)}`, answer: "0" },
-        { line: `if r == x and c ___ y:`, answer: "==" },
-        { line: `if (nr, nc) not in visited and nr >= ___ and nc >= ___:`, answer: "-2, -2" },
-        { line: `queue.append((nr, nc, moves + ___))`, answer: "1" },
+        {
+          line: "    x, y = ___, ___",
+          answer: "x, y = abs(x), abs(y)",
+        },
+        {
+          line: "        if r == x and c == y:",
+          answer: "if r == x and c == y:\n            return moves",
+        },
+        {
+          line: "            if (nr, nc) not in visited and nr >= ___ and nc >= ___:",
+          answer: "if (nr, nc) not in visited and nr >= -2 and nc >= -2:",
+        },
       ],
     },
   ],

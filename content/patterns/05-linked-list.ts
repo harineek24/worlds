@@ -9,12 +9,12 @@ export const linkedList: Pattern = {
     text: "You cannot step into the same river twice.",
     source: "Heraclitus",
     connection:
-      "A linked list can only be traversed forward — each node leads only to the next. You cannot go back. Navigate with intention; once you move past a node, it is gone unless you saved a reference. The slow/fast pointer and dummy head techniques exist precisely because of this constraint: they let you see ahead, remember what matters, and restructure without losing the thread.",
+      "A linked list can only be traversed forward — each node leads only to the next. You cannot go back. Navigate with intention; once you move past a node, it's gone unless you saved a reference. Every pointer reassignment is a one-way door. Think before you move.",
   },
 
   template: {
     description:
-      "Three core sub-patterns: dummy head to avoid edge cases on head deletion/insertion; slow/fast pointers to find midpoints or detect cycles; in-place reversal by saving next before relinking.",
+      "Three core techniques: dummy head to eliminate edge cases on insertion/deletion, slow/fast pointers to find midpoints or detect cycles, and in-place reversal by threading prev/curr/next through the list.",
     snippet: `# Dummy head pattern — avoids edge cases on head deletion
 dummy = ListNode(0)
 dummy.next = head
@@ -38,16 +38,24 @@ while curr:
 
   pythonTools: [
     {
-      name: "Dummy head for safe head manipulation",
-      snippet: "dummy = ListNode(0); dummy.next = head",
+      name: "Dummy head — safe head manipulation",
+      snippet: `dummy = ListNode(0)
+dummy.next = head
+# operate on dummy.next freely
+return dummy.next`,
     },
     {
-      name: "Slow/fast pointers for midpoint or cycle",
-      snippet: "slow, fast = head, head",
+      name: "Slow/fast pointers — find midpoint or detect cycle",
+      snippet: `slow = fast = head
+while fast and fast.next:
+    slow = slow.next
+    fast = fast.next.next
+# slow is now at midpoint`,
     },
     {
-      name: "Always save next before relinking",
-      snippet: "next_node = curr.next",
+      name: "Always save next before reassigning",
+      snippet: `next_node = curr.next   # save it first
+curr.next = prev        # now safe to overwrite`,
     },
   ],
 
@@ -57,365 +65,367 @@ while curr:
       title: "Linked List Cycle",
       difficulty: "easy",
       prompt:
-        "Given the head of a linked list, determine if it contains a cycle. A cycle exists if a node's next pointer points back to a previous node in the list. Return true if there is a cycle, false otherwise.",
-      patternKeywords: ["cycle", "loop", "meet", "tortoise"],
-      solution: `def hasCycle(head):
-    slow = fast = head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
-        if slow == fast:
-            return True
-    return False`,
+        "Given the head of a linked list, determine if the linked list has a cycle in it. A cycle exists if some node can be reached again by continuously following the next pointer. Return true if there is a cycle, false otherwise.",
+      patternKeywords: ["cycle", "loop", "slow fast", "meet"],
+      solution: `slow = fast = head
+while fast and fast.next:
+    slow = slow.next
+    fast = fast.next.next
+    if slow == fast:
+        return True
+return False`,
       solutionExplanation: [
-        "I'm initializing both slow and fast to head because both pointers need to start at the same entry point. The tradeoff here is that if head itself is None I need the while condition to protect me — that's why I check `fast and fast.next` before any dereference.",
-        "I'm moving slow by one and fast by two each iteration. The key insight is that if a cycle exists, fast will lap slow inside the cycle — they're guaranteed to meet because their relative speed is exactly 1 node per step, so fast closes the gap by 1 each iteration and will never skip over slow.",
-        "I'm returning True the moment slow == fast (pointer equality, not value equality). The tradeoff versus using a visited set is O(1) space here at the cost of not knowing where the cycle starts — but the problem only asks for existence.",
-        "I'm returning False after the loop exhausts. If fast ever reaches None or fast.next is None, we've hit the end of a non-cyclic list. A cyclic list has no end, so the loop never terminates naturally — only the cycle-detection branch returns.",
+        "I use Floyd's tortoise-and-hare algorithm. Both pointers start at head. Slow moves one step at a time, fast moves two. If there's no cycle, fast will eventually fall off the end of the list.",
+        "The insight is mathematical: if a cycle exists, fast and slow are both inside it. Fast gains one node on slow every iteration. Eventually it laps slow — they must meet. The gap between them decreases by one each step, so meeting is guaranteed.",
+        "I check for the meeting condition inside the loop, after moving both pointers. If they ever point to the same node, there's a cycle.",
+        "If fast reaches null or fast.next reaches null, there's no cycle — a linear list has an end. Return false.",
       ],
       testCase: {
-        input: "3 -> 2 -> 0 -> -4, tail connects to node at index 1",
-        expected: "true",
+        input: `head = [3, 2, 0, -4], pos = 1  (tail connects back to index 1)`,
+        expected: "True",
         trace: [
-          "Start: slow=3, fast=3",
-          "Step 1: slow=2, fast=0",
-          "Step 2: slow=0, fast=2  (fast jumped: -4 -> 2)",
-          "Step 3: slow=-4, fast=-4  (slow: 0->-4, fast: 2->0->-4)",
-          "slow == fast → return True",
+          "start:  slow=3,  fast=3",
+          "step 1: slow=2,  fast=0   (fast moved 3→2→0)",
+          "step 2: slow=0,  fast=2   (fast moved 0→-4→2, cycling back)",
+          "step 3: slow=-4, fast=-4  slow == fast ✓",
+          "return True",
         ],
         traceExplanations: [
-          "Both pointers enter at node 3. No comparison yet — we haven't moved.",
-          "Slow takes 1 step to node 2. Fast takes 2 steps: 3->2->0. They haven't met because fast is ahead.",
-          "Slow takes 1 step to node 0. Fast takes 2 steps: 0->-4->2 (cycle wraps). Fast is now behind slow in list order but inside the cycle.",
-          "Slow takes 1 step to -4. Fast takes 2 steps: 2->0->-4. They land on the same node. The relative speed of 1 node/iteration means fast inevitably catches slow — it cannot skip over it inside a finite cycle.",
-          "Pointer identity check passes. We confirm a cycle exists.",
+          "Both pointers start at head node (value 3). Fast hasn't been tested against null yet — we enter the loop.",
+          "Slow moves one step: 3→2. Fast moves two steps: 3→2→0. They're at different nodes — no meeting yet. Fast is ahead.",
+          "Slow moves: 2→0. Fast moves two: 0→-4→2. Fast has looped around through the cycle. The gap is closing.",
+          "Slow moves: 0→-4. Fast moves two: 2→0→-4. They land on the same node (-4). Meeting confirmed — a cycle exists.",
+          "The loop condition was always satisfied because fast.next was never null — the cycle kept feeding nodes. No escape route means there's a cycle.",
         ],
       },
       blanks: [
-        {
-          line: "        slow = slow.next",
-          answer: "slow = slow.next",
-        },
-        {
-          line: "        fast = fast.next.next",
-          answer: "fast = fast.next.next",
-        },
-        {
-          line: "        if slow == fast:",
-          answer: "if slow == fast:",
-        },
+        { line: `slow = fast = ___`, answer: "head" },
+        { line: `while fast and fast.___:`, answer: "next" },
+        { line: `slow = slow.___`, answer: "next" },
+        { line: `fast = fast.next.___`, answer: "next" },
+        { line: `if slow ___ fast:`, answer: "==" },
       ],
     },
+
     {
       id: "palindrome-linked-list",
       title: "Palindrome Linked List",
       difficulty: "easy",
       prompt:
-        "Given the head of a singly linked list, return true if the list is a palindrome, false otherwise. A palindrome reads the same forward and backward.",
-      patternKeywords: ["palindrome", "reverse", "midpoint", "compare"],
-      solution: `def isPalindrome(head):
-    # Step 1: find midpoint
-    slow = fast = head
-    while fast and fast.next:
-        slow = slow.next
-        fast = fast.next.next
+        "Given the head of a singly linked list, return true if it is a palindrome or false otherwise. A palindrome reads the same forward and backward. Solve it in O(n) time and O(1) space.",
+      patternKeywords: ["palindrome", "reverse", "midpoint", "compare halves"],
+      solution: `# Step 1: find midpoint
+slow = fast = head
+while fast and fast.next:
+    slow = slow.next
+    fast = fast.next.next
 
-    # Step 2: reverse second half
-    prev = None
-    curr = slow
-    while curr:
-        next_node = curr.next
-        curr.next = prev
-        prev = curr
-        curr = next_node
+# Step 2: reverse second half
+prev = None
+curr = slow
+while curr:
+    next_node = curr.next
+    curr.next = prev
+    prev = curr
+    curr = next_node
 
-    # Step 3: compare
-    left, right = head, prev
-    while right:
-        if left.val != right.val:
-            return False
-        left = left.next
-        right = right.next
-    return True`,
+# Step 3: compare
+left, right = head, prev
+while right:
+    if left.val != right.val:
+        return False
+    left = left.next
+    right = right.next
+return True`,
       solutionExplanation: [
-        "I'm using slow/fast to find the midpoint in one pass. When fast reaches the end, slow is at the start of the second half. The tradeoff is that this modifies the list — for a production API I'd restore it afterward, but for an interview this is acceptable and saves O(n) extra space.",
-        "I'm reversing the second half in-place starting from slow. I save next_node before relinking because once I set curr.next = prev, I've lost the original forward pointer. This is the single most common bug in linked list reversal — forgetting to save next.",
-        "I'm comparing from both ends simultaneously: left starts at head (first half), right starts at prev (the new head of the reversed second half). I iterate while right exists — the reversed half may be shorter by 1 for odd-length lists, which is correct because the middle element doesn't need a match.",
+        "Step 1 — find the midpoint using slow/fast pointers. When fast reaches the end, slow is exactly at the middle. This is the entry point of the second half.",
+        "Step 2 — I reverse the second half in place. I thread prev/curr through the nodes from slow onward. Each iteration I save next_node before cutting curr.next loose, point curr.next back to prev, then advance both. The tradeoff: I'm mutating the list, which is usually acceptable in interviews unless asked otherwise.",
+        "Step 3 — I compare left (starting at head) against right (the reversed second half, starting at prev). A palindrome means these two halves mirror each other. I walk both forward simultaneously; if any values differ, it's not a palindrome.",
+        "I only need to walk as far as right goes — the reversed half is the shorter or equal half. When right runs out, every value matched.",
       ],
       testCase: {
-        input: "1 -> 2 -> 2 -> 1",
-        expected: "true",
+        input: `head = [1, 2, 2, 1]`,
+        expected: "True",
         trace: [
-          "Find mid: slow=1, fast=1 → slow=2(idx1), fast=2(idx2) → slow=2(idx2), fast=1(idx3 wraps) → slow stops at node 2(idx2)",
-          "Reverse from node 2(idx2): prev=None",
-          "  curr=2(idx2): save next=1(idx3), 2.next=None, prev=2(idx2), curr=1(idx3)",
-          "  curr=1(idx3): save next=None, 1.next=2(idx2), prev=1(idx3), curr=None",
-          "Reversed second half: 1 -> 2 -> None",
-          "Compare: left=1(idx0) vs right=1(idx3) → match",
-          "Compare: left=2(idx1) vs right=2(idx2) → match",
+          "find mid: slow/fast start at node(1)",
+          "  iter1: slow=node(2,idx1), fast=node(2,idx2)",
+          "  iter2: slow=node(2,idx2), fast=None → loop ends",
+          "slow is at node(2,idx2) — second half starts here",
+          "reverse [2→1]: prev=None, curr=node(2,idx2)",
+          "  iter1: next_node=node(1), node(2).next=None, prev=node(2), curr=node(1)",
+          "  iter2: next_node=None, node(1).next=node(2), prev=node(1), curr=None",
+          "reversed second half: node(1)→node(2)",
+          "compare: left=node(1,idx0) vs right=node(1,rev) → val 1==1 ✓",
+          "compare: left=node(2,idx1) vs right=node(2,rev) → val 2==2 ✓",
           "right exhausted → return True",
         ],
         traceExplanations: [
-          "Slow/fast find the midpoint. For a 4-node list, after 2 iterations fast lands at the tail (index 3) and slow lands at index 2 — the start of the second half.",
-          "Reversal initializes with prev=None so the new tail of the reversed half correctly points to None.",
-          "Saving next before relinking is critical — without this, curr.next = prev would destroy the only pointer to index 3.",
-          "After the second reversal step, prev points to the original last node (value 1), which is now the head of the reversed second half.",
-          "The reversed second half [1, 2] mirrors the first half [1, 2] if it's a palindrome.",
-          "First comparison: both ends are 1 — they match.",
-          "Second comparison: both inner nodes are 2 — they match.",
-          "right becomes None (reversed half exhausted) — we've confirmed all pairs match.",
+          "Both slow and fast begin at the first node (val=1).",
+          "Slow takes one step to index 1 (val=2). Fast takes two steps to index 2 (val=2). fast.next=node(1,idx3) is non-null — continue.",
+          "Slow advances to index 2 (val=2). Fast tries to advance two: index 2 → index 3 → null. Loop exits. Slow marks the start of the second half.",
+          "Slow is at the second occurrence of val=2. The second half [2, 1] starts here.",
+          "Reversal begins on the second half. prev is None — the new tail will point to None.",
+          "Save next_node (val=1) before cutting. Set node(2).next = None (prev). Advance: prev=node(2), curr=node(1).",
+          "Save next_node (None). Set node(1).next = node(2). Advance: prev=node(1), curr=None. Loop ends. Reversed: 1→2.",
+          "The reversed second half reads 1→2. The first half reads 1→2. These should match for a palindrome.",
+          "First pair: head val=1 vs reversed-head val=1. Match.",
+          "Second pair: val=2 vs val=2. Match. The list is symmetric.",
+          "Right pointer is now None — all nodes in the reversed half have been checked. Every pair matched.",
         ],
       },
       blanks: [
-        {
-          line: "        next_node = curr.next",
-          answer: "next_node = curr.next",
-        },
-        {
-          line: "        curr.next = prev",
-          answer: "curr.next = prev",
-        },
-        {
-          line: "        prev = curr",
-          answer: "prev = curr",
-        },
-        {
-          line: "        curr = next_node",
-          answer: "curr = next_node",
-        },
+        { line: `while fast and fast.___:`, answer: "next" },
+        { line: `next_node = curr.___`, answer: "next" },
+        { line: `curr.next = ___`, answer: "prev" },
+        { line: `prev = ___`, answer: "curr" },
+        { line: `curr = ___`, answer: "next_node" },
+        { line: `left, right = head, ___`, answer: "prev" },
+        { line: `if left.___ != right.val:`, answer: "val" },
       ],
     },
+
     {
       id: "remove-nth-from-end",
       title: "Remove Nth Node From End of List",
       difficulty: "medium",
       prompt:
         "Given the head of a linked list, remove the nth node from the end of the list and return its head. Do it in one pass.",
-      patternKeywords: ["nth from end", "gap", "two pointers", "one pass"],
-      solution: `def removeNthFromEnd(head, n):
-    dummy = ListNode(0)
-    dummy.next = head
-    fast = slow = dummy
+      patternKeywords: ["nth from end", "fixed gap", "two pointers", "one pass"],
+      solution: `dummy = ListNode(0)
+dummy.next = head
+fast = slow = dummy
 
-    # Advance fast by n+1 steps
-    for _ in range(n + 1):
-        fast = fast.next
+# advance fast n+1 steps so gap between slow and fast is n+1
+for _ in range(n + 1):
+    fast = fast.next
 
-    # Move both until fast is None
-    while fast:
-        slow = slow.next
-        fast = fast.next
+# move both until fast hits end
+while fast:
+    slow = slow.next
+    fast = fast.next
 
-    # Delete target
-    slow.next = slow.next.next
-    return dummy.next`,
+# slow is now just before the node to delete
+slow.next = slow.next.next
+return dummy.next`,
       solutionExplanation: [
-        "I'm creating a dummy node before head for two reasons: it handles the edge case where the node to remove is the head itself (n equals list length), and it gives slow a 'before target' position — when I delete, I need the node one before the target, not the target itself.",
-        "I'm advancing fast by n+1 steps (not n) because I want slow to stop at the node before the target. If I advance only n steps, slow ends up on the target, and I can't delete it without a previous-pointer reference. The gap of n+1 puts slow exactly one behind the node to delete.",
-        "I'm moving both pointers in lockstep until fast falls off the end (fast is None). At this point the gap is maintained and slow.next is the nth node from the end — exactly the node to remove.",
-        "The deletion is a single pointer reassignment: slow.next = slow.next.next. The tradeoff is that this leaks the deleted node in languages with manual memory management, but in Python/interviews that's fine.",
+        "I use a dummy node before head so that slow always has a valid .next to delete — this handles the edge case where we need to remove the head itself.",
+        "I advance fast exactly n+1 steps from dummy. This creates a gap of n+1 nodes between slow and fast. The key insight: when fast reaches null (the end), slow is exactly one node before the target.",
+        "Why n+1 and not n? Because I want slow to land on the node *before* the target, not *on* the target. I need the predecessor to perform the deletion.",
+        "I advance both pointers together until fast falls off the end. The gap between them stays constant at n+1 throughout this phase.",
+        "When fast is null, slow.next is the node to remove. I bypass it by setting slow.next = slow.next.next. The deleted node becomes unreachable and is garbage collected.",
+        "I return dummy.next — not head — because if the original head was deleted, dummy.next correctly points to the new head.",
       ],
       testCase: {
-        input: "1 -> 2 -> 3 -> 4 -> 5, n=2",
-        expected: "1 -> 2 -> 3 -> 5",
+        input: `head = [1, 2, 3, 4, 5], n = 2`,
+        expected: "[1, 2, 3, 5]",
         trace: [
-          "dummy -> 1 -> 2 -> 3 -> 4 -> 5",
-          "fast advances n+1=3 steps from dummy: fast=3",
-          "slow=dummy, fast=3",
-          "Move together: slow=1, fast=4",
-          "Move together: slow=2, fast=5",
-          "Move together: slow=3, fast=None",
-          "fast is None — stop. slow=3, slow.next=4 (target)",
-          "slow.next = slow.next.next → 3.next = 5",
-          "Result: 1 -> 2 -> 3 -> 5",
+          "dummy→1→2→3→4→5, fast=slow=dummy",
+          "advance fast n+1=3 steps from dummy:",
+          "  step 1: fast=node(1)",
+          "  step 2: fast=node(2)",
+          "  step 3: fast=node(3)",
+          "gap established: slow=dummy, fast=node(3)",
+          "move both together:",
+          "  iter1: slow=node(1), fast=node(4)",
+          "  iter2: slow=node(2), fast=node(5)",
+          "  iter3: slow=node(3), fast=None → loop ends",
+          "slow=node(3), slow.next=node(4) — this is the node to delete",
+          "slow.next = slow.next.next → node(3).next = node(5)",
+          "result: dummy→1→2→3→5",
+          "return dummy.next = [1,2,3,5]",
         ],
         traceExplanations: [
-          "The dummy node is prepended so slow has somewhere to stand before node 1.",
-          "fast advances 3 steps (n+1=3) so that when it falls off the end, slow is one behind the 2nd-from-end node (node 4).",
-          "At this moment, the gap between slow (dummy, position 0) and fast (node 3, position 3) is exactly n+1.",
-          "Both advance in lockstep — the gap stays constant at n+1.",
-          "Lockstep continues. Fast is now at node 5 (last node).",
-          "Fast advances to None. The gap of n+1 is maintained, so slow is at node 3 — one before the 2nd-from-end node (4).",
-          "Slow.next is node 4, the node we want to remove. We have the predecessor — now we can unlink.",
-          "Relinking: node 3 now points directly to node 5, bypassing node 4.",
-          "Returning dummy.next handles the case where head itself was removed.",
+          "Dummy node sits before the real list. Both pointers start at dummy — gives slow a predecessor position.",
+          "Advancing fast n+1=3 steps to establish the correct gap.",
+          "Fast at node(1). One step from dummy.",
+          "Fast at node(2). Two steps from dummy.",
+          "Fast at node(3). Three steps from dummy. The gap between slow(dummy) and fast(node 3) is exactly 3 nodes.",
+          "Gap of 3 confirmed. When fast reaches null, slow will be 3 nodes behind — at node(3), one before the deletion target.",
+          "Both pointers advance in lockstep. Gap preserved at 3.",
+          "Slow at node(1), fast at node(4). Gap still 3.",
+          "Slow at node(2), fast at node(5). Gap still 3.",
+          "Fast advances to None. Loop stops. Slow is at node(3) — exactly one node before node(4), the 2nd from end. The math worked.",
+          "Slow.next is node(4) — the node to remove. We have the predecessor.",
+          "The bypass: node(3)'s next pointer skips over node(4) and points directly to node(5). Node(4) is now orphaned.",
+          "The list is now 1→2→3→5. Node(4) is gone.",
+          "dummy.next is still node(1), the correct head. If the original head had been deleted, dummy.next would point to the new head.",
         ],
       },
       blanks: [
-        {
-          line: "    for _ in range(n + 1):",
-          answer: "for _ in range(n + 1):",
-        },
-        {
-          line: "        fast = fast.next",
-          answer: "fast = fast.next",
-        },
-        {
-          line: "    slow.next = slow.next.next",
-          answer: "slow.next = slow.next.next",
-        },
+        { line: `dummy = ListNode(___)`, answer: "0" },
+        { line: `for _ in range(n + ___):`, answer: "1" },
+        { line: `fast = fast.___`, answer: "next" },
+        { line: `while ___:`, answer: "fast" },
+        { line: `slow.next = slow.next.___`, answer: "next" },
+        { line: `return dummy.___`, answer: "next" },
       ],
     },
+
     {
       id: "reorder-list",
       title: "Reorder List",
       difficulty: "medium",
       prompt:
-        "Given the head of a singly linked list, reorder it in-place so that the new order is: L0 → Ln → L1 → Ln-1 → L2 → Ln-2 → ... You may not modify node values, only the links.",
-      patternKeywords: ["reorder", "merge", "reverse half", "interleave"],
-      solution: `def reorderList(head):
-    if not head or not head.next:
-        return
+        "Given the head of a singly linked-list L0 → L1 → ... → Ln, reorder it to: L0 → Ln → L1 → Ln-1 → L2 → Ln-2 → ... You may not modify the values in the list's nodes. Only nodes themselves may be changed.",
+      patternKeywords: ["interleave", "reorder", "reverse second half", "merge alternating"],
+      solution: `# Step 1: find midpoint
+slow = fast = head
+while fast.next and fast.next.next:
+    slow = slow.next
+    fast = fast.next.next
 
-    # Step 1: find midpoint
-    slow, fast = head, head
-    while fast.next and fast.next.next:
-        slow = slow.next
-        fast = fast.next.next
+# Step 2: reverse second half
+second = slow.next
+slow.next = None   # cut the list
+prev = None
+curr = second
+while curr:
+    next_node = curr.next
+    curr.next = prev
+    prev = curr
+    curr = next_node
+second = prev
 
-    # Step 2: reverse second half
-    second = slow.next
-    slow.next = None  # cut list
-    prev = None
-    while second:
-        tmp = second.next
-        second.next = prev
-        prev = second
-        second = tmp
-
-    # Step 3: merge alternately
-    first, second = head, prev
-    while second:
-        tmp1, tmp2 = first.next, second.next
-        first.next = second
-        second.next = tmp1
-        first = tmp1
-        second = tmp2`,
+# Step 3: merge alternating
+first = head
+while second:
+    tmp1 = first.next
+    tmp2 = second.next
+    first.next = second
+    second.next = tmp1
+    first = tmp1
+    second = tmp2`,
       solutionExplanation: [
-        "I'm using slow/fast to find the end of the first half. I check fast.next and fast.next.next (not just fast) so that slow stops at the last node of the first half, not the first node of the second half. This means I can cut the list at slow.next = None cleanly.",
-        "I'm reversing the second half in-place. The cut at slow.next = None is critical — without it, the reversal loop would process the entire list, not just the second half. After reversal, prev is the new head of the reversed second half (originally the tail).",
-        "I'm merging by saving both next pointers before relinking. I need tmp1 = first.next and tmp2 = second.next simultaneously because the moment I set first.next = second, I lose the original chain of the first half. The merge interleaves one node from each half per iteration, stopping when second is exhausted (the reversed half may be same length or one shorter).",
+        "This problem is three sub-problems chained together: find the midpoint, reverse the back half, then merge the two halves alternately.",
+        "Step 1 — finding the midpoint. I use the slow/fast trick but with a slightly different loop condition: fast.next and fast.next.next. This ensures slow lands at the *end* of the first half, so I can cut the list cleanly at slow.next.",
+        "Step 2 — I sever the list at the midpoint (slow.next = None) to prevent cycles during reversal, then reverse the second half using the standard prev/curr/next pattern. After the loop, prev points to the new head of the reversed second half.",
+        "Step 3 — I interleave by saving the next pointers of both halves before redirecting. For each pair: first.next gets wired to second, then second.next gets wired back to the original first.next (tmp1). Then I advance both pointers. The loop runs until second is exhausted — first half may have one extra node in odd-length lists, which is fine.",
       ],
       testCase: {
-        input: "1 -> 2 -> 3 -> 4 -> 5",
-        expected: "1 -> 5 -> 2 -> 4 -> 3",
+        input: `head = [1, 2, 3, 4, 5]`,
+        expected: "[1, 5, 2, 4, 3]",
         trace: [
-          "Find mid: slow/fast walk → slow stops at node 3",
-          "Cut: 3.next = None → first half: 1->2->3, second half starts at 4",
-          "Reverse [4->5]: prev=None → 5->4->None, prev=5",
-          "Merge: first=1, second=5",
-          "  tmp1=2, tmp2=4; 1.next=5, 5.next=2; first=2, second=4",
-          "  tmp1=3, tmp2=None; 2.next=4, 4.next=3; first=3, second=None",
-          "second is None — stop",
-          "Result: 1 -> 5 -> 2 -> 4 -> 3",
+          "find mid: slow=fast=node(1)",
+          "  iter1: slow=node(2), fast=node(3)  [fast.next=4, fast.next.next=5 → continue]",
+          "  iter2: slow=node(3), fast=node(5)  [fast.next=None → loop ends]",
+          "slow=node(3), second half = slow.next = node(4)",
+          "cut: node(3).next = None → first half: 1→2→3",
+          "reverse [4→5]: prev=None, curr=node(4)",
+          "  iter1: next_node=node(5), node(4).next=None, prev=node(4), curr=node(5)",
+          "  iter2: next_node=None, node(5).next=node(4), prev=node(5), curr=None",
+          "second = node(5)→node(4)",
+          "merge: first=node(1), second=node(5)",
+          "  iter1: tmp1=node(2), tmp2=node(4); node(1).next=node(5), node(5).next=node(2); first=node(2), second=node(4)",
+          "  iter2: tmp1=node(3), tmp2=None; node(2).next=node(4), node(4).next=node(3); first=node(3), second=None",
+          "second=None → loop ends",
+          "result: 1→5→2→4→3",
         ],
         traceExplanations: [
-          "Slow/fast with the fast.next and fast.next.next condition stops slow at node 3 — the last node of the first half for a 5-node list.",
-          "Cutting the list at slow.next=None isolates the two halves so the reversal only processes [4, 5].",
-          "Reversing [4->5] gives [5->4->None]. Prev=5 is the entry point for the merge.",
-          "Merge starts with the original head (1) and the reversed tail (5).",
-          "First merge iteration: save next pointers (2 and 4), wire 1->5->2. Advance both pointers one step.",
-          "Second merge iteration: save next pointers (3 and None), wire 2->4->3. Advance. Second becomes None.",
-          "second is None means the reversed half is exhausted. The first half's remaining node (3) is already correctly wired as the tail.",
-          "The final list interleaves from both ends exactly as required.",
+          "Both pointers start at head node (val=1).",
+          "Slow advances to node(2), fast advances to node(3). fast.next=4 and fast.next.next=5 are both non-null — loop continues.",
+          "Slow advances to node(3), fast advances to node(5). fast.next=None — loop condition fails. Slow is at the last node of the first half.",
+          "The second half begins at slow.next = node(4).",
+          "Severing at node(3).next = None is critical — without this cut, the reversal loop would walk into the first half and create a cycle.",
+          "Reversal begins on the isolated second half [4, 5].",
+          "Save node(5) as next. Set node(4).next = None (prev). Advance: prev=node(4), curr=node(5).",
+          "Save None as next. Set node(5).next = node(4). Advance: prev=node(5), curr=None. Loop ends. Reversed: 5→4.",
+          "The reversed second half is 5→4. This will be woven into the first half.",
+          "Merge phase begins. first=node(1), second=node(5).",
+          "Save node(2) as tmp1 and node(4) as tmp2 before rewiring. Wire node(1)→node(5), then node(5)→node(2). Advance first to node(2), second to node(4).",
+          "Save node(3) as tmp1 and None as tmp2. Wire node(2)→node(4), then node(4)→node(3). Advance first to node(3), second to None.",
+          "Second is None — no more back-half nodes to interleave. Node(3) sits as the correct tail.",
+          "Final order: 1→5→2→4→3. Every node placed exactly once — O(n) time, O(1) space.",
         ],
       },
       blanks: [
-        {
-          line: "    slow.next = None  # cut list",
-          answer: "slow.next = None",
-        },
-        {
-          line: "        tmp1, tmp2 = first.next, second.next",
-          answer: "tmp1, tmp2 = first.next, second.next",
-        },
-        {
-          line: "        first.next = second",
-          answer: "first.next = second",
-        },
-        {
-          line: "        second.next = tmp1",
-          answer: "second.next = tmp1",
-        },
+        { line: `while fast.___ and fast.next.___:`, answer: "next, next" },
+        { line: `second = slow.___`, answer: "next" },
+        { line: `slow.next = ___`, answer: "None" },
+        { line: `curr.next = ___`, answer: "prev" },
+        { line: `first.next = ___`, answer: "second" },
+        { line: `second.next = ___`, answer: "tmp1" },
+        { line: `first = ___`, answer: "tmp1" },
+        { line: `second = ___`, answer: "tmp2" },
       ],
     },
+
     {
       id: "swap-nodes-in-pairs",
       title: "Swap Nodes in Pairs",
       difficulty: "medium",
       prompt:
-        "Given a linked list, swap every two adjacent nodes and return its head. You must solve the problem without modifying the values in the list's nodes (i.e. only node swaps, not value swaps).",
-      patternKeywords: ["swap pairs", "adjacent", "dummy", "iterative"],
-      solution: `def swapPairs(head):
-    dummy = ListNode(0)
-    dummy.next = head
-    prev = dummy
+        "Given a linked list, swap every two adjacent nodes and return its head. You must solve the problem without modifying the values in the list's nodes (i.e., only node swaps are allowed).",
+      patternKeywords: ["swap pairs", "adjacent", "iterative rewire", "dummy head"],
+      solution: `dummy = ListNode(0)
+dummy.next = head
+prev = dummy
 
-    while prev.next and prev.next.next:
-        first = prev.next
-        second = prev.next.next
+while prev.next and prev.next.next:
+    a = prev.next
+    b = prev.next.next
 
-        # Swap
-        prev.next = second
-        first.next = second.next
-        second.next = first
+    # rewire
+    prev.next = b
+    a.next = b.next
+    b.next = a
 
-        # Advance
-        prev = first
+    # advance
+    prev = a
 
-    return dummy.next`,
+return dummy.next`,
       solutionExplanation: [
-        "I'm using a dummy head so that prev always has a valid node — on the very first pair, prev.next = head and I need to update prev.next to point to second. Without dummy, I'd have no node to attach second to for the first swap.",
-        "I'm naming the two nodes first and second explicitly before touching any pointers. Once I start relinking, the .next relationships change and it becomes impossible to read the original chain — naming them upfront makes the three reassignments unambiguous.",
-        "The three-step swap is ordered carefully: (1) prev.next = second pulls second to the front of the pair, (2) first.next = second.next attaches first to whatever came after second, (3) second.next = first closes the swap by placing first after second. Order matters — if I did step 3 before step 2, I'd lose second.next.",
-        "After the swap, first is the second node in the pair (the one now at the back). I advance prev = first so it points to the last-swapped node, ready to be the anchor for the next pair. The tradeoff of iterative over recursive is O(1) space vs O(n) call stack.",
+        "I use a dummy node so that prev always has a valid predecessor to rewire. This handles the case where the first pair involves the original head — without dummy, I'd need a special case.",
+        "Each iteration processes one pair: a is the first node, b is the second. The loop condition prev.next and prev.next.next ensures there are at least two nodes left to swap.",
+        "The rewiring is three pointer assignments and must happen in the right order. First, prev.next points to b (b jumps to the front). Then a.next points to whatever came after b (a's new successor). Finally b.next points to a (completing the swap). If you do these out of order, you lose nodes.",
+        "After swapping, a is now the second node of the pair and becomes the new prev. The next iteration's pair starts at a.next (the old b.next). Advancing prev = a is what makes this iterative — each swap leaves prev correctly positioned.",
+        "The tradeoff: iterative with dummy is O(1) space. A recursive solution is cleaner to read but uses O(n) stack space. In an interview, I'd mention both and implement the iterative version.",
       ],
       testCase: {
-        input: "1 -> 2 -> 3 -> 4",
-        expected: "2 -> 1 -> 4 -> 3",
+        input: `head = [1, 2, 3, 4]`,
+        expected: "[2, 1, 4, 3]",
         trace: [
-          "dummy -> 1 -> 2 -> 3 -> 4, prev=dummy",
-          "Pair 1: first=1, second=2",
-          "  prev.next=2, 1.next=3, 2.next=1",
-          "  List: dummy -> 2 -> 1 -> 3 -> 4",
-          "  prev=1 (advance)",
-          "Pair 2: first=3, second=4",
-          "  prev.next=4, 3.next=None, 4.next=3",
-          "  List: dummy -> 2 -> 1 -> 4 -> 3",
-          "  prev=3 (advance)",
-          "prev.next=None — loop ends",
-          "Return dummy.next = 2",
+          "dummy→1→2→3→4, prev=dummy",
+          "iter1: a=node(1), b=node(2)",
+          "  prev.next=node(2)   → dummy→2→3→4  [node(1) temporarily detached, a still holds ref]",
+          "  a.next=b.next=node(3) → node(1).next=node(3)",
+          "  b.next=a → node(2).next=node(1)",
+          "  state: dummy→2→1→3→4",
+          "  prev=node(1)  [advance to a]",
+          "iter2: a=node(3), b=node(4)",
+          "  prev.next=node(4)   → node(1).next=node(4)",
+          "  a.next=b.next=None  → node(3).next=None",
+          "  b.next=a → node(4).next=node(3)",
+          "  state: dummy→2→1→4→3",
+          "  prev=node(3)",
+          "prev.next=None → loop ends",
+          "return dummy.next = [2,1,4,3]",
         ],
         traceExplanations: [
-          "Dummy anchors the list before node 1. Prev starts at dummy so the first pair has a valid predecessor.",
-          "We identify the pair to swap: first=node(1), second=node(2). Naming them now preserves the references before relinking.",
-          "Three-pointer reassignment: dummy now points to 2 (second promoted to front), 1 now points to 3 (first's new successor is whatever was after second), 2 now points to 1 (second links back to first — swap complete).",
-          "After pair 1, the sublist reads: dummy -> 2 -> 1 -> 3 -> 4.",
-          "Prev advances to node 1 (the back of the swapped pair) — it's now the anchor for the next pair.",
-          "Second pair: first=node(3), second=node(4).",
-          "Same three-step swap: 1.next=4 (prev.next=second), 3.next=None (first.next=second.next which is None), 4.next=3 (second.next=first).",
-          "Final list: dummy -> 2 -> 1 -> 4 -> 3.",
-          "Prev advances to node 3. prev.next is None — no more complete pairs.",
-          "dummy.next is node 2 — the new head after all swaps.",
+          "Starting state. prev=dummy gives us a predecessor node before the real list begins.",
+          "First pair: a=node(1), b=node(2). We're about to swap these two.",
+          "Wire dummy to b first. dummy→2. Node(1) is temporarily detached from the main chain — but the variable 'a' still holds its reference. Nothing is lost.",
+          "Wire a (node 1) to whatever followed b (node 3). Now node(1).next = node(3). Node(1) has its correct new successor.",
+          "Wire b (node 2) back to a (node 1). Now node(2).next = node(1). The swap is complete.",
+          "Full state after first swap: dummy→2→1→3→4. The pair (1,2) is now (2,1).",
+          "Advance prev to a (node 1). Node(1) is now the second node of the swapped pair and acts as the predecessor for the next pair.",
+          "Second pair: a=node(3), b=node(4).",
+          "Wire node(1).next = node(4). Node(4) now connects into node(1)'s position.",
+          "Wire node(3).next = None (b.next was already None). Node(3) becomes the new tail.",
+          "Wire node(4).next = node(3). Swap complete.",
+          "Full state: dummy→2→1→4→3.",
+          "Advance prev to node(3). prev.next is None — fewer than two nodes remain. Loop exits.",
+          "dummy.next is node(2) — the new head. All pairs swapped correctly.",
         ],
       },
       blanks: [
-        {
-          line: "        prev.next = second",
-          answer: "prev.next = second",
-        },
-        {
-          line: "        first.next = second.next",
-          answer: "first.next = second.next",
-        },
-        {
-          line: "        second.next = first",
-          answer: "second.next = first",
-        },
-        {
-          line: "        prev = first",
-          answer: "prev = first",
-        },
+        { line: `dummy = ListNode(___)`, answer: "0" },
+        { line: `while prev.___ and prev.next.___:`, answer: "next, next" },
+        { line: `a = prev.___`, answer: "next" },
+        { line: `b = prev.next.___`, answer: "next" },
+        { line: `prev.next = ___`, answer: "b" },
+        { line: `a.next = b.___`, answer: "next" },
+        { line: `b.next = ___`, answer: "a" },
+        { line: `prev = ___`, answer: "a" },
       ],
     },
   ],
