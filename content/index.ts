@@ -7,6 +7,7 @@ import { heap } from "./patterns/07-heap"
 import { bfs } from "./patterns/09-bfs"
 import { graphs } from "./patterns/11-graphs"
 import { backtracking } from "./patterns/10-backtracking"
+import { dynamicProgramming } from "./patterns/12-dynamic-programming"
 import { greedy } from "./patterns/13-greedy"
 import { Pattern } from "./types"
 
@@ -24,7 +25,7 @@ export const patterns: Pattern[] = [
   bfs,
   backtracking,
   graphs,
-  // 12-dynamic-programming (coming)
+  dynamicProgramming,
   greedy,
   // 14-trie (coming)
   // 15-prefix-sum (coming)
