@@ -5,12 +5,15 @@ import { stack } from "./patterns/04-stack"
 import { linkedList } from "./patterns/05-linked-list"
 import { binarySearch } from "./patterns/06-binary-search"
 import { heap } from "./patterns/07-heap"
+import { dfs } from "./patterns/08-dfs"
 import { bfs } from "./patterns/09-bfs"
-import { graphs } from "./patterns/11-graphs"
 import { backtracking } from "./patterns/10-backtracking"
+import { graphs } from "./patterns/11-graphs"
 import { dynamicProgramming } from "./patterns/12-dynamic-programming"
-import { prefixSum } from "./patterns/15-prefix-sum"
 import { greedy } from "./patterns/13-greedy"
+import { trie } from "./patterns/14-trie"
+import { prefixSum } from "./patterns/15-prefix-sum"
+import { matrices } from "./patterns/16-matrices"
 import { Pattern } from "./types"
 
 // Sidebar order follows hellointerview.com/learn/code curriculum
@@ -23,15 +26,15 @@ export const patterns: Pattern[] = [
   linkedList,
   binarySearch,
   heap,
-  // 08-dfs (coming)
+  dfs,
   bfs,
   backtracking,
   graphs,
   dynamicProgramming,
   greedy,
-  // 14-trie (coming)
+  trie,
   prefixSum,
-  // 16-matrices (coming)
+  matrices,
 ]
 
 export function getPattern(id: string): Pattern | undefined {
