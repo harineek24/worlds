@@ -6,6 +6,7 @@ import { linkedList } from "./patterns/05-linked-list"
 import { heap } from "./patterns/07-heap"
 import { bfs } from "./patterns/09-bfs"
 import { graphs } from "./patterns/11-graphs"
+import { backtracking } from "./patterns/10-backtracking"
 import { greedy } from "./patterns/13-greedy"
 import { Pattern } from "./types"
 
@@ -21,7 +22,7 @@ export const patterns: Pattern[] = [
   heap,
   // 08-dfs (coming)
   bfs,
-  // 10-backtracking (coming)
+  backtracking,
   graphs,
   // 12-dynamic-programming (coming)
   greedy,
