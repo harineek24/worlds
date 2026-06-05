@@ -1,25 +1,32 @@
 import { twoPointers } from "./patterns/01-two-pointers"
+import { slidingWindow } from "./patterns/02-sliding-window"
+import { intervals } from "./patterns/03-intervals"
+import { linkedList } from "./patterns/05-linked-list"
+import { heap } from "./patterns/07-heap"
+import { bfs } from "./patterns/09-bfs"
+import { graphs } from "./patterns/11-graphs"
+import { greedy } from "./patterns/13-greedy"
 import { Pattern } from "./types"
 
 // Sidebar order follows hellointerview.com/learn/code curriculum
 // To add a new pattern: create content/patterns/XX-name.ts, import it here, add to array
 export const patterns: Pattern[] = [
   twoPointers,
-  // 02-sliding-window
-  // 03-binary-search
-  // 04-stack
-  // 05-linked-list
-  // 06-trees
-  // 07-tries
-  // 08-heap
-  // 09-backtracking
-  // 10-graphs
-  // 11-dynamic-programming-1d
-  // 12-dynamic-programming-2d
-  // 13-greedy
-  // 14-intervals
-  // 15-math-geometry
-  // 16-bit-manipulation
+  slidingWindow,
+  intervals,
+  // 04-stack (coming)
+  linkedList,
+  // 06-binary-search (coming)
+  heap,
+  // 08-dfs (coming)
+  bfs,
+  // 10-backtracking (coming)
+  graphs,
+  // 12-dynamic-programming (coming)
+  greedy,
+  // 14-trie (coming)
+  // 15-prefix-sum (coming)
+  // 16-matrices (coming)
 ]
 
 export function getPattern(id: string): Pattern | undefined {
