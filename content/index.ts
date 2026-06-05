@@ -3,11 +3,13 @@ import { slidingWindow } from "./patterns/02-sliding-window"
 import { intervals } from "./patterns/03-intervals"
 import { stack } from "./patterns/04-stack"
 import { linkedList } from "./patterns/05-linked-list"
+import { binarySearch } from "./patterns/06-binary-search"
 import { heap } from "./patterns/07-heap"
 import { bfs } from "./patterns/09-bfs"
 import { graphs } from "./patterns/11-graphs"
 import { backtracking } from "./patterns/10-backtracking"
 import { dynamicProgramming } from "./patterns/12-dynamic-programming"
+import { prefixSum } from "./patterns/15-prefix-sum"
 import { greedy } from "./patterns/13-greedy"
 import { Pattern } from "./types"
 
@@ -19,7 +21,7 @@ export const patterns: Pattern[] = [
   intervals,
   stack,
   linkedList,
-  // 06-binary-search (coming)
+  binarySearch,
   heap,
   // 08-dfs (coming)
   bfs,
@@ -28,7 +30,7 @@ export const patterns: Pattern[] = [
   dynamicProgramming,
   greedy,
   // 14-trie (coming)
-  // 15-prefix-sum (coming)
+  prefixSum,
   // 16-matrices (coming)
 ]
 
