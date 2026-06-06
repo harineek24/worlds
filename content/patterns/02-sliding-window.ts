@@ -68,9 +68,9 @@ freq[arr[left]] -= 1`,
         max_sum = max(max_sum, window_sum)
     return max_sum`,
       solutionExplanation: [
-        "I seed the window with the first k elements using sum(). This is the only O(k) operation — every subsequent step is O(1). The tradeoff is a small upfront cost for a clean loop body.",
-        "The sliding step is the key insight: instead of recomputing the sum of k elements from scratch each time (which would be O(nk)), I add the incoming right element and subtract the outgoing left element. The window 'slides' in one arithmetic operation.",
-        "I track the running maximum. The window never shrinks or grows — it just shifts one position right per iteration, so every position is visited exactly once.",
+        "I seed the window with `sum(arr[:k])` — a slice sum — rather than manually looping to accumulate the first `k` elements. This is the only O(k) operation in the whole function. I use `sum()` on a slice here instead of `sum(arr[i] for i in range(k))` because the slice version is simpler and Python's built-in `sum` on a list slice is implemented in C, so it's faster in practice. Every subsequent step will be O(1).",
+        "The sliding step is the key insight: `window_sum += arr[right] - arr[right - k]`. Instead of recomputing the sum of k elements from scratch each time — which would be O(nk) overall — I add the incoming element at `right` and subtract the outgoing element at `right - k`. The expression `arr[right - k]` is the element that just left the window: since the window is exactly size k, the element that fell off the left is always `k` positions behind `right`. One arithmetic operation replaces an inner loop.",
+        "I track the running maximum using `max_sum = max(max_sum, window_sum)` — a built-in `max()` call rather than an if statement. Both are equivalent, but `max()` as an expression assigned back to `max_sum` is idiomatic Python: it reads as 'max_sum is the maximum of itself and the new candidate', which matches the mental model exactly.",
       ],
       testCase: {
         input: `arr = [2, 1, 5, 1, 3, 2], k = 3`,
@@ -118,10 +118,10 @@ freq[arr[left]] -= 1`,
         min_sum = min(min_sum, window_sum)
     return total - min_sum`,
       solutionExplanation: [
-        "The key inversion: instead of tracking which k cards you pick from the ends, I track the (n-k) cards you leave behind in the middle. Maximizing picked points is equivalent to minimizing the sum of the middle window. This turns an awkward 'pick from both ends' problem into a clean fixed-size sliding window.",
-        "If window_size is 0, you're taking all cards — return the total immediately.",
-        "I seed the first window of size (n-k) and slide it across the array, tracking the minimum sum seen. The sliding step is the same O(1) add-and-subtract trick.",
-        "The answer is total minus the minimum middle window. Whatever the middle contributes least, the ends contribute most.",
+        "The key inversion: instead of tracking which k cards you pick from the ends, I track the (n-k) cards you leave behind in the middle. Maximizing picked points is equivalent to minimizing the sum of the middle window. This turns an awkward 'pick from both ends' problem — which has no obvious pointer strategy — into a clean fixed-size sliding window over a contiguous middle segment.",
+        "I compute `total = sum(cardPoints)` upfront using the built-in `sum()` rather than accumulating with a loop — it's one line and communicates 'the total of the entire array' instantly. If `window_size == 0`, all cards are taken and `total` is the answer; the early return avoids dividing by zero or sliding a zero-size window.",
+        "I seed the first window with `sum(cardPoints[:window_size])` and slide it using the same O(1) add-and-subtract trick: `window_sum += cardPoints[right] - cardPoints[right - window_size]`. I track the minimum with `min_sum = min(min_sum, window_sum)` — using `min()` as an expression rather than an if statement, for the same reason I'd use `max()`: it reads as a clean running-minimum update.",
+        "The answer is `total - min_sum`. I return this single expression rather than computing the picked-card sum directly — the inversion is the whole point of the algorithm, and spelling it out here as a subtraction makes the logic explicit: whatever the middle contributes least, the ends contribute most.",
       ],
       testCase: {
         input: `cardPoints = [1, 2, 3, 4, 5, 6, 1], k = 3`,
@@ -179,10 +179,10 @@ def max_sum_distinct(nums, k):
             left += 1
     return max_sum`,
       solutionExplanation: [
-        "I use a frequency map to track how many times each element appears in the current window. Adding an element increments its count; removing decrements it. When a count hits zero, I delete the key so that len(freq) accurately reflects the number of distinct elements — this is the distinctness check.",
-        "I expand the window by adding each new element and its value to the running sum. The window grows until it hits exactly size k.",
-        "Once the window reaches size k, I check if it's valid: len(freq) == k means every element in the window is unique (no key has count > 1). If valid, I update the max.",
-        "Whether or not the window was valid, I slide it forward: subtract the leftmost value, decrement its frequency, clean up if zero, and advance left. This keeps the window at exactly size k for the next iteration.",
+        "I use `defaultdict(int)` from `collections` rather than a plain dict — because I never need to check if a key exists before incrementing. Accessing a missing key in a `defaultdict(int)` gives 0 automatically, which is exactly what a frequency counter needs. With a plain dict I'd have to write `freq[x] = freq.get(x, 0) + 1` every time, or risk a KeyError. The `defaultdict` makes every increment a clean `freq[x] += 1`.",
+        "I expand the window by adding each new element with `freq[nums[right]] += 1` and adding its value to `window_sum`. I use a for loop for the right pointer — `for right in range(len(nums))` — because right always advances one step per element, making a for loop the correct abstraction. The window grows until it hits exactly size k.",
+        "Once the window reaches size k — checked with `right - left + 1 == k` — I check validity: `len(freq) == k` means every element appears exactly once (if any key had count > 1, `freq` would have fewer distinct keys than elements). I use `len(freq)` as the distinctness check rather than tracking a separate `duplicates` counter because deleting zero-frequency keys keeps `len(freq)` accurate at all times.",
+        "Whether or not the window was valid, I slide it forward: subtract `nums[left]` from `window_sum`, decrement `freq[nums[left]]`, delete the key if its count hits 0 (using `del freq[nums[left]]` — not `pop`, because I want an explicit deletion that's clear at a glance), and advance `left`. Deleting zero-count keys is what keeps `len(freq)` reliable as the distinctness check.",
       ],
       testCase: {
         input: `nums = [1, 5, 4, 2, 9, 9, 9], k = 3`,
@@ -238,10 +238,10 @@ def max_sum_distinct(nums, k):
         max_len = max(max_len, right - left + 1)
     return max_len`,
       solutionExplanation: [
-        "I use a frequency map to track character counts in the current window. I use dict.get(key, 0) instead of defaultdict here — it's a clean one-liner that avoids importing anything.",
-        "Every time I add a character, I check if its count exceeded 1. If so, the window has a duplicate and is invalid. I shrink from the left until the duplicate is resolved — this is the variable-size shrink loop.",
-        "The shrink loop removes characters from the left one by one until the newly added character's count drops back to 1. The window is now the longest valid window ending at right.",
-        "After shrinking, the window is valid. I record its size. Because I only record after the window is valid, max_len always reflects the best valid window seen so far.",
+        "I use a plain dict `freq = {}` rather than `defaultdict(int)` here — and I access it with `freq.get(s[right], 0)` instead of `freq[s[right]]`. I use `dict.get(key, 0)` instead of direct indexing because the character might not exist in the dict yet — `.get` with a default of 0 avoids a KeyError without needing a try/except or an `in` check first. I chose a plain dict over `defaultdict` here because there's no import needed and the `.get` pattern is explicit about the 'might not exist' case.",
+        "Every time I add a character, I immediately check `if freq[s[right]] > 1` — a while loop rather than an if statement — because a single shrink step might not resolve the duplicate. I need to keep shrinking until the count of the newly added character specifically drops back to 1. A while loop expresses 'keep going until the condition is resolved', whereas an if would only shrink once and might leave the window in an invalid state.",
+        "The shrink loop removes characters from the left one by one: decrement `freq[s[left]]`, delete the key if the count hits 0 (to keep the dict clean), and advance `left`. I use `del freq[s[left]]` rather than leaving the zero-count key in the dict — while it wouldn't affect correctness here, keeping the dict clean is good practice and prevents the dict from growing without bound on long strings.",
+        "After the while loop, the window is guaranteed valid — `freq[s[right]] == 1`, meaning the newest character appears exactly once. I record `right - left + 1` as the window size using `max(max_len, right - left + 1)` — a single expression that updates the running maximum without a conditional branch.",
       ],
       testCase: {
         input: `s = "abcabcbb"`,
@@ -308,10 +308,10 @@ def max_sum_distinct(nums, k):
         max_len = max(max_len, right - left + 1)
     return max_len`,
       solutionExplanation: [
-        "I maintain a frequency map and track max_freq — the count of the most common character in the current window. The key formula is: (window_size - max_freq) = number of characters that are NOT the dominant character, which equals the number of replacements needed to make them all match.",
-        "I update max_freq each time a character is added. Note that I never decrease max_freq even when shrinking the window — this is a deliberate optimization. We only care about windows at least as large as the best we've already found, so a lower max_freq would never produce a longer valid window.",
-        "The validity check: if (window_size - max_freq) > k, we need more replacements than allowed. Shrink from the left. I don't delete zero-frequency keys here — the max_freq optimization makes it unnecessary.",
-        "After potentially shrinking, the window is valid. Record its size. Because we only shrink by one when invalid, the window size never decreases — it either stays the same or grows, which is why this finds the maximum efficiently.",
+        "I maintain `freq` as a plain dict accessed with `freq.get(s[right], 0)` — same reasoning as the previous problem: `.get` with a default of 0 avoids a KeyError when a character is seen for the first time, without needing to import `defaultdict` or check membership first. I also track `max_freq` — the count of the most common character in the current window. The key formula: `window_size - max_freq` = the number of non-dominant characters = the minimum replacements needed to make the whole window uniform.",
+        "I update `max_freq` with `max_freq = max(max_freq, freq[s[right]])` each time a character is added. Critically, I never decrease `max_freq` even when shrinking the window — this is a deliberate optimization. `max_freq` acts as a floor: we only care about finding windows at least as large as the best one found so far, and a lower `max_freq` could never produce a longer valid window than we've already seen.",
+        "The validity check uses a while loop: `while (right - left + 1) - max_freq > k`. I use while rather than if because after one shrink step the condition might still be violated — but in practice, with the stale `max_freq` optimization, the window shrinks by at most 1 per invalid step (never more), so the loop body runs at most once per right position. The while is still correct and generalizes cleanly.",
+        "After potentially shrinking, the window is valid. I record its size with `max_len = max(max_len, right - left + 1)`. Because we only ever shrink by one when the window is invalid, the window size never decreases below its previous maximum — it either stays the same or grows as `right` advances. This monotonic behavior is what makes the algorithm O(n): each element enters and exits the window at most once.",
       ],
       testCase: {
         input: `s = "AABABBA", k = 1`,

@@ -80,9 +80,9 @@ def countBits(n):
         dp[i] = dp[i >> 1] + (i & 1)
     return dp`,
       solutionExplanation: [
-        "For climbing stairs, the decision at each step is: did I arrive from one step below, or two steps below? The number of ways to reach step i is the sum of ways to reach i-1 and i-2 — classic Fibonacci.",
-        "I don't need the full array. I only ever look back two steps, so I track just prev1 and prev2 and slide them forward. This is O(1) space.",
-        "For counting bits, I notice that right-shifting i by 1 gives i//2 — which I've already computed. The bit I dropped with the shift is i & 1. So dp[i] = dp[i>>1] + (i&1). Each answer is built from a previously computed answer.",
+        "For climbing stairs, the decision at each step is: did I arrive from one step below, or two steps below? The number of ways to reach step i is the sum of ways to reach i-1 and i-2 — classic Fibonacci recurrence. The subproblems overlap (step i-1 and i-2 are both needed), which is exactly when DP pays off.",
+        "I don't need the full array. I only ever look back two steps, so I track just prev1 and prev2 and slide them forward with `prev2, prev1 = prev1, curr`. Python evaluates the right side completely before assignment, so both variables update correctly in one line — no temporary variable needed. This reduces space from O(n) to O(1).",
+        "For counting bits, the key insight is that `i >> 1` (right-shift by 1) gives `i // 2`, which I've already solved. The bit that was dropped by the shift is recovered by `i & 1`. So `dp[i] = dp[i>>1] + (i&1)`. I use `[0] * (n + 1)` — the `* (n + 1)` allocates n+1 slots so I can use 1-indexed access: `dp[0]` is the base case (0 has no set bits), and `dp[i]` is the answer for integer i.",
       ],
       testCase: {
         input: `n = 5 (climbing stairs); n = 5 (counting bits)`,
@@ -138,9 +138,9 @@ def countBits(n):
             dp[i][j] = dp[i-1][j] + dp[i][j-1]
     return dp[m-1][n-1]`,
       solutionExplanation: [
-        "I initialize the entire first row and first column to 1. There's exactly one way to reach any cell in the first row (go right the whole way) and any cell in the first column (go down the whole way).",
-        "For any interior cell, the robot arrived either from above (dp[i-1][j]) or from the left (dp[i][j-1]). The total paths to this cell is the sum of those two — because every path to this cell must have come from one of those two neighbors.",
-        "I fill the table row by row. Each cell depends only on cells already computed. The answer is in the bottom-right corner.",
+        "I initialize the entire first row and first column to 1. There's exactly one way to reach any cell in the first row (go right the whole way) and any cell in the first column (go down the whole way). I do this by initializing `dp = [[1] * n for _ in range(m)]` — every cell starts as 1, so the border cells are already correct without a separate initialization pass.",
+        "For any interior cell, the robot arrived either from above (`dp[i-1][j]`) or from the left (`dp[i][j-1]`). The total paths is the sum of those two — because every path to this cell must have passed through one of those two neighbors. I reference previous indices (`i-1`, `j-1`) because DP builds on already-solved subproblems. I fill left-to-right, top-to-bottom, so those cells are always computed before they're needed.",
+        "The table is sized `m x n` — no off-by-one buffer needed here because cells are 0-indexed and I access `dp[m-1][n-1]` directly. The answer is in the bottom-right corner after filling all interior cells.",
       ],
       testCase: {
         input: `m = 3, n = 3`,
@@ -185,10 +185,10 @@ def countBits(n):
                 dp[i] = max(dp[i], dp[j] + 1)
     return max(dp)`,
       solutionExplanation: [
-        "dp[i] represents the length of the longest increasing subsequence ending at index i. Every element alone is a subsequence of length 1, so I initialize all values to 1.",
-        "For each i, I look back at every j before it. If nums[j] < nums[i], then nums[i] can legally extend the subsequence ending at j. The new length would be dp[j] + 1.",
-        "I take the max across all valid j. This ensures dp[i] holds the best possible LIS ending at i — no matter which previous element I extended from.",
-        "The final answer is the maximum value anywhere in dp, because the best overall LIS might end at any index.",
+        "dp[i] represents the length of the longest increasing subsequence ending at index i. Every element alone is a subsequence of length 1, so I initialize all values to 1 with `dp = [1] * n`. Using `* n` (not `* (n+1)`) because this table is 0-indexed to match the input array — dp[i] directly corresponds to nums[i].",
+        "For each i, I look back at every j before it. If `nums[j] < nums[i]`, nums[i] can legally extend the subsequence ending at j. The new length would be `dp[j] + 1`. I reference `dp[j]` — a previously computed value — because DP builds forward only on already-solved subproblems. This is why I fill left-to-right: each `dp[i]` depends on all `dp[j]` where j < i.",
+        "I take `max(dp[i], dp[j] + 1)` across all valid j. This ensures dp[i] holds the best possible LIS ending at i, regardless of which earlier element I extended from.",
+        "The final answer is `max(dp)` — a single pass over the array — because the globally best LIS might end at any index, not necessarily the last one.",
       ],
       testCase: {
         input: `nums = [10,9,2,5,3,7,101,18]`,
@@ -245,11 +245,11 @@ def countBits(n):
 
     return dp[n]`,
       solutionExplanation: [
-        "dp[i] means the first i characters of s can be validly segmented. dp[0] = True is the base case — an empty string is trivially segmented.",
-        "For each position i, I scan all split points j before it. If the prefix up to j is already valid (dp[j] is True) and the substring s[j:i] is in the dictionary, then the prefix up to i is also valid.",
-        "I convert wordDict to a set first because dictionary lookup should be O(1). Checking membership in a list would be O(k) per lookup.",
-        "The break is an optimization: once I've found one valid split for position i, I don't need to check the others. dp[i] is True regardless.",
-        "The final answer is dp[n] — whether the entire string can be segmented.",
+        "dp[i] means the first i characters of s can be validly segmented. I use `dp = [False] * (n + 1)` with size n+1, not n — this is the 1-indexed pattern. `dp[0]` is the base case (empty string, trivially segmented), and `dp[i]` represents the answer for the first i characters. Without the +1, `dp[n]` would be out of bounds.",
+        "For each position i, I scan all split points j before it. If the prefix up to j is already valid (`dp[j]` is True) and the substring `s[j:i]` is in the dictionary, then the prefix up to i is also valid. I reference `dp[j]` — a previously computed answer — and build forward. Filling left-to-right ensures dp[j] is always settled before it's read.",
+        "I convert wordDict to a set first. Checking `s[j:i] in word_set` is O(1) average. If wordDict stayed a list, each membership check would be O(k) where k is the dictionary size — making the overall algorithm O(n² × k) instead of O(n²).",
+        "The `break` is an optimization: once one valid split for position i is found, dp[i] is True regardless of remaining j values. No need to keep checking.",
+        "The final answer is `dp[n]` — whether the entire string of n characters can be segmented.",
       ],
       testCase: {
         input: `s = "leetcode", wordDict = ["leet","code"]`,
@@ -307,12 +307,12 @@ def countBits(n):
 
     return dp[n]`,
       solutionExplanation: [
-        "dp[i] is the number of ways to decode the first i characters. dp[0] = 1 is the empty-string base case — there's one way to decode nothing.",
-        "dp[1] depends on whether the first character is '0'. A '0' can't be decoded as a single digit, so dp[1] = 0 in that case.",
-        "At each position i, I have two choices: decode s[i-1] as a single digit, or decode s[i-2:i] as a two-digit number.",
-        "Single digit is valid only if it isn't '0'. If valid, I add dp[i-1] — all the ways I could have decoded up to the previous position.",
-        "Two digits are valid only if they form a number from 10 to 26. If valid, I add dp[i-2] — all the ways up to two positions back.",
-        "These two contributions can stack. If both choices are valid at position i, the total ways doubles appropriately.",
+        "dp[i] is the number of ways to decode the first i characters. I use `dp = [0] * (n + 1)` — size n+1, not n, because `dp[0]` is the base case (empty string: one way to decode nothing) and `dp[n]` is the final answer. The +1 avoids off-by-one: without it, `dp[n]` would be out of bounds.",
+        "dp[1] is set explicitly based on whether the first character is '0'. A '0' can't map to any letter as a single digit, so dp[1] = 0. This handles the edge case before the main loop begins at i=2.",
+        "At each position i, I consider two choices. For the single-digit path, `one = s[i-1]` — the last character. For the two-digit path, `two = s[i-2:i]` — the last two characters. Python slice notation makes extracting these substrings concise.",
+        "Single digit is valid only if `one != '0'`. If valid, I add `dp[i-1]` — all the ways to decode up to the previous position. I reference `dp[i-1]` because DP builds on already-solved subproblems; this cell was filled in an earlier iteration.",
+        "Two digits are valid only if `'10' <= two <= '26'`. String comparison works here because the strings have equal length — Python compares lexicographically, which matches numeric order for zero-padded two-digit strings. If valid, I add `dp[i-2]` — the ways to decode everything before this two-digit group.",
+        "Both contributions can stack: if both single and two-digit decodes are valid at position i, dp[i] accumulates both. This is the additive principle of counting — independent valid choices multiply the total count.",
       ],
       testCase: {
         input: `s = "226"`,

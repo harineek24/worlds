@@ -422,11 +422,11 @@ while mid <= high:
         nums[mid], nums[high] = nums[high], nums[mid]
         high -= 1`,
       solutionExplanation: [
-        "Three pointers define three regions: everything before low is 0s (confirmed), low to mid-1 is 1s (confirmed), mid to high is unknown (to be processed), everything after high is 2s (confirmed). I start with the entire array in the unknown region.",
-        "The loop runs while mid hasn't passed high — meaning there's still unknown territory. Once mid > high, every element has been classified.",
-        "If nums[mid] is 0, I swap it with nums[low]. Both low and mid advance — low because the 0-region grew, mid because we just placed a confirmed value there (the swapped element was a 1 from the confirmed zone, so mid can safely move past it).",
-        "If nums[mid] is 1, it's already in the right region. Just advance mid to shrink the unknown zone.",
-        "If nums[mid] is 2, I swap it with nums[high] and shrink high. Critically, I do NOT advance mid here — the element swapped in from high is unknown and must be re-examined in the next iteration.",
+        "I initialize three pointers in one tuple assignment: `low, mid, high = 0, 0, len(nums) - 1`. This is idiomatic Python for multi-variable initialization — cleaner than three separate lines and makes the starting state of all three regions visible at once. The regions are: everything before `low` is confirmed 0s, `low` to `mid-1` is confirmed 1s, `mid` to `high` is unknown, after `high` is confirmed 2s. I start with the entire array unknown.",
+        "I use a while loop with condition `mid <= high` — not `mid < high` — because when `mid == high` there's still one unknown element at that position that needs to be classified. The loop terminates when `mid` passes `high`, meaning the unknown region is empty.",
+        "If `nums[mid] == 0`, I swap with `nums[low]` using Python's tuple swap — `nums[low], nums[mid] = nums[mid], nums[low]` — which is atomic: no temp variable needed, and there's no risk of reading a half-updated value. Both `low` and `mid` advance: `low` because the 0-region grew, `mid` because the element swapped in from `low` was a confirmed 1 (it was already in the 1s region), so `mid` can safely move past it.",
+        "If `nums[mid] == 1`, it's already in the right region — just advance `mid` with `mid += 1` to shrink the unknown zone. No swap needed; the element is already where it belongs.",
+        "If `nums[mid] == 2`, I swap with `nums[high]` — again using tuple swap — and shrink `high` with `high -= 1`. Critically, I do NOT advance `mid` here: the element just swapped in from `high` came from the unknown region and must be re-examined in the next iteration. Advancing `mid` here would silently skip it.",
       ],
       testCase: {
         input: `nums = [2, 0, 2, 1, 1, 0]`,

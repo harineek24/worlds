@@ -367,12 +367,12 @@ def networkDelayTime(times, n, k):
     max_dist = max(dist.values())
     return max_dist if max_dist < float('inf') else -1`,
       solutionExplanation: [
-        "I build a weighted directed adjacency list. Each node maps to a list of (neighbor, weight) pairs.",
-        "I initialize all distances to infinity except the source, which is 0. The heap starts with just (0, k) — we're at the source with zero delay.",
-        "Dijkstra's works by always processing the node with the smallest known distance first. The heap guarantees this. When I pop a node, I have its final shortest distance.",
-        "The stale-entry check `if d > dist[node]: continue` skips heap entries that have been superseded by a shorter path found later. This is the lazy deletion pattern — cheaper than removing stale entries on update.",
-        "For each neighbor, I compute the new distance. If it's better than what I've recorded, I update and push to the heap.",
-        "The answer is the maximum distance across all nodes — the last node to receive the signal determines total time. If any node is still infinity, it was unreachable, so I return -1.",
+        "I build a weighted directed adjacency list using `defaultdict(list)`. Each node maps to a list of (neighbor, weight) pairs. defaultdict means I can call `graph[u].append(...)` for any u without first checking if u exists as a key.",
+        "I initialize all distances to infinity except the source, which is 0. The heap starts with just `(0, k)`. I push tuples of `(distance, node)` — Python's heapq compares tuples lexicographically, so putting distance first means the heap orders entries by distance automatically. Without this convention I'd need a custom comparator.",
+        "Dijkstra's works by always processing the node with the smallest known distance first. The min-heap guarantees this in O(log n) per pop. When I pop a node, I have its final shortest distance.",
+        "The stale-entry check `if d > dist[node]: continue` is needed because Python's heapq has no decrease-key operation. When a shorter path is found, I push a new entry rather than updating the old one. The stale entry is skipped here — cheaper than removing it from the heap.",
+        "For each neighbor, I compute the candidate distance `nd = d + weight`. If it's better than the recorded distance, I update `dist[neighbor]` and push `(nd, neighbor)` to the heap.",
+        "The answer is the maximum value in `dist` — the last node to receive the signal determines total delay. If any node is still infinity, it was unreachable, so I return -1.",
       ],
       testCase: {
         input: `times = [[2,1,1],[2,3,1],[3,4,1]], n = 4, k = 2`,

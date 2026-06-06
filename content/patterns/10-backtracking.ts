@@ -65,8 +65,9 @@ export const backtracking: Pattern = {
     return result`,
       solutionExplanation: [
         "I'm appending a copy of `path` at the very start of every recursive call — before the loop. This records every prefix as a valid subset, including the empty set.",
+        "`result.append(path[:])` — I copy the path rather than appending `path` directly. Lists are passed by reference in Python, not by value. If I did `result.append(path)`, every entry in `result` would point to the same list object, which gets mutated by later appends and pops. By the time the function returns, every entry would show the same final (empty) state. `path[:]` creates a new list with the current contents, capturing a snapshot at this moment in the recursion.",
         "I'm starting each inner loop at `start` (not 0) so I only look forward in the array. This ensures I never repeat elements or generate duplicate subsets.",
-        "The `path.append / backtrack / path.pop` trio is the core choose-explore-unchoose pattern. After recursing, popping restores the path so the next iteration starts from a clean state.",
+        "`current_path.pop()` — I pop rather than reassign because `path` is a shared mutable list threaded through the recursion. `pop()` removes the last element in-place, exactly reversing the `append()` we did before recursing. If I instead wrote `path = path[:-1]`, I'd create a new local list and the outer call would still hold the old reference — the backtrack would silently fail.",
       ],
       testCase: {
         input: "nums = [1, 2, 3]",
@@ -140,7 +141,8 @@ export const backtracking: Pattern = {
         "I'm tracking `open_count` and `close_count` rather than the string itself. These two numbers encode all the validity constraints I need.",
         "I add `(` only when `open_count < n` — there are still open parens left to place. This prunes the search tree at the source: invalid prefixes are never explored.",
         "I add `)` only when `close_count < open_count` — there's an unmatched open paren waiting. This single condition guarantees every prefix is valid, so any complete string is automatically well-formed.",
-        "When the path reaches length `2 * n`, every paren is placed and the string is valid — I record it.",
+        "`path.pop()` after each recursive call — `path` is a shared mutable list. The pop undoes exactly the `append()` from two lines above, restoring the list to its pre-branch state so the next branch starts clean. Reassigning `path` would create a new local binding and leave the caller's list unchanged, silently breaking the backtrack.",
+        "When the path reaches length `2 * n`, every paren is placed and the string is valid — I join the list into a string and record it. I use a list-of-characters `path` rather than string concatenation because strings are immutable in Python: `path + '('` would allocate a new string every time, making each level O(n). List append is O(1); the join happens once at the leaf.",
       ],
       testCase: {
         input: "n = 3",
@@ -211,6 +213,8 @@ export const backtracking: Pattern = {
         "I'm passing `remaining` down the recursion rather than summing the path each time. When remaining hits 0, the path sums to the target — I record it. When remaining goes negative, this branch can never work and I prune immediately.",
         "The key to allowing reuse is passing `i` (not `i + 1`) to the recursive call. This means the same candidate can be picked again at the next level.",
         "I still loop `from start` to avoid going backwards — this prevents duplicate combinations like [2,3] and [3,2] from both appearing.",
+        "`result.append(path[:])` at the base case — I must copy here for the same reason as always: `path` is a shared mutable list. Appending the reference means every stored result will reflect the final (empty) state of `path` after all backtracks complete. `path[:]` snapshots the current contents.",
+        "`path.pop()` is the backtrack — it reverses the `path.append(candidates[i])` from before the recursive call, restoring the list so the next candidate in the loop starts from the same prefix.",
       ],
       testCase: {
         input: "candidates = [2, 3, 6, 7], target = 7",
@@ -289,9 +293,9 @@ export const backtracking: Pattern = {
     return False`,
       solutionExplanation: [
         "I'm trying to start the DFS from every cell in the grid. The first cell that matches `word[0]` and leads to a full match returns True immediately.",
-        "At each DFS step I check three things in order: did we match the full word (base case), are we out of bounds, does the current cell match the expected character. Ordering these checks avoids index errors.",
-        "I'm using the board itself as the visited marker — I temporarily overwrite the cell with `#` before recursing. This is O(1) memory and avoids a separate visited set.",
-        "After recursing in all 4 directions, I restore the cell to its original character. This is the backtrack step — it ensures other DFS paths starting elsewhere can still use this cell.",
+        "At each DFS step I check three things in order: did we match the full word (base case), are we out of bounds, does the current cell match the expected character. Ordering these checks avoids index errors — the bounds check must come before the character check, otherwise `board[r][c]` would index out of range.",
+        "I'm using the board itself as the visited marker — I temporarily overwrite the cell with `#` before recursing. This is O(1) extra memory. The alternative would be a separate `visited = set()` whose `in` check is O(1) on average, but the in-place marker avoids allocating and updating that set at every DFS frame.",
+        "`board[r][c] = temp` after recursion — this is the backtrack step. I restore the cell so that DFS paths starting from other cells (or other branches of this DFS) can still use it. Without this restore, marking a cell as `#` would permanently block it from all future paths.",
       ],
       testCase: {
         input: 'board = [["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]], word = "ABCCED"',
@@ -367,7 +371,8 @@ export const backtracking: Pattern = {
         "I'm treating `start` as the left boundary of the next part to cut. At each level of recursion, I try every possible right boundary `end` from `start+1` to the end of the string.",
         "I only recurse into a substring if it's a palindrome. This is the pruning step — non-palindrome prefixes are skipped entirely, not explored.",
         "When `start` reaches `len(s)`, we've partitioned the entire string and every part in `path` is a palindrome — so we record a copy.",
-        "The `path.pop()` after recursion is the backtrack — it removes the last chosen substring so we can try a longer (or different) cut from the same start position.",
+        "`result.append(path[:])` — `path` is a shared mutable list that gets modified throughout the recursion. Appending the reference would mean all recorded results point to the same object, which ends up empty after all backtracks. `path[:]` creates a new list with the current substrings, permanently capturing this partition.",
+        "`path.pop()` is the backtrack — it removes the substring we just appended, so the next `end` value (a longer cut from the same `start`) begins from the same prefix. This is the undo of the `path.append(substring)` two lines above.",
       ],
       testCase: {
         input: 's = "aab"',

@@ -75,9 +75,9 @@ def dfs(node):
     right = maxDepth(root.right)
     return 1 + max(left, right)`,
       solutionExplanation: [
-        "Base case: None represents the empty tree, which has depth 0. This is returned up to the parent as a clean signal that there's nothing below.",
-        "I recurse into both subtrees first. I'm asking each child: what is the deepest path beneath you? The call returns only after fully resolving the entire subtree — I don't need to track state myself.",
-        "At each node, I take the longer of the two child depths and add 1 for the current node. The tradeoff: O(n) time visiting every node, O(h) space on the call stack where h is the height — O(log n) for balanced, O(n) worst case for skewed.",
+        "Base case: `if not root: return 0`. Recursion is chosen over iteration here because trees have a natural recursive structure — the call stack directly mirrors the tree's node hierarchy. An iterative DFS would require an explicit stack and extra bookkeeping, making the code harder to read without any algorithmic gain. `not root` is used rather than `root is None` because it's more Pythonic and handles any falsy sentinel; for tree nodes these are equivalent, but `not node` is the standard idiom.",
+        "I recurse into both subtrees first. I'm asking each child: what is the deepest path beneath you? The call returns only after fully resolving the entire subtree — this is the bottom-up pattern. I don't need to track state myself; the return value carries the result up through the call stack.",
+        "`return 1 + max(left, right)` — the `+ 1` counts the current node itself as one level. Without it, a single-node tree would return 0 instead of 1. `max` selects the deeper subtree because the question asks for the longest path down. Tradeoff: O(n) time visiting every node, O(h) space on the call stack where h is the height — O(log n) for balanced, O(n) worst case for a skewed tree.",
       ],
       testCase: {
         input: "root = [3,9,20,null,null,15,7]",
@@ -143,9 +143,9 @@ def dfs(node):
     remaining = targetSum - root.val
     return hasPathSum(root.left, remaining) or hasPathSum(root.right, remaining)`,
       solutionExplanation: [
-        "Base case 1: empty node (None). A None node is not a leaf — it means the path ended without a real leaf. Return False.",
-        "Base case 2: leaf node (no children). This is the only place a valid path can terminate. I check if the remaining sum equals this node's value — the path used up exactly targetSum.",
-        "Recursive case: subtract the current node's value from the target and pass the remainder DOWN to both children. I'm asking: can either subtree complete a path that accounts for the remaining sum? The 'or' short-circuits — if the left subtree succeeds, we don't explore right.",
+        "Two base cases, in order. `if not root: return False` — an empty node is not a leaf, so no valid path terminates here. `not root` vs `root is None`: both work for tree nodes, but `not root` is the Pythonic convention. Recursion is used over iteration because the top-down 'pass remaining sum down' pattern maps cleanly to parameters — each recursive call carries the updated remainder without any external stack management.",
+        "Second base case: `if not root.left and not root.right` — this is a leaf. A valid path can only terminate at a leaf; stopping at an internal node would be a partial path. I check `remaining == root.val` here rather than subtracting first, to make the leaf condition explicit and self-contained.",
+        "Recursive case: subtract the current node's value from the target and pass the remainder DOWN to both children. `return ... or ...` short-circuits — if the left subtree succeeds, Python never evaluates the right. This is an algorithmic win for trees that are heavily left-leaning and have an early match.",
       ],
       testCase: {
         input: "root = [5,4,8,11,null,13,4,7,2], targetSum = 22",
@@ -210,9 +210,9 @@ def dfs(node):
         return dfs(node.left, lo, node.val) and dfs(node.right, node.val, hi)
     return dfs(root, float('-inf'), float('inf'))`,
       solutionExplanation: [
-        "I pass valid bounds (lo, hi) DOWN to each node. Every node must satisfy lo < node.val < hi. These bounds tighten as we go deeper — a node's value becomes a constraint for its subtree.",
-        "The critical insight: checking only parent-child relationships isn't enough. A classic trap is a node in a left subtree that's smaller than its immediate parent but larger than an ancestor — this violates BST globally. Passing bounds catches that.",
-        "When going left, the current node's value becomes the new upper bound. When going right, it becomes the new lower bound. This is the invariant that propagates 'everything in my left subtree must be less than me' all the way down. Time: O(n), Space: O(h).",
+        "I pass valid bounds (lo, hi) DOWN to each node via parameters — the top-down DFS pattern. Every node must satisfy lo < node.val < hi. These bounds tighten as we go deeper. Recursion is chosen because bounds can be passed as function arguments naturally; an iterative approach would need a stack of (node, lo, hi) tuples, which is less readable. `if not node: return True` uses `not node` — Pythonic for None checks on tree nodes.",
+        "The critical insight: checking only parent-child relationships isn't enough. A classic trap is a node in a left subtree that's smaller than its immediate parent but larger than an ancestor — this violates BST globally. Passing bounds catches that. `float('-inf')` and `float('inf')` are used as the initial bounds because Python integers are unbounded, but `float` gives clean sentinel values for comparisons without special-casing.",
+        "When going left, the current node's value becomes the new upper bound: `dfs(node.left, lo, node.val)`. When going right, it becomes the new lower bound: `dfs(node.right, node.val, hi)`. The `and` short-circuits — if the left subtree fails, the right is never checked. This propagates 'everything in my left subtree must be less than me' all the way down without any extra data structures. Time: O(n), Space: O(h).",
       ],
       testCase: {
         input: "root = [5,1,4,null,null,3,6]",
@@ -275,9 +275,9 @@ def dfs(node):
     dfs(root)
     return diameter[0]`,
       solutionExplanation: [
-        "Each node can be the 'elbow' — the highest point of the longest path passing through it. At that node, the longest path length is left_depth + right_depth (number of edges down to the deepest leaf on each side).",
-        "I track a global maximum across all nodes because the longest diameter might pass through any node, not necessarily the root. I use a list [0] as a mutable container so the inner function can update it without a nonlocal declaration.",
-        "The return value is the depth of the current subtree (for use by the parent), while the side effect updates the global diameter candidate. These are two separate concerns handled in one pass. Time: O(n) — every node visited once.",
+        "Each node can be the 'elbow' — the highest point of the longest path passing through it. At that node, the longest path length is left_depth + right_depth (number of edges down to the deepest leaf on each side). Recursion is the right tool here because the depth of a subtree is defined recursively — `return 1 + max(left, right)` reads exactly like the definition. The `+ 1` counts the current node as a level; without it, leaves would return 0 and the depths would be off by one throughout.",
+        "I track a global maximum across all nodes because the longest diameter might pass through any node, not necessarily the root. `diameter = [0]` uses a single-element list as a mutable container. The alternative is `nonlocal diameter` with a plain integer — `nonlocal` is needed because Python closures can read outer variables but cannot rebind them without it. The list trick sidesteps `nonlocal` by mutating the container (which is already in scope) rather than rebinding the name. Both work; `nonlocal` is more explicit, the list trick is a common Python pattern you'll see in interviews.",
+        "The return value (`1 + max(left, right)`) is the depth of the current subtree — used by the parent to compute its own diameter. The side effect (`diameter[0] = max(...)`) updates the running global max. These are two separate concerns deliberately handled in a single O(n) pass rather than two separate traversals.",
       ],
       testCase: {
         input: "root = [1,2,3,4,5]",
@@ -349,9 +349,9 @@ def dfs(node):
     dfs(root, targetSum, [])
     return result`,
       solutionExplanation: [
-        "I carry a mutable path list down the recursion. At each node I append before recursing and pop after — this is the backtracking contract. The path always reflects exactly the nodes on the current root-to-here route.",
-        "I only collect a path at a leaf node where remaining equals the current node's value. Collecting at non-leaf nodes would capture partial paths. I use list(path) to snapshot the current path — without the copy, every collected path would end up pointing to the same mutated list.",
-        "After both recursive calls return, path.pop() undoes the append from this level. The function leaves the path exactly as it found it. This is the core backtracking pattern: add → recurse → remove. Time: O(n²) in the worst case because copying a path of length O(n) for each of O(n) leaves.",
+        "I carry a mutable path list down the recursion. At each node I `path.append(node.val)` before recursing. Recursion is chosen over iteration because the backtracking pattern — append before, pop after — maps directly onto the call stack's enter/exit lifecycle. An iterative version would need to manually snapshot and restore the path at each step. `if not node: return` uses `not node` — the Pythonic tree-node None check — and returns early with no value (implicitly None) since this path variant doesn't need to return anything up the tree.",
+        "I only collect a path at a leaf node where remaining equals the current node's value. Collecting at non-leaf nodes would capture partial paths. `result.append(list(path))` — the `list(path)` call creates a shallow copy (snapshot) of the current path. Without the copy, every entry in `result` would point to the same list object, and after backtracking completes they'd all be empty. This is the most common bug in backtracking problems.",
+        "After both recursive calls return, `path.pop()` undoes the append from this level. The function leaves path exactly as it found it — the backtracking contract. This is the core pattern: append → recurse → pop. `pop()` with no argument removes the last element in O(1), which is exactly what we want since we always appended to the end. Time: O(n²) worst case — copying a path of length O(n) for each of O(n) leaves.",
       ],
       testCase: {
         input: "root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22",
