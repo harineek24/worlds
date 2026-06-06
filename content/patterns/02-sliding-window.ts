@@ -96,6 +96,16 @@ freq[arr[left]] -= 1`,
         { line: `window_sum += arr[right] - arr[right - ___]`, answer: "k" },
         { line: `max_sum = max(___, window_sum)`, answer: "max_sum" },
       ],
+      explanationBlanks: [
+        {
+          line: "The sliding step is the key insight: `window_sum += arr[right] - arr[right - k]`. Instead of recomputing the sum of k elements from scratch each time — which would be ___ overall — I add the incoming element at `right` and subtract the outgoing element at `right - k`. The expression `arr[right - k]` is the element that just left the window: since the window is exactly size k, the element that fell off the left is always `k` positions behind `right`. One arithmetic operation replaces an inner loop.",
+          answer: "O(nk)",
+        },
+        {
+          line: "I track the running maximum using `max_sum = max(max_sum, window_sum)` — a built-in `max()` call rather than an if statement. Both are equivalent, but `max()` as an expression assigned back to `max_sum` is idiomatic Python: it reads as 'max_sum is the maximum of itself and the new candidate', which matches the mental model exactly.",
+          answer: "if statement",
+        },
+      ],
     },
 
     {
@@ -149,6 +159,20 @@ freq[arr[left]] -= 1`,
         { line: `window_sum += cardPoints[right] - cardPoints[right - ___]`, answer: "window_size" },
         { line: `min_sum = min(___, window_sum)`, answer: "min_sum" },
         { line: `return total - ___`, answer: "min_sum" },
+      ],
+      explanationBlanks: [
+        {
+          line: "The key inversion: instead of tracking which k cards you pick from the ends, I track the (n-k) cards you leave behind in the middle. Maximizing picked points is equivalent to ___ the sum of the middle window. This turns an awkward 'pick from both ends' problem — which has no obvious pointer strategy — into a clean fixed-size sliding window over a contiguous middle segment.",
+          answer: "minimizing",
+        },
+        {
+          line: "I seed the first window with `sum(cardPoints[:window_size])` and slide it using the same O(1) add-and-subtract trick: `window_sum += cardPoints[right] - cardPoints[right - window_size]`. I track the minimum with `min_sum = min(min_sum, window_sum)` — using `min()` as an expression rather than an if statement, for the same reason I'd use `max()`: it reads as a clean running-minimum update.",
+          answer: "O(1)",
+        },
+        {
+          line: "The answer is `total - min_sum`. I return this single expression rather than computing the picked-card sum directly — the ___ is the whole point of the algorithm, and spelling it out here as a subtraction makes the logic explicit: whatever the middle contributes least, the ends contribute most.",
+          answer: "inversion",
+        },
       ],
     },
 

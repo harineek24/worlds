@@ -467,6 +467,20 @@ def dfs(node):
           "All branches exhausted. Backtrack all the way. Final result has only one valid path.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I carry a mutable path list down the recursion. At each node I `path.append(node.val)` before recursing. Recursion is chosen over iteration because the backtracking pattern — append before, pop after — maps directly onto the call stack's enter/exit lifecycle. An iterative version would need to manually snapshot and restore the path at each step. `if not node: return` uses `not node` — the Pythonic tree-node None check — and returns early with no value (implicitly None) since this path variant doesn't need to return anything up the tree.",
+          answer: "append before, pop after",
+        },
+        {
+          line: "I only collect a path at a leaf node where remaining equals the current node's value. Collecting at non-leaf nodes would capture partial paths. `result.append(list(path))` — the `list(path)` call creates a shallow copy (snapshot) of the current path. Without the copy, every entry in `result` would point to the same list object, and after backtracking completes they'd all be empty. This is the most common bug in backtracking problems.",
+          answer: "shallow copy (snapshot)",
+        },
+        {
+          line: "After both recursive calls return, `path.pop()` undoes the append from this level. The function leaves path exactly as it found it — the backtracking contract. This is the core pattern: append → recurse → pop. `pop()` with no argument removes the last element in O(1), which is exactly what we want since we always appended to the end. Time: O(n²) worst case — copying a path of length O(n) for each of O(n) leaves.",
+          answer: "backtracking contract",
+        },
+      ],
       blanks: [
         { line: `path.___(node.val)`, answer: "append" },
         {
