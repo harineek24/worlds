@@ -323,6 +323,20 @@ def max_sum_distinct(nums, k):
         { line: `left += ___`, answer: "1" },
         { line: `max_len = max(max_len, right - left + ___)`, answer: "1" },
       ],
+      explanationBlanks: [
+        {
+          line: "Every time I add a character, I immediately check `if freq[s[right]] > 1` — a while loop rather than an if statement — because a single shrink step might not resolve the duplicate. I need to keep shrinking until the count of the newly added character specifically drops back to 1. A while loop expresses 'keep going until the condition is resolved', whereas an ___ would only shrink once and might leave the window in an invalid state.",
+          answer: "if",
+        },
+        {
+          line: "The shrink loop removes characters from the left one by one: decrement `freq[s[left]]`, delete the key if the count hits 0 (to keep the dict clean), and advance `left`. I use `del freq[s[left]]` rather than leaving the zero-count key in the dict — while it wouldn't affect correctness here, keeping the dict clean is good practice and prevents the dict from growing without bound on long strings.",
+          answer: "del freq[s[left]]",
+        },
+        {
+          line: "After the while loop, the window is guaranteed valid — `freq[s[right]] == 1`, meaning the newest character appears exactly once. I record `right - left + 1` as the window size using `max(max_len, right - left + 1)` — a single expression that updates the ___ without a conditional branch.",
+          answer: "running maximum",
+        },
+      ],
     },
 
     {
@@ -388,6 +402,20 @@ def max_sum_distinct(nums, k):
         { line: `freq[s[left]] -= ___`, answer: "1" },
         { line: `left += ___`, answer: "1" },
         { line: `max_len = max(max_len, right - ___ + 1)`, answer: "left" },
+      ],
+      explanationBlanks: [
+        {
+          line: "I maintain `freq` as a plain dict accessed with `freq.get(s[right], 0)` — same reasoning as the previous problem: `.get` with a default of 0 avoids a KeyError when a character is seen for the first time, without needing to import `defaultdict` or check membership first. I also track `max_freq` — the count of the most common character in the current window. The key formula: `window_size - max_freq` = the number of non-dominant characters = the minimum ___ needed to make the whole window uniform.",
+          answer: "replacements",
+        },
+        {
+          line: "I update `max_freq` with `max_freq = max(max_freq, freq[s[right]])` each time a character is added. Critically, I never decrease `max_freq` even when shrinking the window — this is a deliberate optimization. `max_freq` acts as a floor: we only care about finding windows at least as large as the best one found so far, and a lower `max_freq` could never produce a longer valid window than we've already seen.",
+          answer: "max_freq",
+        },
+        {
+          line: "After potentially shrinking, the window is valid. I record its size with `max_len = max(max_len, right - left + 1)`. Because we only ever shrink by one when the window is invalid, the window size never decreases below its previous maximum — it either stays the same or grows as `right` advances. This ___ behavior is what makes the algorithm O(n): each element enters and exits the window at most once.",
+          answer: "monotonic",
+        },
       ],
     },
   ],

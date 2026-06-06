@@ -86,6 +86,20 @@ return result`,
         "I add guards before the bottom row and left column traversals because after moving top and right, the layer may have collapsed to a single row or column. Without the guards, I'd traverse those cells twice.",
         "Syntax — why four separate for-loops instead of a direction-array loop: The spiral pattern has four distinct directional segments that share no common update logic — each one shrinks a different boundary pointer. A direction-array loop works well for uniform grid traversal (BFS, DFS), but here the bookkeeping after each direction differs, so four explicit loops are cleaner. Forcing it into a direction array would require index-tracking overhead that obscures the logic.",
       ],
+      explanationBlanks: [
+        {
+          line: "I maintain four boundary pointers: top, bottom, left, right. Each iteration of the while loop processes one full ___ of the spiral — the outermost layer — then shrinks the boundaries inward.",
+          answer: "ring",
+        },
+        {
+          line: "I traverse left-to-right along the top row, then top-to-bottom along the right column, then right-to-left along the bottom row, then bottom-to-top along the left column. After each direction, I shrink the corresponding ___.",
+          answer: "boundary",
+        },
+        {
+          line: "I add guards before the bottom row and left column traversals because after moving top and right, the layer may have collapsed to a single row or column. Without the guards, I'd traverse those cells ___.",
+          answer: "twice",
+        },
+      ],
       testCase: {
         input: "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
         expected: "[1,2,3,6,9,8,7,4,5]",
@@ -144,6 +158,20 @@ for row in matrix:
         "After transposing, reversing each row completes the rotation. Both operations are in-place with O(1) extra space. The insight is recognizing the rotation as a composition of two reflections.",
         "Syntax — why in-place modification instead of a new matrix: The problem requires it, and it saves O(n²) space. Python's simultaneous assignment (a, b = b, a) makes in-place swapping a one-liner with no temp variable needed. row.reverse() also modifies in-place. If the problem allowed a new matrix, creating one would be simpler to reason about — but in-place shows you understand memory constraints.",
         "Syntax — why for j in range(i+1, n) for the transpose: Starting j at i+1 restricts swaps to the upper triangle. If j started at 0 or i, you'd swap each pair twice, returning to the original. Starting at i would also swap an element with itself (a no-op but wasted work). i+1 is the minimal range that touches each off-diagonal pair exactly once.",
+      ],
+      explanationBlanks: [
+        {
+          line: "A 90-degree clockwise rotation is equivalent to two simpler operations: first ___ the matrix (flip across the main diagonal), then reverse each row.",
+          answer: "transpose",
+        },
+        {
+          line: "After transposing, reversing each row completes the rotation. Both operations are in-place with O(1) extra space. The insight is recognizing the rotation as a composition of two ___.",
+          answer: "reflections",
+        },
+        {
+          line: "The transpose swaps matrix[i][j] with matrix[j][i] for all i < j. I only iterate over the ___ (j starts at i+1) to avoid double-swapping back to the original.",
+          answer: "upper triangle",
+        },
       ],
       testCase: {
         input: "matrix = [[1,2,3],[4,5,6],[7,8,9]]",
