@@ -204,6 +204,20 @@ return total`,
         "Syntax — why [0] * (len(nums) + 1): The multiplication creates a list of zeros of the correct length in one expression. The n+1 length is essential: prefix[0] must equal 0 (the sum of zero elements), and prefix[n] must equal the total sum. Allocating n+1 upfront lets the build loop run cleanly as prefix[i+1] = prefix[i] + nums[i] for i in range(n) with no boundary gymnastics.",
         "Syntax — why return prefix[right+1] - prefix[left] not prefix[right] - prefix[left-1]: The +1 offset is tied to the array convention where prefix[i] = sum of first i elements (not first i+1). Using prefix[left-1] would fail when left=0 (index -1 in Python wraps to the last element, a silent bug). The n+1-length design with prefix[0]=0 eliminates that edge case entirely.",
       ],
+      explanationBlanks: [
+        {
+          line: "In the constructor, I precompute prefix sums. prefix[i] holds the sum of all elements from index 0 up to index i-1. I make the array one element longer than nums to avoid off-by-one handling — ___[0] = 0 always.",
+          answer: "prefix",
+        },
+        {
+          line: "For any query ___(left, right), I return prefix[right+1] - prefix[left]. This works because prefix[right+1] includes all elements 0..right, and subtracting prefix[left] removes all elements 0..left-1, leaving exactly the sum of elements left..right.",
+          answer: "sumRange",
+        },
+        {
+          line: "Construction is O(n), each query is ___. This is the canonical use case for prefix sums.",
+          answer: "O(1)",
+        },
+      ],
       testCase: {
         input: "nums = [-2, 0, 3, -5, 2, -1], sumRange(0,2), sumRange(2,5), sumRange(0,5)",
         expected: "1, -1, -3",

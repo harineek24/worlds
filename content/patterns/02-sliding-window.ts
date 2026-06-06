@@ -239,6 +239,20 @@ def max_sum_distinct(nums, k):
         { line: `max_sum = max(___, window_sum)`, answer: "max_sum" },
         { line: `if freq[nums[left]] == 0: del freq[nums[___]]`, answer: "left" },
       ],
+      explanationBlanks: [
+        {
+          line: "I use `defaultdict(int)` from `collections` rather than a plain dict — because I never need to check if a key exists before incrementing. Accessing a missing key in a `defaultdict(int)` gives 0 automatically, which is exactly what a ___ needs. With a plain dict I'd have to write `freq[x] = freq.get(x, 0) + 1` every time, or risk a KeyError. The `defaultdict` makes every increment a clean `freq[x] += 1`.",
+          answer: "frequency counter",
+        },
+        {
+          line: "Once the window reaches size k — checked with `right - left + 1 == k` — I check validity: `len(freq) == k` means every element appears exactly once (if any key had count > 1, `freq` would have fewer distinct keys than elements). I use `len(freq)` as the distinctness check rather than tracking a separate `duplicates` counter because deleting zero-frequency keys keeps `len(freq)` accurate at all times.",
+          answer: "len(freq)",
+        },
+        {
+          line: "Whether or not the window was valid, I slide it forward: subtract `nums[left]` from `window_sum`, decrement `freq[nums[left]]`, delete the key if its count hits 0 (using `del freq[nums[left]]` — not `pop`, because I want an explicit deletion that's clear at a glance), and advance `left`. Deleting zero-count keys is what keeps ___ reliable as the distinctness check.",
+          answer: "len(freq)",
+        },
+      ],
     },
 
     {
