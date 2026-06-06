@@ -210,6 +210,8 @@ if first_col_zero:
         "First I save whether the first row and first column themselves contain any zeros — because I'm about to overwrite them as flags, and I need to remember their original state.",
         "I scan the interior of the matrix (rows 1+ and cols 1+). When I find a zero at (i,j), I mark matrix[i][0] and matrix[0][j] as 0 to flag that row i and column j need zeroing.",
         "Then I do a second pass over the interior: if the flag for a row or column is 0, zero out that cell. Finally I handle the first row and first column themselves using the booleans I saved at the start.",
+        "Syntax — why any(matrix[0][j] == 0 for j in range(n)): any() short-circuits — it stops as soon as it finds the first True. This is more efficient and expressive than building a list and checking if 0 in list. The generator expression inside avoids allocating an intermediate list. This pattern (any/all with a generator) is idiomatic Python for checking whether a condition holds for any element in a sequence.",
+        "Syntax — why in-place modification with the first row/column as flags: This reduces space from O(m+n) to O(1) by reusing existing matrix storage. The trick only works because the flag information (which rows/columns to zero) can be encoded as zeros in the first row/column — the same value we're setting. Saving first_row_zero and first_col_zero before overwriting is critical: without those two booleans, we'd corrupt the flag information we just wrote.",
       ],
       testCase: {
         input: "matrix = [[1,1,1],[1,0,1],[1,1,1]]",
