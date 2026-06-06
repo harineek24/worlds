@@ -97,6 +97,20 @@ def findKthLargest(nums, k):
           "heap[0] is the min of the top-2 set, which is the 2nd largest element overall.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I maintain a min-heap of exactly k elements. The invariant is: at all times, the heap holds the k largest elements seen so far. `import heapq` is used rather than sorting because the heap maintains order incrementally — each push/pop is O(log k). Sorting the whole list after every insertion would be O(n log n) per step.",
+          answer: "k largest",
+        },
+        {
+          line: "For each new number I push it onto the heap. If the heap now has k+1 elements, one of them is too small to be in the top-k — and because it's a min-heap, the smallest is at the root. I pop it immediately. `heapq.heappush` and `heapq.heappop` are chosen over maintaining a sorted list because they preserve the heap invariant in O(log k) instead of O(k) for an insertion into a sorted list.",
+          answer: "min-heap",
+        },
+        {
+          line: "After processing every number, the heap holds exactly the k largest elements. I read the answer with `heap[0]` — peeking, not popping. `heap[0]` gives the root in O(1) without removing it; `heappop` would destroy the heap structure and is unnecessary here. The root is the smallest of the k largest elements, which is the kth largest overall. Tradeoff vs. sorting: O(n log k) time instead of O(n log n), and O(k) space instead of O(n).",
+          answer: "peeking, not popping",
+        },
+      ],
       blanks: [
         { line: `heapq.heappush(___, num)`, answer: "heap" },
         { line: `if len(heap) > ___:`, answer: "k" },
@@ -145,6 +159,20 @@ def kClosest(points, k):
           "Negation trick worked: we kept the two smallest distances without a sort.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I want to keep the k smallest distances, but Python's `heapq` is a min-heap only — it always surfaces the smallest element. If I store distances as-is, `heappop` would evict the closest points, which is backwards for this problem.",
+          answer: "closest points",
+        },
+        {
+          line: "The fix: `heapq.heappush(heap, -dist, x, y)` — negate the distance before pushing. Python's `heapq` has no max-heap mode and no `key=` parameter, so negating values is the idiomatic way to turn a min-heap into a max-heap without writing a custom class. The root is now the farthest point among the k candidates.",
+          answer: "farthest point",
+        },
+        {
+          line: "When the heap exceeds size k, I pop the root — the farthest point in the current set (most negative negated value = largest actual distance). This maintains the invariant: heap always holds the k closest points seen so far. I skip `sqrt()` because comparing x²+y² is equivalent to comparing Euclidean distances and avoids floating-point overhead. I read the result with `heap[0]` peeking implicitly via list comprehension — no destructive pop needed at the end.",
+          answer: "k closest points seen so far",
+        },
+      ],
       blanks: [
         { line: `dist = x * x + ___`, answer: "y * y" },
         { line: `heapq.heappush(heap, (___, x, y))`, answer: "-dist" },
@@ -190,6 +218,16 @@ def findClosestElements(arr, k, x):
           "Binary search converged. The left boundary is 0, so the answer window is indices 0–3.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I'm binary-searching for the left boundary of the best window of k elements. The search space is indices 0 through len(arr)-k — those are all valid starting positions for a window of width k. This problem uses `bisect` (binary search) rather than `heapq` because the array is already sorted — we can exploit that structure directly instead of building a heap.",
+          answer: "left boundary",
+        },
+        {
+          line: "If x - arr[mid] > arr[mid+k] - x, the right neighbor is closer to x than the left edge, so sliding the window right will improve it — set lo = mid+1. Otherwise, hi = mid. The strict `>` (not `>=`) handles ties: equal distances default to hi = mid, which keeps the left (smaller) elements — matching the problem's tiebreak rule. Tradeoff vs. a heap: O(log(n-k) + k) here vs. O(n log k) with a heap. Binary search wins when n is large and k is small.",
+          answer: "tiebreak rule",
+        },
+      ],
       blanks: [
         { line: `lo, hi = 0, len(arr) - ___`, answer: "k" },
         { line: `if x - arr[mid] ___ arr[mid + k] - x:`, answer: ">" },

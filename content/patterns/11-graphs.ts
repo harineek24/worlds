@@ -134,6 +134,11 @@ def canFinish(numCourses, prerequisites):
         { line: `if in_degree[neighbor] == ___:`, answer: "0" },
         { line: `return completed == ___`, answer: "numCourses" },
       ],
+      explanationBlanks: [
+        { line: "I seed the queue with `deque([n for n in in_degree if in_degree[n] == 0])`. The list comprehension filters all zero-in-degree nodes in one line; wrapping it in deque gives O(1) popleft instead of O(n) for a plain list. These are courses safe to take ___.", answer: "immediately" },
+        { line: "Each time I process a node, I increment a counter. When I finish a course, I reduce the in-degree of every course that depended on it. If any drop to zero, they're now ___ and join the queue.", answer: "unblocked" },
+        { line: "If the counter equals numCourses at the end, every course was reachable — no cycle. If it's less, some courses were locked in a cycle and could never be scheduled. The count is the ___ detector.", answer: "cycle" },
+      ],
     },
 
     {
@@ -197,6 +202,10 @@ def findOrder(numCourses, prerequisites):
         { line: `order.___(node)`, answer: "append" },
         { line: `in_degree[neighbor] ___ 1`, answer: "-=" },
         { line: `return order if len(order) == ___ else []`, answer: "numCourses" },
+      ],
+      explanationBlanks: [
+        { line: "The queue is seeded with `deque([n for n in in_degree if in_degree[n] == 0])`: the list comprehension builds the zero-in-degree frontier, and deque wraps it for O(1) popleft. The only difference from Course Schedule is what I do as I process nodes — instead of incrementing a counter, I append each node to an `order` list. Kahn's algorithm naturally produces a valid ___ order because a node is appended only after all its prerequisites have been processed.", answer: "topological" },
+        { line: "The cycle check is the same: if the order list is shorter than numCourses, some nodes were permanently stuck above in-degree 0 (trapped in a ___) and never entered the queue. I return an empty list in that case.", answer: "cycle" },
       ],
     },
 
@@ -270,6 +279,10 @@ def findOrder(numCourses, prerequisites):
         { line: `if grid[r][c] == ___:`, answer: "'1'" },
         { line: `count ___ 1`, answer: "+=" },
       ],
+      explanationBlanks: [
+        { line: "The DFS visits every connected land cell and marks it '0' in-place. This in-place mutation serves as the ___ set — no extra data structure needed. A plain dict or set would require O(m×n) extra space; mutating the grid is O(1).", answer: "visited" },
+        { line: "After DFS returns, the entire island has been erased from the grid, so the outer scan continues cleanly to the next undiscovered island. Three separate ___ means three islands.", answer: "flood fills" },
+      ],
     },
 
     {
@@ -332,6 +345,11 @@ def pacificAtlantic(heights):
         { line: `bfs([...top row + left col...], ___)`, answer: "pac" },
         { line: `bfs([...bottom row + right col...], ___)`, answer: "atl" },
         { line: `if (r,c) in pac ___ (r,c) in atl`, answer: "and" },
+      ],
+      explanationBlanks: [
+        { line: "The trick is to ___ the problem. Instead of simulating water flowing down from every cell (which would be O(m×n) BFS each), I flow upward from each ocean's border — asking 'which cells can reach this ocean?' by only stepping to neighbors that are equal or higher height.", answer: "reverse" },
+        { line: "I run multi-source BFS from all Pacific-border cells simultaneously. `visited.update(starts)` marks all seed cells in one call before the loop begins. Every cell BFS can reach while going uphill (heights[nr][nc] >= heights[r][c]) corresponds to a cell from which water would flow downhill to the ___.", answer: "Pacific" },
+        { line: "The final answer is a list comprehension over all cells: `[[r,c] for r in range(rows) for c in range(cols) if (r,c) in pac and (r,c) in atl]`. Using sets for pac and atl makes each membership check O(1) — if these were lists, the ___ would be O(m×n) per cell.", answer: "intersection" },
       ],
     },
 

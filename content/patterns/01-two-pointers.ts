@@ -99,6 +99,20 @@ return True`,
         { line: `left ___ 1`, answer: "+=" },
         { line: `right ___ 1`, answer: "-=" },
       ],
+      explanationBlanks: [
+        {
+          line: "First I clean the input — lowercase everything and strip out anything that isn't a letter or digit. This gives me a pure sequence to compare. I use a ___ here instead of a for-loop that builds a list manually, because it's a single expression — more readable, and Python can optimize the construction slightly better for simple filters like this.",
+          answer: "list comprehension",
+        },
+        {
+          line: "I place one pointer at the start and one at the end. Since a palindrome is symmetric, these two positions should always match. I use a while loop instead of a for loop because the termination condition is dynamic — both pointers move inward but the loop ends when they meet, not after a fixed number of steps, so I need a condition check at each iteration rather than a fixed range.",
+          answer: "while loop",
+        },
+        {
+          line: "If the characters at left and right don't match, I can immediately return False. No need to continue — the ___ is already broken. Returning early here avoids scanning the rest of the string pointlessly.",
+          answer: "symmetry",
+        },
+      ],
     },
 
     {
@@ -146,6 +160,20 @@ while left < right:
         { line: `if s == target: return [left + ___, right + ___]`, answer: "1, 1" },
         { line: `elif s < target: ___ += 1`, answer: "left" },
         { line: `else: ___ -= 1`, answer: "right" },
+      ],
+      explanationBlanks: [
+        {
+          line: "I start with the widest possible window — leftmost and rightmost elements. This gives me the full range to work with. I use a while loop instead of a for loop because the termination condition is dynamic — the two pointers move at different rates depending on what we find at each step, so I need a condition check rather than a fixed iteration count.",
+          answer: "while loop",
+        },
+        {
+          line: "If the sum is too small, I need a larger value. Since the array is ___, moving left rightward is the only way to increase the sum without touching right. I use `left += 1` rather than reassigning `left = left + 1` — the augmented assignment is idiomatic Python and makes the directional intent obvious.",
+          answer: "sorted",
+        },
+        {
+          line: "If the sum is too large, I need a smaller value. Moving right leftward decreases the sum — the sorted order guarantees this is the only correct move. I use `right -= 1` for the same reason: augmented assignment is cleaner and signals 'shrink from the right'.",
+          answer: "right -= 1",
+        },
       ],
     },
 
@@ -210,6 +238,20 @@ return max_water`,
         { line: `if height[left] ___ height[right]:`, answer: "<" },
         { line: `___ += 1`, answer: "left" },
         { line: `___ -= 1`, answer: "right" },
+      ],
+      explanationBlanks: [
+        {
+          line: "Area is width times height. I use `min(height[left], height[right])` rather than an if-else to select the shorter wall — `min()` is a single expression that communicates 'the bottleneck' directly. Width is `right - left`, the distance between the two pointers.",
+          answer: "bottleneck",
+        },
+        {
+          line: "The ___ wall is the bottleneck — it's capping the height. Moving the shorter wall inward is the only move that could possibly find a better container. Moving the taller wall inward could only reduce width without any chance of increasing height, so that direction is provably suboptimal.",
+          answer: "shorter",
+        },
+        {
+          line: "I update the running maximum using `max(max_water, water)` rather than an if statement — `max()` as an expression assigned back to `max_water` is idiomatic Python and keeps the update to one line without a conditional branch.",
+          answer: "if statement",
+        },
       ],
     },
 
@@ -291,6 +333,20 @@ return result`,
         { line: `elif s < 0: ___ += 1`, answer: "left" },
         { line: `else: ___ -= 1`, answer: "right" },
       ],
+      explanationBlanks: [
+        {
+          line: "I sort the array first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which allocates a new list. Since we don't need to preserve the original order for this problem, in-place is the right call. Sorting is also what makes two pointers viable: it gives us directionality so that 'sum too small → move left rightward' and 'sum too large → move right leftward' are provably correct moves.",
+          answer: "two pointers",
+        },
+        {
+          line: "Duplicate skip for the anchor: if `nums[i] == nums[i-1]`, this anchor value has already been explored fully. I check `i > 0` first to avoid an index-out-of-bounds on the first iteration — it's a guard condition, not the main check.",
+          answer: "index-out-of-bounds",
+        },
+        {
+          line: "When I find a valid triplet, I `append` it to `result` as a list literal `[nums[i], nums[left], nums[right]]` rather than a tuple — the problem asks for a list of lists, so I match the expected type exactly. Then I use inner while loops to skip adjacent duplicates on both sides before advancing the pointers, which is the ___ step.",
+          answer: "deduplication",
+        },
+      ],
     },
 
     {
@@ -347,6 +403,20 @@ return count`,
         { line: `count += right - ___`, answer: "left" },
         { line: `___ -= 1`, answer: "right" },
         { line: `else: ___ += 1`, answer: "left" },
+      ],
+      explanationBlanks: [
+        {
+          line: "I sort first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which would allocate a new list. The key insight after sorting: for a triple (a ≤ b ≤ c), only one inequality matters: a + b > c. The other two are automatically satisfied because c is the largest. This reduces a ___ check to one.",
+          answer: "3-condition",
+        },
+        {
+          line: "If `nums[left] + nums[right] > nums[k]`, then every value between left and right-1 also satisfies the inequality with `right` (since the array is sorted and all those values are ≥ nums[left]). So I count `right - left` valid triangles in one step rather than iterating through them — this is the O(n²) speedup over the naïve ___ approach.",
+          answer: "O(n³)",
+        },
+        {
+          line: "If the sum is too small, `nums[left]` is the bottleneck — it's the smaller of the two remaining sides. Moving `left` rightward with `left += 1` is the only way to increase the sum, because `right` is already as large as it can be for this inner loop.",
+          answer: "left += 1",
+        },
       ],
     },
 

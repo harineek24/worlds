@@ -60,6 +60,20 @@ return max_profit`,
         "This is O(n) time and O(1) space — one pass, two variables.",
         "Syntax — why float('inf'): I initialize min_price to float('inf') rather than a large number like 10**9. float('inf') is always larger than any real number, so the first price will always beat it and become the initial minimum. A hardcoded large number is fragile — if prices can exceed it, the logic breaks. inf is mathematically correct and requires no assumption about input magnitude.",
       ],
+      explanationBlanks: [
+        {
+          line: "This is ___ time and O(1) space — one pass, two variables.",
+          answer: "O(n)",
+        },
+        {
+          line: "I update ___ at each step with price - min_price. I never need to look back because any optimal buy must be to the left of the sell, and I've already tracked the best buy to the left.",
+          answer: "max_profit",
+        },
+        {
+          line: "I'm tracking the minimum price seen so far as I scan left to right. At every new price, I ask: if I had bought at the cheapest point so far and sold today, what's my profit? That's the ___ insight — I always want to buy as cheap as possible before the current day.",
+          answer: "greedy",
+        },
+      ],
       testCase: {
         input: "prices = [7, 1, 5, 3, 6, 4]",
         expected: "5",
@@ -118,6 +132,20 @@ return start if total_tank >= 0 else -1`,
         "If a solution exists, I find it greedily. I maintain curr_tank as I scan. If curr_tank goes negative after station i, then stations 0 through i are all invalid starting points — any path through them would drain the tank before reaching i+1. So I reset and try starting from i+1.",
         "The greedy guarantee: if total_tank >= 0, exactly one valid start exists. By process of elimination, the last candidate standing after all resets is the answer.",
         "Syntax — why range(len(gas)): I iterate by index rather than by value because I need the index i to update start = i + 1. Iterating over values with 'for diff in ...' would lose that. This is a general rule: when you need the position of the element, not just the element, use range(len(...)) or enumerate.",
+      ],
+      explanationBlanks: [
+        {
+          line: "First the feasibility check: if total gas across all stations is less than total cost, it's impossible to complete the circuit regardless of starting point. I track ___ for this check at the end.",
+          answer: "total_tank",
+        },
+        {
+          line: "If a solution exists, I find it greedily. I maintain curr_tank as I scan. If curr_tank goes negative after station i, then stations 0 through i are all invalid starting points — any path through them would drain the tank before reaching i+1. So I reset and try starting from ___.",
+          answer: "i+1",
+        },
+        {
+          line: "The greedy guarantee: if ___ >= 0, exactly one valid start exists. By process of elimination, the last candidate standing after all resets is the answer.",
+          answer: "total_tank",
+        },
       ],
       testCase: {
         input: "gas = [1,2,3,4,5], cost = [3,4,5,1,2]",

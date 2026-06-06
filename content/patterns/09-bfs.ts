@@ -130,6 +130,20 @@ def level_order(root):
           answer: "level.append(node.val)",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm snapshotting `len(queue)` at the top of each `while` iteration. That count tells me exactly how many nodes belong to the current level before I start enqueuing the next one. Without the snapshot, as I push children during the loop, `len(queue)` would grow — I'd drift into processing next-level nodes as if they were part of the current ___.",
+          answer: "wave",
+        },
+        {
+          line: "`from collections import deque` + `queue = deque([root])` — I use deque instead of a plain list because `list.pop(0)` is O(n): Python has to shift every remaining element left. `deque.popleft()` is ___ because a deque is a doubly-linked structure with a direct pointer to the front. For a tree with thousands of nodes, that difference compounds every level.",
+          answer: "O(1)",
+        },
+        {
+          line: "I append the completed `level` list to `result` after the ___ loop finishes — that's when the entire wave has been processed.",
+          answer: "inner",
+        },
+      ],
     },
     {
       id: "rightmost-node",
@@ -198,6 +212,16 @@ def right_side_view(root):
         {
           line: "                result.append(___)",
           answer: "result.append(node.val)",
+        },
+      ],
+      explanationBlanks: [
+        {
+          line: "I'm using the loop index `i` to detect the last node in each level: when `i == level_size - 1`, that's the ___ node processed, so I record it.",
+          answer: "rightmost",
+        },
+        {
+          line: "`level_size = len(queue)` snapshot — I freeze the count before the inner loop because the queue grows as I enqueue children. If I checked `len(queue)` inside the loop instead of snapshotting, I'd process next-level nodes inside the current level's iteration, breaking level ___ entirely.",
+          answer: "separation",
         },
       ],
     },
@@ -285,6 +309,20 @@ def oranges_rotting(grid):
           answer: "return minutes if fresh == 0 else -1",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm seeding the queue with ALL rotten oranges at once — that's the ___ trick. Every rotten orange is a simultaneous starting point, so BFS spreads from all of them in parallel rather than one at a time.",
+          answer: "multi-source",
+        },
+        {
+          line: "When a fresh neighbor is infected, I mutate the grid to 2 to mark it visited and decrement `fresh`. Using the grid itself as the ___ set avoids a separate data structure — checking `grid[nr][nc] == 1` is both the freshness test and the not-yet-visited check in a single condition.",
+          answer: "visited",
+        },
+        {
+          line: "Each BFS level represents one minute. I snapshot the queue length (`level_size = len(queue)`) to process exactly the oranges that turned rotten in the previous minute, then spread to their fresh neighbors. The snapshot is necessary because enqueuing newly-rotten cells during the loop would otherwise bleed them into the current minute's ___.",
+          answer: "processing",
+        },
+      ],
     },
     {
       id: "01-matrix",
@@ -362,6 +400,20 @@ def update_matrix(mat):
           answer: "dist[nr][nc] = dist[r][c] + 1",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm initializing all distances to infinity, then setting every 0-cell to distance 0 and loading them all into the queue. This is ___ BFS — every zero is a simultaneous origin.",
+          answer: "multi-source",
+        },
+        {
+          line: "BFS guarantees that the first time we reach a cell, it's via the shortest path. So when I see `dist[nr][nc] > dist[r][c] + 1`, I know I've found a shorter route and I ___ the distance.",
+          answer: "relax",
+        },
+        {
+          line: "The relaxation condition `dist[nr][nc] > dist[r][c] + 1` doubles as the ___ check — if a cell already has a distance ≤ current + 1, we don't re-enqueue it. This replaces a separate `visited` set entirely.",
+          answer: "visited",
+        },
+      ],
     },
     {
       id: "minimum-knight-moves",
@@ -434,6 +486,20 @@ def min_knight_moves(x: int, y: int) -> int:
         {
           line: "            if (nr, nc) not in visited and nr >= ___ and nc >= ___:",
           answer: "if (nr, nc) not in visited and nr >= -2 and nc >= -2:",
+        },
+      ],
+      explanationBlanks: [
+        {
+          line: "I'm using `abs(x), abs(y)` to fold the problem into the first quadrant. By symmetry, the minimum moves to (x, y) equals the minimum to (|x|, |y|), which cuts the ___ space dramatically.",
+          answer: "search",
+        },
+        {
+          line: "I add to `visited` before enqueuing, not after dequeuing — this prevents duplicate entries in the queue. If I added after dequeuing, the same cell could be ___ multiple times before it's ever processed.",
+          answer: "enqueued",
+        },
+        {
+          line: "`visited = {(0, 0)}` — I use a set literal, not a list, because `(nr, nc) not in visited` needs to be O(1). A list check would be ___ per neighbor per node. On a large chessboard with many visited positions this becomes a major bottleneck. Set membership testing uses hashing and is O(1) on average.",
+          answer: "O(n)",
         },
       ],
     },

@@ -8,6 +8,62 @@ import PhilosophyBanner from "@/components/PhilosophyBanner"
 import TwoColumn from "@/components/TwoColumn"
 import FillBlank from "@/components/FillBlank"
 
+// Render an explanation sentence that may contain ___ blanks inline
+function ExplanationLine({
+  line,
+  blankIndex,
+  blanks,
+  answers,
+  submitted,
+  onChangeBlank,
+}: {
+  line: string
+  blankIndex: number
+  blanks: { line: string; answer: string }[]
+  answers: string[]
+  submitted: boolean
+  onChangeBlank: (absoluteIndex: number, value: string) => void
+}) {
+  // Check if this explanation line matches an explanationBlank entry
+  const matchIndex = blanks.findIndex((b) => b.line === line)
+  if (matchIndex === -1) {
+    // No blank — render full text
+    return <p className="text-[#c8a97e] text-sm leading-relaxed">{line}</p>
+  }
+
+  // Has a blank — split on ___ and render with input
+  const absoluteIndex = blankIndex + matchIndex
+  const parts = line.split("___")
+  const isCorrect = answers[absoluteIndex]?.trim() === blanks[matchIndex].answer
+
+  return (
+    <p className="text-[#c8a97e] text-sm leading-relaxed flex items-center flex-wrap gap-1">
+      {parts.map((part, j) => (
+        <span key={j} className="flex items-center gap-1">
+          <span>{part}</span>
+          {j < parts.length - 1 && (
+            <input
+              value={answers[absoluteIndex] ?? ""}
+              onChange={(e) => onChangeBlank(absoluteIndex, e.target.value)}
+              disabled={submitted}
+              className={`w-28 px-2 py-0.5 rounded text-center font-mono text-xs outline-none border transition-colors ${
+                !submitted
+                  ? "bg-[#1a1208] border-[#5c3d1e] text-[#f5e6c8] focus:border-[#a0845c]"
+                  : isCorrect
+                  ? "bg-[#0d2b0d] border-[#2d6a2d] text-[#6fcf6f]"
+                  : "bg-[#2b0d0d] border-[#6a2d2d] text-[#cf6f6f]"
+              }`}
+            />
+          )}
+          {submitted && !isCorrect && j === parts.length - 1 && (
+            <span className="text-[#6a2d2d] text-xs ml-1">→ {blanks[matchIndex].answer}</span>
+          )}
+        </span>
+      ))}
+    </p>
+  )
+}
+
 export default function ChallengePage({
   params,
 }: {
@@ -20,11 +76,20 @@ export default function ChallengePage({
   const problem = pattern.problems.find((p) => p.id === problemId)
   if (!problem) notFound()
 
-  const [answers, setAnswers] = useState<string[]>(Array(problem.blanks.length).fill(""))
+  const totalBlanks = problem.blanks.length + problem.explanationBlanks.length
+  const [answers, setAnswers] = useState<string[]>(Array(totalBlanks).fill(""))
   const [submitted, setSubmitted] = useState(false)
 
-  const correct = problem.blanks.filter((b, i) => answers[i]?.trim() === b.answer).length
-  const total = problem.blanks.length
+  // Code blanks use indices 0..blanks.length-1
+  // Explanation blanks use indices blanks.length..totalBlanks-1
+  const codeAnswers = answers.slice(0, problem.blanks.length)
+  const explAnswers = answers.slice(problem.blanks.length)
+
+  const codeCorrect = problem.blanks.filter((b, i) => codeAnswers[i]?.trim() === b.answer).length
+  const explCorrect = problem.explanationBlanks.filter(
+    (b, i) => explAnswers[i]?.trim() === b.answer
+  ).length
+  const correct = codeCorrect + explCorrect
 
   function handleChange(index: number, value: string) {
     setAnswers((prev) => {
@@ -42,7 +107,7 @@ export default function ChallengePage({
 
       <div className="flex flex-col gap-8 px-10 py-8">
 
-        {/* Problem + Pattern (same as study, pattern name hidden until submit) */}
+        {/* Problem + Pattern */}
         <TwoColumn
           label="Problem"
           left={
@@ -81,30 +146,75 @@ export default function ChallengePage({
           }
         />
 
-        {/* Fill in the blanks — solution */}
+        {/* Code blanks (left) + Explanation blanks (right) */}
         <TwoColumn
-          label="Fill in the Blanks — Solution"
-          left={<FillBlank blanks={problem.blanks} submitted={submitted} answers={answers} onChange={handleChange} />}
+          label="Fill in the Blanks"
+          left={
+            <div className="flex flex-col gap-4">
+              <p className="text-[#a0845c] text-xs uppercase tracking-widest">Code</p>
+              <FillBlank
+                blanks={problem.blanks}
+                submitted={submitted}
+                answers={codeAnswers}
+                onChange={(i, v) => handleChange(i, v)}
+              />
+            </div>
+          }
           right={
-            <div className="flex flex-col gap-3">
-              <p className="text-[#a0845c] text-xs uppercase tracking-widest mb-1">What are you doing here?</p>
-              {submitted ? (
-                <ol className="flex flex-col gap-3">
-                  {problem.solutionExplanation.map((line, i) => (
+            <div className="flex flex-col gap-4">
+              <p className="text-[#a0845c] text-xs uppercase tracking-widest">Reasoning — fill the gaps</p>
+              <ol className="flex flex-col gap-3">
+                {problem.solutionExplanation.map((line, i) => {
+                  const blankMatch = problem.explanationBlanks.findIndex((b) => b.line === line)
+                  const absoluteIndex = problem.blanks.length + blankMatch
+                  const isCorrect =
+                    blankMatch !== -1 &&
+                    answers[absoluteIndex]?.trim() === problem.explanationBlanks[blankMatch].answer
+
+                  return (
                     <li key={i} className="flex gap-3">
-                      <span className="text-[#5c3d1e] text-xs font-mono mt-0.5 shrink-0">{String(i + 1).padStart(2, "0")}</span>
-                      <p className="text-[#c8a97e] text-sm leading-relaxed">{line}</p>
+                      <span className="text-[#5c3d1e] text-xs font-mono mt-0.5 shrink-0">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      {blankMatch !== -1 ? (
+                        <div className="flex items-center flex-wrap gap-1 text-[#c8a97e] text-sm leading-relaxed">
+                          {line.split("___").map((part, j, arr) => (
+                            <span key={j} className="flex items-center gap-1">
+                              <span>{part}</span>
+                              {j < arr.length - 1 && (
+                                <input
+                                  value={answers[absoluteIndex] ?? ""}
+                                  onChange={(e) => handleChange(absoluteIndex, e.target.value)}
+                                  disabled={submitted}
+                                  className={`w-28 px-2 py-0.5 rounded text-center font-mono text-xs outline-none border transition-colors ${
+                                    !submitted
+                                      ? "bg-[#1a1208] border-[#5c3d1e] text-[#f5e6c8] focus:border-[#a0845c]"
+                                      : isCorrect
+                                      ? "bg-[#0d2b0d] border-[#2d6a2d] text-[#6fcf6f]"
+                                      : "bg-[#2b0d0d] border-[#6a2d2d] text-[#cf6f6f]"
+                                  }`}
+                                />
+                              )}
+                              {submitted && !isCorrect && j === arr.length - 1 && (
+                                <span className="text-[#6a2d2d] text-xs ml-1">
+                                  → {problem.explanationBlanks[blankMatch].answer}
+                                </span>
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[#c8a97e] text-sm leading-relaxed">{line}</p>
+                      )}
                     </li>
-                  ))}
-                </ol>
-              ) : (
-                <p className="text-[#4a3520] font-mono text-xs italic">Explanation revealed on submit</p>
-              )}
+                  )
+                })}
+              </ol>
             </div>
           }
         />
 
-        {/* Trace blanks */}
+        {/* Trace + Trace explanations */}
         <TwoColumn
           label={`Trace — ${problem.testCase.input}`}
           left={
@@ -134,9 +244,9 @@ export default function ChallengePage({
         <div className="flex items-center justify-between border-t border-[#2a1f0e] pt-6 pb-8">
           <div>
             {submitted && (
-              <p className={`font-mono text-sm ${correct === total ? "text-[#6fcf6f]" : "text-[#cfb06f]"}`}>
-                {correct}/{total} correct
-                {correct === total ? " — clean run" : " — review the study page"}
+              <p className={`font-mono text-sm ${correct === totalBlanks ? "text-[#6fcf6f]" : "text-[#cfb06f]"}`}>
+                {correct}/{totalBlanks} correct
+                {correct === totalBlanks ? " — clean run" : " — review the study page"}
               </p>
             )}
           </div>

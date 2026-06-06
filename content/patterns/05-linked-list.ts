@@ -99,6 +99,20 @@ return False`,
           "The loop condition was always satisfied because fast.next was never null — the cycle kept feeding nodes. No escape route means there's a cycle.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I use Floyd's tortoise-and-hare algorithm. Both pointers start at head. Slow moves one step at a time, fast moves two. If there's no cycle, fast will eventually fall off the ___ of the list.",
+          answer: "end",
+        },
+        {
+          line: "The insight is mathematical: if a cycle exists, fast and slow are both inside it. Fast gains one node on slow every iteration. Eventually it ___ slow — they must meet. The gap between them decreases by one each step, so meeting is guaranteed.",
+          answer: "laps",
+        },
+        {
+          line: "If fast reaches null or fast.next reaches null, there's no cycle — a linear list has an end. The `while fast and fast.next` guard handles both: `fast` catches a null tail, `fast.next` prevents a ___ when fast is at the last node. Return false.",
+          answer: "null-pointer dereference",
+        },
+      ],
       blanks: [
         { line: `slow = fast = ___`, answer: "head" },
         { line: `while fast and fast.___:`, answer: "next" },
@@ -174,6 +188,20 @@ return True`,
           "Right pointer is now None — all nodes in the reversed half have been checked. Every pair matched.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "Step 2 — I reverse the second half in place, starting from slow. The critical line is `next_node = curr.next` — this saves the original next pointer *before* overwriting it with `curr.next = prev`. Once you reassign `curr.next`, the original next is gone; `next_node` is the only ___ left. Skipping this save is the most common linked-list bug. The tradeoff: I'm mutating the list, which is usually acceptable in interviews unless asked otherwise.",
+          answer: "reference",
+        },
+        {
+          line: "Step 3 — I compare left (starting at head) against right (the reversed second half, starting at prev). A palindrome means these two halves ___ each other. I walk both forward simultaneously; if any values differ, it's not a palindrome.",
+          answer: "mirror",
+        },
+        {
+          line: "I only need to walk as far as right goes — the reversed half is the shorter or equal half. When right runs out, every value ___.",
+          answer: "matched",
+        },
+      ],
       blanks: [
         { line: `while fast and fast.___:`, answer: "next" },
         { line: `next_node = curr.___`, answer: "next" },
@@ -252,6 +280,20 @@ return dummy.next`,
           "dummy.next is still node(1), the correct head. If the original head had been deleted, dummy.next would point to the new head.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "`dummy = ListNode(0); dummy.next = head` — the dummy node exists so that slow always has a valid ___ for deletion. Without it, removing the original head would require `if node == head: head = head.next` as a special case. The dummy absorbs that branch: slow can always do `slow.next = slow.next.next` regardless of which node is targeted. The value 0 is arbitrary — it's never read.",
+          answer: "predecessor",
+        },
+        {
+          line: "Why n+1 and not n? Because I want slow to land on the node *before* the target, not *on* the target. I need the predecessor to perform the deletion — a linked list has no ___, so you must arrive at the predecessor first.",
+          answer: "back-pointer",
+        },
+        {
+          line: "I return `dummy.next` — not `head` — because if the original head was the deleted node, `head` is now ___. `dummy.next` always reflects the current first real node.",
+          answer: "stale",
+        },
+      ],
       blanks: [
         { line: `dummy = ListNode(___)`, answer: "0" },
         { line: `for _ in range(n + ___):`, answer: "1" },
@@ -338,6 +380,20 @@ while second:
           "Final order: 1→5→2→4→3. Every node placed exactly once — O(n) time, O(1) space.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "Step 1 — the loop condition here is `while fast.next and fast.next.next`, not the usual `while fast and fast.next`. This small change makes slow land at the *last node of the first half* rather than the first node of the second half — so `slow.next` is exactly where the second half begins, enabling a clean cut. Choosing the wrong condition shifts the ___ by one and creates an off-by-one in the merge.",
+          answer: "midpoint",
+        },
+        {
+          line: "Step 2 — I sever the list at the midpoint (`slow.next = None`) to prevent ___ during reversal, then reverse the second half. The line `next_node = curr.next` must come before `curr.next = prev` — once you overwrite `curr.next`, the original next is unreachable. This save-before-overwrite pattern is mandatory for in-place reversal. After the loop, `prev` is the new head of the reversed second half.",
+          answer: "cycles",
+        },
+        {
+          line: "Step 3 — I interleave by saving both halves' next pointers (`tmp1`, `tmp2`) before any rewiring. This is the same principle as the reversal save: you cannot read `first.next` after you have already reassigned it. Two saves, then two wires, then two advances — order matters. The loop runs until second is exhausted — first half may have one extra node in odd-length lists, which is ___.",
+          answer: "correct",
+        },
+      ],
       blanks: [
         { line: `while fast.___ and fast.next.___:`, answer: "next, next" },
         { line: `second = slow.___`, answer: "next" },

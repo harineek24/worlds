@@ -17,9 +17,10 @@ export interface Problem {
   prompt: string
   patternKeywords: string[] // shown on right side of problem row
   solution: string // full code
-  solutionExplanation: string[] // line-by-line, interviewer voice, matches solution lines
+  solutionExplanation: string[] // line-by-line, interviewer voice — shown in full on study page
+  explanationBlanks: Blank[] // key terms blanked out in the explanation on challenge page
   testCase: TestCase
-  blanks: Blank[] // for challenge page
+  blanks: Blank[] // code fill-in-the-blanks for challenge page
 }
 
 export interface PythonTool {

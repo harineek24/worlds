@@ -88,6 +88,16 @@ heapq.heapify(heap)`,
           answer: "key=lambda x: x[0]",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm sorting by start time first because that's the only way a linear scan makes sense — if I don't sort, I'd have to compare every pair, which is ___. Sorting costs O(n log n) and makes the rest O(n). I use `intervals.sort(key=lambda x: x[0])` with a lambda rather than a named function because this is a throwaway, one-line key: a named function would force the reader to scroll elsewhere to understand something trivially simple. The `x[0]` extracts index 0 — the start time — from each two-element list. I use index access rather than unpacking because sort's `key=` receives a whole element, not a pair.",
+          answer: "O(n²)",
+        },
+        {
+          line: "I'm iterating from the second interval onward and comparing each interval's start to the previous interval's end. If the next meeting starts before the current one ends, we have a conflict and can return false immediately.",
+          answer: "return false immediately",
+        },
+      ],
     },
 
     {
@@ -163,6 +173,20 @@ heapq.heapify(heap)`,
           answer: "max(new_interval[1], intervals[i][1])",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm splitting the problem into ___ phases: intervals before the new one (no overlap), intervals that overlap with the new one (merge them in), and intervals after the new one (no overlap). This three-phase approach avoids conditionals inside a single loop.",
+          answer: "three",
+        },
+        {
+          line: "In phase two, I merge every interval that overlaps with new_interval by expanding new_interval's bounds to cover both. The overlap condition is: the existing interval starts at or before new_interval ends. I mutate new_interval in place (`new_interval[0] = min(...)`) rather than creating a new list each iteration — this keeps the merge loop ___.",
+          answer: "allocation-free",
+        },
+        {
+          line: "After the merge loop, I append the fully-merged new_interval once, then dump all remaining intervals. These are guaranteed non-overlapping since the input was already sorted and non-overlapping.",
+          answer: "non-overlapping",
+        },
+      ],
     },
 
     {
@@ -232,6 +256,20 @@ heapq.heapify(heap)`,
           answer: "removals += 1",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm sorting by end time, not start time — this is the key greedy insight. By always keeping the interval that ends earliest, I leave the most room for future intervals. It's the same logic as the classic ___ problem. I write `intervals.sort(key=lambda x: x[1])` with `x[1]` to extract the end time (index 1). Using a lambda instead of a named function keeps the intent inline — the reader sees the sort criterion right where the sort happens. `operator.itemgetter(1)` would also work and is slightly faster, but a lambda is more universally readable without importing anything.",
+          answer: "activity selection",
+        },
+        {
+          line: "If there's an overlap (start < prev_end), I must remove one. The greedy choice is to remove the one with the later end — which is the current one, since I sorted by end. So I just increment removals without updating prev_end.",
+          answer: "the later end",
+        },
+        {
+          line: "This greedy approach is provably optimal: keeping the earliest-ending interval at every step maximizes the count of intervals we can keep, which minimizes removals.",
+          answer: "minimizes removals",
+        },
+      ],
     },
 
     {
@@ -285,6 +323,20 @@ heapq.heapify(heap)`,
         {
           line: "            result[-1][1] = max(result[-1][1], end)",
           answer: "max(result[-1][1], end)",
+        },
+      ],
+      explanationBlanks: [
+        {
+          line: "I'm sorting by start time so that any intervals that could overlap are adjacent in the list. After sorting, I only need to compare the current interval with the last interval in result — no interval further back can be affected. `intervals.sort(key=lambda x: x[0])` uses a lambda because defining a named function like `def get_start(x): return x[0]` for something this simple is over-engineering — it would force a reader to look elsewhere for a one-liner. The lambda keeps the key criterion right next to the sort call.",
+          answer: "right next to the sort call",
+        },
+        {
+          line: "For each subsequent interval, I check if it overlaps the last merged interval using `result[-1]`. I use `result[-1]` instead of `result[len(result)-1]` — Python's ___ reads from the end of the list, and `[-1]` is the idiomatic way to say 'last element'. It's not just shorter — it signals intent: I always want the most recently added interval, whatever the list's length is. If there's overlap, I extend via `result[-1][1] = max(result[-1][1], end)` — again operating directly on the last element without copying it out.",
+          answer: "negative indexing",
+        },
+        {
+          line: "If there's no overlap, the current interval is entirely to the right of everything in result. I `result.append([start, end])` — using a plain list as a dynamic array is appropriate here since I only grow from the tail and read from the tail. Python list `.append()` is ___, which is all we need.",
+          answer: "O(1) amortized",
         },
       ],
     },
