@@ -77,8 +77,9 @@ return False`,
       solutionExplanation: [
         "I use Floyd's tortoise-and-hare algorithm. Both pointers start at head. Slow moves one step at a time, fast moves two. If there's no cycle, fast will eventually fall off the end of the list.",
         "The insight is mathematical: if a cycle exists, fast and slow are both inside it. Fast gains one node on slow every iteration. Eventually it laps slow — they must meet. The gap between them decreases by one each step, so meeting is guaranteed.",
+        "`slow = fast = head` — why start both at head rather than fast at head.next: starting at the same node handles single-element lists without a special case. It also keeps the math clean — we check for equality *after* moving, so the initial shared position never triggers a false positive.",
         "I check for the meeting condition inside the loop, after moving both pointers. If they ever point to the same node, there's a cycle.",
-        "If fast reaches null or fast.next reaches null, there's no cycle — a linear list has an end. Return false.",
+        "If fast reaches null or fast.next reaches null, there's no cycle — a linear list has an end. The `while fast and fast.next` guard handles both: `fast` catches a null tail, `fast.next` prevents a null-pointer dereference when fast is at the last node. Return false.",
       ],
       testCase: {
         input: `head = [3, 2, 0, -4], pos = 1  (tail connects back to index 1)`,
@@ -138,8 +139,8 @@ while right:
     right = right.next
 return True`,
       solutionExplanation: [
-        "Step 1 — find the midpoint using slow/fast pointers. When fast reaches the end, slow is exactly at the middle. This is the entry point of the second half.",
-        "Step 2 — I reverse the second half in place. I thread prev/curr through the nodes from slow onward. Each iteration I save next_node before cutting curr.next loose, point curr.next back to prev, then advance both. The tradeoff: I'm mutating the list, which is usually acceptable in interviews unless asked otherwise.",
+        "Step 1 — find the midpoint using slow/fast pointers. `slow = fast = head` — both start at head because we want slow to land *at* the midpoint, not one before it. The loop condition `while fast and fast.next` lets slow reach the exact middle when fast hits the end or one step from it.",
+        "Step 2 — I reverse the second half in place, starting from slow. The critical line is `next_node = curr.next` — this saves the original next pointer *before* overwriting it with `curr.next = prev`. Once you reassign `curr.next`, the original next is gone; `next_node` is the only reference left. Skipping this save is the most common linked-list bug. The tradeoff: I'm mutating the list, which is usually acceptable in interviews unless asked otherwise.",
         "Step 3 — I compare left (starting at head) against right (the reversed second half, starting at prev). A palindrome means these two halves mirror each other. I walk both forward simultaneously; if any values differ, it's not a palindrome.",
         "I only need to walk as far as right goes — the reversed half is the shorter or equal half. When right runs out, every value matched.",
       ],
@@ -208,12 +209,12 @@ while fast:
 slow.next = slow.next.next
 return dummy.next`,
       solutionExplanation: [
-        "I use a dummy node before head so that slow always has a valid .next to delete — this handles the edge case where we need to remove the head itself.",
+        "`dummy = ListNode(0); dummy.next = head` — the dummy node exists so that slow always has a valid predecessor for deletion. Without it, removing the original head would require `if node == head: head = head.next` as a special case. The dummy absorbs that branch: slow can always do `slow.next = slow.next.next` regardless of which node is targeted. The value 0 is arbitrary — it's never read.",
         "I advance fast exactly n+1 steps from dummy. This creates a gap of n+1 nodes between slow and fast. The key insight: when fast reaches null (the end), slow is exactly one node before the target.",
-        "Why n+1 and not n? Because I want slow to land on the node *before* the target, not *on* the target. I need the predecessor to perform the deletion.",
+        "Why n+1 and not n? Because I want slow to land on the node *before* the target, not *on* the target. I need the predecessor to perform the deletion — a linked list has no back-pointer, so you must arrive at the predecessor first.",
         "I advance both pointers together until fast falls off the end. The gap between them stays constant at n+1 throughout this phase.",
-        "When fast is null, slow.next is the node to remove. I bypass it by setting slow.next = slow.next.next. The deleted node becomes unreachable and is garbage collected.",
-        "I return dummy.next — not head — because if the original head was deleted, dummy.next correctly points to the new head.",
+        "When fast is null, slow.next is the node to remove. I bypass it by setting `slow.next = slow.next.next`. The deleted node becomes unreachable and is garbage collected.",
+        "I return `dummy.next` — not `head` — because if the original head was the deleted node, `head` is now stale. `dummy.next` always reflects the current first real node.",
       ],
       testCase: {
         input: `head = [1, 2, 3, 4, 5], n = 2`,
@@ -297,9 +298,9 @@ while second:
     second = tmp2`,
       solutionExplanation: [
         "This problem is three sub-problems chained together: find the midpoint, reverse the back half, then merge the two halves alternately.",
-        "Step 1 — finding the midpoint. I use the slow/fast trick but with a slightly different loop condition: fast.next and fast.next.next. This ensures slow lands at the *end* of the first half, so I can cut the list cleanly at slow.next.",
-        "Step 2 — I sever the list at the midpoint (slow.next = None) to prevent cycles during reversal, then reverse the second half using the standard prev/curr/next pattern. After the loop, prev points to the new head of the reversed second half.",
-        "Step 3 — I interleave by saving the next pointers of both halves before redirecting. For each pair: first.next gets wired to second, then second.next gets wired back to the original first.next (tmp1). Then I advance both pointers. The loop runs until second is exhausted — first half may have one extra node in odd-length lists, which is fine.",
+        "Step 1 — the loop condition here is `while fast.next and fast.next.next`, not the usual `while fast and fast.next`. This small change makes slow land at the *last node of the first half* rather than the first node of the second half — so `slow.next` is exactly where the second half begins, enabling a clean cut. Choosing the wrong condition shifts the midpoint by one and creates an off-by-one in the merge.",
+        "Step 2 — I sever the list at the midpoint (`slow.next = None`) to prevent cycles during reversal, then reverse the second half. The line `next_node = curr.next` must come before `curr.next = prev` — once you overwrite `curr.next`, the original next is unreachable. This save-before-overwrite pattern is mandatory for in-place reversal. After the loop, `prev` is the new head of the reversed second half.",
+        "Step 3 — I interleave by saving both halves' next pointers (`tmp1`, `tmp2`) before any rewiring. This is the same principle as the reversal save: you cannot read `first.next` after you have already reassigned it. Two saves, then two wires, then two advances — order matters. The loop runs until second is exhausted — first half may have one extra node in odd-length lists, which is correct.",
       ],
       testCase: {
         input: `head = [1, 2, 3, 4, 5]`,
@@ -374,10 +375,10 @@ while prev.next and prev.next.next:
 
 return dummy.next`,
       solutionExplanation: [
-        "I use a dummy node so that prev always has a valid predecessor to rewire. This handles the case where the first pair involves the original head — without dummy, I'd need a special case.",
-        "Each iteration processes one pair: a is the first node, b is the second. The loop condition prev.next and prev.next.next ensures there are at least two nodes left to swap.",
-        "The rewiring is three pointer assignments and must happen in the right order. First, prev.next points to b (b jumps to the front). Then a.next points to whatever came after b (a's new successor). Finally b.next points to a (completing the swap). If you do these out of order, you lose nodes.",
-        "After swapping, a is now the second node of the pair and becomes the new prev. The next iteration's pair starts at a.next (the old b.next). Advancing prev = a is what makes this iterative — each swap leaves prev correctly positioned.",
+        "`dummy = ListNode(0); dummy.next = head` — the dummy node gives `prev` a real predecessor before the list begins. Without it, swapping the very first pair would require special-casing the head: `head = b; ...`. The dummy absorbs that branch so every swap, including the first, goes through the same `prev.next = b` assignment. The value 0 is never read.",
+        "Each iteration processes one pair: `a` is the first node, `b` is the second. The loop condition `prev.next and prev.next.next` ensures there are at least two nodes left — a single trailing node gets left in place, which is correct.",
+        "The rewiring is three pointer assignments and order is mandatory. First, `prev.next = b` (b jumps to the front of the pair). Then `a.next = b.next` (a takes b's old successor — you still have `b.next` because you haven't touched it yet). Finally `b.next = a` (completes the swap). If you set `b.next = a` before `a.next = b.next`, you lose b's original successor permanently.",
+        "After swapping, `a` is now the second node of the pair and becomes the new `prev`. The next iteration's pair starts at `a.next`. Advancing `prev = a` is what makes this iterative — each swap leaves prev correctly positioned for the next pair.",
         "The tradeoff: iterative with dummy is O(1) space. A recursive solution is cleaner to read but uses O(n) stack space. In an interview, I'd mention both and implement the iterative version.",
       ],
       testCase: {

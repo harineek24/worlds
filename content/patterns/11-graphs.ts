@@ -93,11 +93,11 @@ def canFinish(numCourses, prerequisites):
 
     return completed == numCourses`,
       solutionExplanation: [
-        "I'm building a directed graph where an edge b → a means 'b must come before a'. I also track each node's in-degree — the number of unmet prerequisites.",
-        "I seed the queue with every course that has zero prerequisites. These are safe to take immediately and are the starting points of topological processing.",
-        "Each time I process a node, I increment a counter. This counter tells me how many courses I was able to schedule without getting blocked.",
-        "When I finish a course, I reduce the in-degree of every course that depended on it. If any of those drop to zero, they're now unblocked and join the queue.",
-        "If the counter equals numCourses at the end, every course was reachable — no cycle. If it's less, some courses were locked in a cycle and could never be scheduled.",
+        "I'm building a directed graph where an edge b → a means 'b must come before a'. I use `defaultdict(list)` for the adjacency list — accessing a missing key in a plain dict raises KeyError, but defaultdict auto-initializes missing keys with an empty list, so `graph[b].append(a)` just works without a guard.",
+        "I track each node's in-degree using a dict comprehension: `{i: 0 for i in range(numCourses)}`. This is more readable and Pythonic than initializing an empty dict and filling it in a loop — the entire structure is created in one expression.",
+        "I seed the queue with `deque([n for n in in_degree if in_degree[n] == 0])`. The list comprehension filters all zero-in-degree nodes in one line; wrapping it in deque gives O(1) popleft instead of O(n) for a plain list. These are courses safe to take immediately.",
+        "Each time I process a node, I increment a counter. When I finish a course, I reduce the in-degree of every course that depended on it. If any drop to zero, they're now unblocked and join the queue.",
+        "If the counter equals numCourses at the end, every course was reachable — no cycle. If it's less, some courses were locked in a cycle and could never be scheduled. The count is the cycle detector.",
       ],
       testCase: {
         input: `numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]`,
@@ -164,9 +164,9 @@ def findOrder(numCourses, prerequisites):
 
     return order if len(order) == numCourses else []`,
       solutionExplanation: [
-        "The setup is identical to Course Schedule — directed graph with in-degree tracking. The only difference is that now I need to record the order, not just count.",
-        "Instead of a counter, I append each processed node to an `order` list. Kahn's algorithm naturally produces a valid topological order — each node is appended only after all its prerequisites.",
-        "The cycle check is the same: if the order list is shorter than numCourses, some nodes were stuck in a cycle and never processed. I return an empty list in that case.",
+        "The setup is identical to Course Schedule — `defaultdict(list)` for the adjacency list (auto-initializes missing keys, no KeyError), and a dict comprehension `{i: 0 for i in range(numCourses)}` for in-degrees (one expression, no loop needed).",
+        "The queue is seeded with `deque([n for n in in_degree if in_degree[n] == 0])`: the list comprehension builds the zero-in-degree frontier, and deque wraps it for O(1) popleft. The only difference from Course Schedule is what I do as I process nodes — instead of incrementing a counter, I append each node to an `order` list. Kahn's algorithm naturally produces a valid topological order because a node is appended only after all its prerequisites have been processed.",
+        "The cycle check is the same: if the order list is shorter than numCourses, some nodes were permanently stuck above in-degree 0 (trapped in a cycle) and never entered the queue. I return an empty list in that case.",
       ],
       testCase: {
         input: `numCourses = 4, prerequisites = [[1,0],[2,0],[3,1],[3,2]]`,
@@ -230,10 +230,10 @@ def findOrder(numCourses, prerequisites):
 
     return count`,
       solutionExplanation: [
-        "I scan every cell in the grid. Whenever I find an unvisited land cell ('1'), I've discovered a new island — I increment the count.",
-        "I immediately call DFS from that cell to flood-fill the entire island. The DFS visits every connected land cell and marks it '0' so it won't be counted again.",
-        "The base case for DFS is any out-of-bounds cell or any cell that isn't '1'. This naturally stops the flood fill at water and at the grid boundary.",
-        "Marking cells '0' in-place is the key — it serves as our visited set without extra memory. After DFS returns, the entire island has been erased, so the scan continues to the next undiscovered island.",
+        "I scan every cell in the grid. Whenever I find an unvisited land cell ('1'), I've discovered a new island — I increment the count and immediately DFS from that cell to flood-fill the entire island.",
+        "The DFS visits every connected land cell and marks it '0' in-place. This in-place mutation serves as the visited set — no extra data structure needed. A plain dict or set would require O(m×n) extra space; mutating the grid is O(1).",
+        "The base case for DFS checks bounds and cell value in a single compound condition. This naturally stops the flood fill at water and at the grid boundary — the recursion simply returns without doing anything.",
+        "After DFS returns, the entire island has been erased from the grid, so the outer scan continues cleanly to the next undiscovered island. Three separate flood fills means three islands.",
       ],
       testCase: {
         input: `grid = [
@@ -301,10 +301,10 @@ def pacificAtlantic(heights):
 
     return [[r,c] for r in range(rows) for c in range(cols) if (r,c) in pac and (r,c) in atl]`,
       solutionExplanation: [
-        "The trick is to reverse the problem. Instead of simulating water flowing down, I flow upward from each ocean — asking 'which cells can reach this ocean?' by only stepping to neighbors that are equal or higher.",
-        "I run multi-source BFS from all Pacific-border cells simultaneously. Every cell BFS can reach while going uphill is reachable by the Pacific.",
-        "I do the same BFS from all Atlantic-border cells. Now I have two sets: cells reachable from Pacific, and cells reachable from Atlantic.",
-        "Any cell in both sets is an answer — water there can flow downhill to reach either ocean. I just intersect the two sets.",
+        "The trick is to reverse the problem. Instead of simulating water flowing down from every cell (which would be O(m×n) BFS each), I flow upward from each ocean's border — asking 'which cells can reach this ocean?' by only stepping to neighbors that are equal or higher height.",
+        "I run multi-source BFS from all Pacific-border cells simultaneously. `visited.update(starts)` marks all seed cells in one call before the loop begins. Every cell BFS can reach while going uphill (heights[nr][nc] >= heights[r][c]) corresponds to a cell from which water would flow downhill to the Pacific.",
+        "I do the same BFS from all Atlantic-border cells. The BFS function is shared — `pac` and `atl` are passed as the `visited` set argument, so the same logic fills both reachable sets.",
+        "The final answer is a list comprehension over all cells: `[[r,c] for r in range(rows) for c in range(cols) if (r,c) in pac and (r,c) in atl]`. Using sets for pac and atl makes each membership check O(1) — if these were lists, the intersection would be O(m×n) per cell.",
       ],
       testCase: {
         input: `heights = [[1,2,2,3,5],[3,2,3,4,4],[2,4,5,3,1],[6,7,1,4,5],[5,1,1,2,4]]`,

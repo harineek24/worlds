@@ -71,9 +71,9 @@ def findKthLargest(nums, k):
             heapq.heappop(heap)
     return heap[0]`,
       solutionExplanation: [
-        "I maintain a min-heap of exactly k elements. The invariant is: at all times, the heap holds the k largest elements seen so far.",
-        "For each new number I push it onto the heap. If the heap now has k+1 elements, one of them is too small to be in the top-k — and because it's a min-heap, the smallest is at the root. I pop it immediately.",
-        "After processing every number, the heap holds exactly the k largest elements. The root — heap[0] — is the smallest of those k elements, which is the kth largest overall. The tradeoff vs. sorting: O(n log k) time instead of O(n log n), and O(k) space instead of O(n).",
+        "I maintain a min-heap of exactly k elements. The invariant is: at all times, the heap holds the k largest elements seen so far. `import heapq` is used rather than sorting because the heap maintains order incrementally — each push/pop is O(log k). Sorting the whole list after every insertion would be O(n log n) per step.",
+        "For each new number I push it onto the heap. If the heap now has k+1 elements, one of them is too small to be in the top-k — and because it's a min-heap, the smallest is at the root. I pop it immediately. `heapq.heappush` and `heapq.heappop` are chosen over maintaining a sorted list because they preserve the heap invariant in O(log k) instead of O(k) for an insertion into a sorted list.",
+        "After processing every number, the heap holds exactly the k largest elements. I read the answer with `heap[0]` — peeking, not popping. `heap[0]` gives the root in O(1) without removing it; `heappop` would destroy the heap structure and is unnecessary here. The root is the smallest of the k largest elements, which is the kth largest overall. Tradeoff vs. sorting: O(n log k) time instead of O(n log n), and O(k) space instead of O(n).",
       ],
       testCase: {
         input: "nums = [3, 2, 1, 5, 6, 4], k = 2",
@@ -123,9 +123,9 @@ def kClosest(points, k):
             heapq.heappop(heap)
     return [[x, y] for _, x, y in heap]`,
       solutionExplanation: [
-        "I want to keep the k smallest distances, but Python's heap is a min-heap — it evicts the smallest. If I store distances as-is, I'd evict the closest points, which is backwards.",
-        "The fix: negate the distance before pushing. Now the heap is effectively a max-heap by distance. The root is always the farthest point among the k candidates — the one most likely to be displaced by a closer newcomer.",
-        "When the heap exceeds size k, I pop the root — the farthest point in the current set. This maintains the invariant: heap always holds the k closest points seen so far. I skip sqrt() because comparing x²+y² is equivalent to comparing distances and avoids floating point.",
+        "I want to keep the k smallest distances, but Python's `heapq` is a min-heap only — it always surfaces the smallest element. If I store distances as-is, `heappop` would evict the closest points, which is backwards for this problem.",
+        "The fix: `heapq.heappush(heap, -dist, x, y)` — negate the distance before pushing. Python's `heapq` has no max-heap mode and no `key=` parameter, so negating values is the idiomatic way to turn a min-heap into a max-heap without writing a custom class. The root is now the farthest point among the k candidates.",
+        "When the heap exceeds size k, I pop the root — the farthest point in the current set (most negative negated value = largest actual distance). This maintains the invariant: heap always holds the k closest points seen so far. I skip `sqrt()` because comparing x²+y² is equivalent to comparing Euclidean distances and avoids floating-point overhead. I read the result with `heap[0]` peeking implicitly via list comprehension — no destructive pop needed at the end.",
       ],
       testCase: {
         input: "points = [[1,3],[-2,2],[5,8],[0,1]], k = 2",
@@ -172,9 +172,9 @@ def findClosestElements(arr, k, x):
             hi = mid
     return arr[lo:lo + k]`,
       solutionExplanation: [
-        "I'm binary-searching for the left boundary of the best window of k elements. The search space is indices 0 through len(arr)-k — those are all valid starting positions for a window of width k.",
-        "At each mid, I compare two distances: how far x is from the left edge of the window (arr[mid]) vs. how far x is from the element just beyond the right edge (arr[mid+k]). This tells me whether the window should slide right or stay.",
-        "If x - arr[mid] > arr[mid+k] - x, the right neighbor is closer to x than the left edge, so sliding the window right will improve it — set lo = mid+1. Otherwise, hi = mid. The tradeoff: O(log(n-k) + k) vs. a heap approach's O(n log k). Binary search wins when n is large and k is small.",
+        "I'm binary-searching for the left boundary of the best window of k elements. The search space is indices 0 through len(arr)-k — those are all valid starting positions for a window of width k. This problem uses `bisect` (binary search) rather than `heapq` because the array is already sorted — we can exploit that structure directly instead of building a heap.",
+        "At each mid, I compare two distances: how far x is from the left edge of the window (arr[mid]) vs. how far x is from the element just beyond the right edge (arr[mid+k]). This tells me whether the window should slide right or stay. The `//` integer division for `mid` is deliberate — it avoids floating-point and matches Python's floor semantics.",
+        "If x - arr[mid] > arr[mid+k] - x, the right neighbor is closer to x than the left edge, so sliding the window right will improve it — set lo = mid+1. Otherwise, hi = mid. The strict `>` (not `>=`) handles ties: equal distances default to hi = mid, which keeps the left (smaller) elements — matching the problem's tiebreak rule. Tradeoff vs. a heap: O(log(n-k) + k) here vs. O(n log k) with a heap. Binary search wins when n is large and k is small.",
       ],
       testCase: {
         input: "arr = [1,2,3,4,5], k = 4, x = 3",
@@ -225,9 +225,9 @@ def mergeKLists(lists):
 
     return dummy.next`,
       solutionExplanation: [
-        "I seed the heap with the head of each list — one representative per list. The heap tuple is (value, list_index, node). I include list_index as a tiebreaker because Python will try to compare nodes if values are equal, and ListNode isn't comparable.",
-        "I use a dummy head node to simplify the linked list construction — I never have to special-case the first node.",
-        "Each iteration: pop the global minimum from the heap, attach it to the result list, then push that node's successor (if it exists) from the same list. This is the key insight — each list contributes exactly one node to the heap at a time, keeping heap size ≤ k.",
+        "I seed the heap with the head of each list — one representative per list. `import heapq` is used here because we're repeatedly extracting the global minimum across k live cursors — exactly what a heap is built for. A naive scan across all k list heads each iteration would be O(nk); the heap reduces that to O(n log k). The heap tuple is (value, list_index, node). I include list_index as a tiebreaker because Python will try to compare nodes if values are equal, and ListNode isn't comparable — the tuple comparison short-circuits at list_index before reaching node.",
+        "I use a dummy head node to simplify the linked list construction — I never have to special-case the first node. This is a standard Python idiom for building linked lists: start with a throwaway node, then return dummy.next.",
+        "Each iteration: `heapq.heappop(heap)` removes and returns the global minimum — O(log k). I attach the popped node to the result list, then push that node's successor (if it exists) from the same list. This is the key insight — each list contributes exactly one node to the heap at a time, keeping heap size ≤ k. I never peek with `heap[0]` here because I always want to consume and replace the minimum.",
         "Time: O(n log k) where n is total nodes. Each node is pushed and popped once, and heap operations are O(log k). Space: O(k) for the heap.",
       ],
       testCase: {
@@ -299,10 +299,10 @@ class MedianFinder:
             return -self.lo[0]
         return (-self.lo[0] + self.hi[0]) / 2`,
       solutionExplanation: [
-        "I split the stream into two halves: lo holds the smaller half as a max-heap (negated), hi holds the larger half as a min-heap. The invariant: every element in lo is ≤ every element in hi.",
-        "I always push to lo first. Then I enforce the ordering invariant — if lo's maximum exceeds hi's minimum, the boundary between halves is in the wrong place, so I move the offending element to hi.",
-        "I then enforce the size invariant: lo can have at most one more element than hi (to handle odd counts). If either heap is too large, I rebalance by moving the boundary element.",
-        "findMedian is O(1): if sizes are unequal, the extra element in lo is the median. If equal, average the two boundary elements. The tradeoff: O(log n) per insertion, O(1) per query — perfect for a stream where you query often.",
+        "I split the stream into two halves: `lo` holds the smaller half as a max-heap (stored negated), `hi` holds the larger half as a min-heap (stored as-is). The invariant: every element in lo is ≤ every element in hi. Two heaps are used instead of one because a single heap can only give you the min or max, not both boundaries simultaneously — and the median sits at the boundary.",
+        "I always push to lo first using `heapq.heappush(self.lo, -num)`. The negation is the Python idiom for a max-heap: since `heapq` only supports min-heap, negating all values means the largest real value becomes the most negative stored value and floats to the root. Reading the max is then `-self.lo[0]` — peeking with `heap[0]` rather than popping, because we only want to inspect the boundary, not remove it. Then I enforce the ordering invariant — if lo's maximum exceeds hi's minimum, the boundary between halves is in the wrong place, so I move the offending element to hi.",
+        "I then enforce the size invariant: lo can have at most one more element than hi (to handle odd counts). If either heap is too large, I rebalance by moving the boundary element. Each move uses `heapq.heappop` (destructive, O(log n)) followed by `heapq.heappush` (O(log n)) — unavoidable here since we're actually transferring elements between heaps.",
+        "findMedian is O(1): if sizes are unequal, the extra element in lo is the median, read with `-self.lo[0]` (peek, not pop). If equal, average the two boundary values. The tradeoff: O(log n) per insertion, O(1) per query — ideal for a stream where queries are frequent.",
       ],
       testCase: {
         input: `addNum(1), addNum(2), findMedian(), addNum(3), findMedian()`,

@@ -60,7 +60,7 @@ heapq.heapify(heap)`,
             return False
     return True`,
       solutionExplanation: [
-        "I'm sorting by start time first because that's the only way a linear scan makes sense — if I don't sort, I'd have to compare every pair, which is O(n²). Sorting costs O(n log n) and makes the rest O(n).",
+        "I'm sorting by start time first because that's the only way a linear scan makes sense — if I don't sort, I'd have to compare every pair, which is O(n²). Sorting costs O(n log n) and makes the rest O(n). I use `intervals.sort(key=lambda x: x[0])` with a lambda rather than a named function because this is a throwaway, one-line key: a named function would force the reader to scroll elsewhere to understand something trivially simple. The `x[0]` extracts index 0 — the start time — from each two-element list. I use index access rather than unpacking because sort's `key=` receives a whole element, not a pair.",
         "I'm iterating from the second interval onward and comparing each interval's start to the previous interval's end. If the next meeting starts before the current one ends, we have a conflict and can return false immediately.",
         "If we complete the loop without finding any conflict, the person can attend all meetings — return true.",
       ],
@@ -123,8 +123,8 @@ heapq.heapify(heap)`,
     return result`,
       solutionExplanation: [
         "I'm splitting the problem into three phases: intervals before the new one (no overlap), intervals that overlap with the new one (merge them in), and intervals after the new one (no overlap). This three-phase approach avoids conditionals inside a single loop.",
-        "In phase one, I keep appending intervals whose end is strictly before the new interval's start. These can never overlap with anything to come.",
-        "In phase two, I merge every interval that overlaps with new_interval by expanding new_interval's bounds to cover both. The overlap condition is: the existing interval starts at or before new_interval ends.",
+        "In phase one, I keep appending intervals whose end is strictly before the new interval's start. These can never overlap with anything to come. I use `result.append(intervals[i])` — Python's list `.append()` is O(1) amortized because lists over-allocate internally. I use a plain list as a dynamic array here, not a deque, because I only ever add to the end and read from the end — no front operations are needed.",
+        "In phase two, I merge every interval that overlaps with new_interval by expanding new_interval's bounds to cover both. The overlap condition is: the existing interval starts at or before new_interval ends. I mutate new_interval in place (`new_interval[0] = min(...)`) rather than creating a new list each iteration — this keeps the merge loop allocation-free.",
         "After the merge loop, I append the fully-merged new_interval once, then dump all remaining intervals. These are guaranteed non-overlapping since the input was already sorted and non-overlapping.",
       ],
       testCase: {
@@ -188,7 +188,7 @@ heapq.heapify(heap)`,
 
     return removals`,
       solutionExplanation: [
-        "I'm sorting by end time, not start time — this is the key greedy insight. By always keeping the interval that ends earliest, I leave the most room for future intervals. It's the same logic as the classic activity selection problem.",
+        "I'm sorting by end time, not start time — this is the key greedy insight. By always keeping the interval that ends earliest, I leave the most room for future intervals. It's the same logic as the classic activity selection problem. I write `intervals.sort(key=lambda x: x[1])` with `x[1]` to extract the end time (index 1). Using a lambda instead of a named function keeps the intent inline — the reader sees the sort criterion right where the sort happens. `operator.itemgetter(1)` would also work and is slightly faster, but a lambda is more universally readable without importing anything.",
         "I track prev_end as the end of the last interval I decided to keep. If the current interval's start is at or after prev_end, there's no overlap — I keep it and update prev_end.",
         "If there's an overlap (start < prev_end), I must remove one. The greedy choice is to remove the one with the later end — which is the current one, since I sorted by end. So I just increment removals without updating prev_end.",
         "This greedy approach is provably optimal: keeping the earliest-ending interval at every step maximizes the count of intervals we can keep, which minimizes removals.",
@@ -253,10 +253,10 @@ heapq.heapify(heap)`,
 
     return result`,
       solutionExplanation: [
-        "I'm sorting by start time so that any intervals that could overlap are adjacent in the list. After sorting, I only need to compare the current interval with the last interval in result — no interval further back can be affected.",
+        "I'm sorting by start time so that any intervals that could overlap are adjacent in the list. After sorting, I only need to compare the current interval with the last interval in result — no interval further back can be affected. `intervals.sort(key=lambda x: x[0])` uses a lambda because defining a named function like `def get_start(x): return x[0]` for something this simple is over-engineering — it would force a reader to look elsewhere for a one-liner. The lambda keeps the key criterion right next to the sort call.",
         "I initialize result with the first interval. This avoids an empty-list edge case and gives a starting point for comparisons.",
-        "For each subsequent interval, I check if it overlaps the last merged interval. The overlap condition is: current start <= last merged end. If so, I extend the last interval's end to the max of both ends — this handles the case where one interval is fully contained in another.",
-        "If there's no overlap, the current interval is entirely to the right of everything in result. I append it as a new distinct interval.",
+        "For each subsequent interval, I check if it overlaps the last merged interval using `result[-1]`. I use `result[-1]` instead of `result[len(result)-1]` — Python's negative indexing reads from the end of the list, and `[-1]` is the idiomatic way to say 'last element'. It's not just shorter — it signals intent: I always want the most recently added interval, whatever the list's length is. If there's overlap, I extend via `result[-1][1] = max(result[-1][1], end)` — again operating directly on the last element without copying it out.",
+        "If there's no overlap, the current interval is entirely to the right of everything in result. I `result.append([start, end])` — using a plain list as a dynamic array is appropriate here since I only grow from the tail and read from the tail. Python list `.append()` is O(1) amortized, which is all we need.",
       ],
       testCase: {
         input: "intervals = [[1,3],[2,6],[8,10],[15,18]]",
@@ -319,10 +319,10 @@ heapq.heapify(heap)`,
 
     return free_time`,
       solutionExplanation: [
-        "I'm flattening all employee schedules into a single list of intervals. Free time is any gap in the combined schedule — it doesn't matter which employee owns which interval, only whether someone is working at any given moment.",
-        "After flattening, I sort by start time and merge all overlapping intervals using the standard merge pattern. The merged list represents every moment when at least one employee is working.",
+        "I'm flattening all employee schedules into a single list of intervals. Free time is any gap in the combined schedule — it doesn't matter which employee owns which interval, only whether someone is working at any given moment. A heap-based approach (pushing one interval per employee and always advancing the smallest) would be more memory-efficient for huge inputs since it avoids materializing the full flat list. But the flat-then-sort approach is simpler to reason about — correct for interview purposes, and the O(n log n) cost is the same.",
+        "After flattening, I sort by start time using `all_intervals.sort(key=lambda x: x[0])`. The lambda extracts index 0 (start time) from each interval. This is a named-function-free approach: the lambda lives right next to the sort call, making the intent immediately obvious without requiring the reader to look elsewhere. Then I merge all overlapping intervals using the standard merge pattern. The `merged[-1]` negative index lets me always address the last merged interval without computing its position — it's the idiomatic Python way to say 'I only care about the tail of this list'.",
         "The free time intervals are precisely the gaps between consecutive merged intervals. If merged[i] ends at time A and merged[i+1] starts at time B, then [A, B] is a window when nobody is working.",
-        "I use `all_intervals[0][:]` (a copy) when seeding merged so I don't mutate the original input while extending merged[-1][1].",
+        "I use `all_intervals[0][:]` (a slice copy) when seeding merged so I don't mutate the original input while extending `merged[-1][1]`. Without the copy, `merged[-1]` and `all_intervals[0]` would point to the same list object, and modifying the end time would silently corrupt the input.",
       ],
       testCase: {
         input: "schedules = [[[1,3],[6,7]],[[2,4]],[[2,5],[9,12]]]",

@@ -57,12 +57,12 @@ while left < right:
     right -= 1
 return True`,
       solutionExplanation: [
-        "First I clean the input — lowercase everything and strip out anything that isn't a letter or digit. This gives me a pure sequence to compare.",
-        "I place one pointer at the start and one at the end. Since a palindrome is symmetric, these two positions should always match.",
-        "I run the loop as long as the pointers haven't crossed — once they meet in the middle, every pair has been checked.",
-        "If the characters at left and right don't match, I can immediately return false. No need to continue — the symmetry is already broken.",
-        "If they match, I move both pointers one step inward and check the next pair.",
-        "If I make it through the entire loop without returning false, every pair matched — it's a palindrome.",
+        "First I clean the input — lowercase everything and strip out anything that isn't a letter or digit. This gives me a pure sequence to compare. I use a list comprehension here instead of a for-loop that builds a list manually, because it's a single expression — more readable, and Python can optimize the construction slightly better for simple filters like this.",
+        "I use `isalnum()` on each character instead of writing `c.isalpha() or c.isdigit()` — it does both checks in one call and also handles unicode edge cases automatically, so there's no risk of accidentally letting through a unicode letter-like character that `isalpha()` would have caught but a manual range check wouldn't.",
+        "I place one pointer at the start and one at the end. Since a palindrome is symmetric, these two positions should always match. I use a while loop instead of a for loop because the termination condition is dynamic — both pointers move inward but the loop ends when they meet, not after a fixed number of steps, so I need a condition check at each iteration rather than a fixed range.",
+        "If the characters at left and right don't match, I can immediately return False. No need to continue — the symmetry is already broken. Returning early here avoids scanning the rest of the string pointlessly.",
+        "If they match, I move both pointers one step inward using `+= 1` and `-= 1` on separate lines rather than a tuple assignment — both are equivalent here, but the separate lines make the intent clear: left moves right, right moves left.",
+        "If I make it through the entire loop without returning False, every pair matched — it's a palindrome. I return True at the function level rather than inside the loop so this only executes once all pairs are confirmed.",
       ],
       testCase: {
         input: `s = "A man, a plan, a canal: Panama"`,
@@ -117,11 +117,11 @@ while left < right:
     else:
         right -= 1`,
       solutionExplanation: [
-        "I start with the widest possible window — leftmost and rightmost elements. This gives me the full range to work with.",
-        "I sum the two values the pointers are pointing at. This is the candidate answer for this window.",
-        "If the sum matches the target exactly, I've found the pair. I add 1 to each index because the problem asks for 1-indexed positions.",
-        "If the sum is too small, I need a larger value. Since the array is sorted, moving left rightward is the only way to increase the sum without touching right.",
-        "If the sum is too large, I need a smaller value. Moving right leftward decreases the sum. The sorted order guarantees this is the right move.",
+        "I start with the widest possible window — leftmost and rightmost elements. This gives me the full range to work with. I use a while loop instead of a for loop because the termination condition is dynamic — the two pointers move at different rates depending on what we find at each step, so I need a condition check rather than a fixed iteration count.",
+        "I sum the two values the pointers point at and store the result in a local variable `s`. This is the candidate answer for this window — computing it once and reusing it avoids recalculating in each branch of the if-elif-else.",
+        "If the sum matches the target exactly, I've found the pair. I return `[left + 1, right + 1]` as a list literal rather than a tuple because the problem specifies a list return — and the `+ 1` offset is applied inline rather than in a separate step to keep the return concise.",
+        "If the sum is too small, I need a larger value. Since the array is sorted, moving left rightward is the only way to increase the sum without touching right. I use `left += 1` rather than reassigning `left = left + 1` — the augmented assignment is idiomatic Python and makes the directional intent obvious.",
+        "If the sum is too large, I need a smaller value. Moving right leftward decreases the sum — the sorted order guarantees this is the only correct move. I use `right -= 1` for the same reason: augmented assignment is cleaner and signals 'shrink from the right'.",
       ],
       testCase: {
         input: `numbers = [2, 7, 11, 15], target = 9`,
@@ -166,13 +166,13 @@ while left < right:
         right -= 1
 return max_water`,
       solutionExplanation: [
-        "I start at the widest possible container — outermost walls. Width can only decrease from here, so I need to find height gains that compensate.",
-        "I track the best area seen so far. Every iteration is a candidate.",
-        "Area is width times height. Width is the distance between the two pointers. Height is capped by the shorter wall — water spills over anything shorter.",
-        "I update the running maximum. I'm not stopping early because a wider container with short walls might still lose to a narrower one with tall walls.",
-        "The shorter wall is the bottleneck — it's capping the height. Moving the shorter wall inward is the only move that could possibly find a better container. Moving the taller wall inward would only make things worse.",
-        "Same logic — move the shorter wall. If they're equal, either move works.",
-        "Return the best area found across all windows.",
+        "I start at the widest possible container — outermost walls. Width can only decrease from here, so I need to find height gains that compensate. I use a while loop instead of a for loop because both pointers move independently toward each other — neither has a fixed step size, so a condition-based loop is the right tool.",
+        "I initialize `max_water = 0` as a plain integer rather than using `float('-inf')` — because area is always non-negative here, 0 is a safe and semantically clear starting value.",
+        "Area is width times height. I use `min(height[left], height[right])` rather than an if-else to select the shorter wall — `min()` is a single expression that communicates 'the bottleneck' directly. Width is `right - left`, the distance between the two pointers.",
+        "I update the running maximum using `max(max_water, water)` rather than an if statement — `max()` as an expression assigned back to `max_water` is idiomatic Python and keeps the update to one line without a conditional branch.",
+        "The shorter wall is the bottleneck — it's capping the height. Moving the shorter wall inward is the only move that could possibly find a better container. Moving the taller wall inward could only reduce width without any chance of increasing height, so that direction is provably suboptimal.",
+        "If they're equal, either move works — the code falls into the `else` branch and moves right, which is a valid convention. The choice doesn't affect correctness.",
+        "Return `max_water` — the best area found across all evaluated windows.",
       ],
       testCase: {
         input: `height = [1, 8, 6, 2, 5, 4, 8, 3, 7]`,
@@ -241,12 +241,12 @@ for i in range(len(nums) - 2):
             right -= 1
 return result`,
       solutionExplanation: [
-        "I sort the array first. Sorting is what makes two pointers viable — it gives us directionality. If the sum is too small, we know to move left rightward; too large, move right leftward. Without sorted order, we'd have no basis for that decision.",
-        "I iterate over each element as the fixed 'anchor' of the triplet. I only go to len-2 because I need at least two more elements for the pair.",
-        "Duplicate skip for the anchor: if nums[i] equals nums[i-1], this anchor value has already been explored fully. Reprocessing it would generate duplicate triplets in the result.",
-        "For each fixed anchor, I run the standard two-pointer search on the remaining subarray to find a pair that sums to -nums[i].",
-        "When I find a valid triplet, I record it and then skip over duplicates on both sides before moving the pointers. This is the deduplication step — without it, equal adjacent values would produce identical triplets.",
-        "If the sum is negative, the pair is too small. Moving left rightward increases the sum. If positive, moving right leftward decreases it.",
+        "I sort the array first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which allocates a new list. Since we don't need to preserve the original order for this problem, in-place is the right call. Sorting is also what makes two pointers viable: it gives us directionality so that 'sum too small → move left rightward' and 'sum too large → move right leftward' are provably correct moves.",
+        "I iterate over each element as the fixed anchor using a for loop with `range(len(nums) - 2)` — I stop at len-2 because I need at least two more elements to the right for the pair. A for loop is correct here because the anchor advances exactly one position per outer iteration — no conditional step size.",
+        "Duplicate skip for the anchor: if `nums[i] == nums[i-1]`, this anchor value has already been explored fully. I check `i > 0` first to avoid an index-out-of-bounds on the first iteration — it's a guard condition, not the main check.",
+        "For each fixed anchor, I initialize `left` and `right` for a fresh two-pointer search on the remaining subarray. I use a while loop here because the two inner pointers move at different rates depending on the sum — a for loop with a fixed range couldn't express the variable termination.",
+        "When I find a valid triplet, I `append` it to `result` as a list literal `[nums[i], nums[left], nums[right]]` rather than a tuple — the problem asks for a list of lists, so I match the expected type exactly. Then I use inner while loops to skip adjacent duplicates on both sides before advancing the pointers, which is the deduplication step.",
+        "If the sum is negative, the pair is too small — `left += 1` moves to a larger value. If positive, `right -= 1` moves to a smaller one. The sorted order guarantees these are the correct directions. Using `elif` rather than separate `if` checks is important: only one pointer should move per iteration.",
       ],
       testCase: {
         input: `nums = [-1, 0, 1, 2, -1, -4]`,
@@ -311,11 +311,11 @@ for k in range(len(nums) - 1, 1, -1):
             left += 1
 return count`,
       solutionExplanation: [
-        "I sort first. The key insight is that for a sorted triple (a ≤ b ≤ c), only one inequality matters: a + b > c. The other two (a + c > b and b + c > a) are automatically satisfied because c is the largest. This reduces a 3-condition check to one.",
-        "I fix the largest side k starting from the right end, iterating backward. For each fixed largest side, I run two pointers on everything to its left.",
-        "If nums[left] + nums[right] > nums[k], then every pair from left to right-1 also satisfies this inequality with right (since they're all larger than nums[left]). That's right - left valid triangles in one shot — this is the O(n²) speedup.",
-        "After counting, I move right inward to try the next candidate for the second-largest side.",
-        "If the sum is too small, nums[left] is the bottleneck. Moving it rightward is the only way to increase the sum.",
+        "I sort first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which would allocate a new list. The key insight after sorting: for a triple (a ≤ b ≤ c), only one inequality matters: a + b > c. The other two are automatically satisfied because c is the largest. This reduces a 3-condition check to one.",
+        "I fix the largest side using `k` as the outer loop variable, iterating backward with `range(len(nums) - 1, 1, -1)`. I use a for loop for the outer iteration because `k` always advances by exactly one position — unlike the inner two pointers which move conditionally. Starting from the right ensures the fixed element is always the true maximum of the triple.",
+        "If `nums[left] + nums[right] > nums[k]`, then every value between left and right-1 also satisfies the inequality with `right` (since the array is sorted and all those values are ≥ nums[left]). So I count `right - left` valid triangles in one step rather than iterating through them — this is the O(n²) speedup over the naïve O(n³) approach.",
+        "After bulk-counting, I move `right` inward with `right -= 1` to try the next candidate for the second-largest side. I don't need to reset `left` — valid pairs from the previous `right` are still valid candidates for the new, smaller `right`.",
+        "If the sum is too small, `nums[left]` is the bottleneck — it's the smaller of the two remaining sides. Moving `left` rightward with `left += 1` is the only way to increase the sum, because `right` is already as large as it can be for this inner loop.",
       ],
       testCase: {
         input: `nums = [2, 2, 3, 4]`,
@@ -365,9 +365,9 @@ while write < len(nums):
     nums[write] = 0
     write += 1`,
       solutionExplanation: [
-        "I use a write pointer that tracks the next position to place a non-zero value. It only advances when we've written something — so it always points at the first 'gap' that needs filling.",
-        "The read pointer scans the whole array. Every time it finds a non-zero value, it copies it to the write position. Non-zeros are compacted to the front in their original relative order.",
-        "After the scan, everything from write onward is leftover space that should be zero. I fill it in explicitly. This two-pass approach is clean and avoids swap logic.",
+        "I use a `write` pointer initialized to 0 — a plain integer, not a list index object or sentinel. It tracks the next position to place a non-zero value and only advances when we've actually written something, so it always points at the first unfilled slot. I use a for loop for the read pointer — `for read in range(len(nums))` — because the read pointer advances exactly one step per element regardless of what it finds. Only the write pointer moves conditionally.",
+        "Every time the read pointer finds a non-zero value, I copy it to `nums[write]` using direct index assignment rather than `list.append` or any other method — because the constraint is in-place with no extra list, I'm reusing the existing array slots. Non-zeros are compacted to the front in their original relative order because I copy them left-to-right without rearranging.",
+        "After the read scan, everything from `write` to the end is leftover space from elements that were moved forward. I fill it with zeros using a second while loop — `while write < len(nums)` — rather than a slice assignment like `nums[write:] = [0] * (len(nums) - write)`, because the while loop is O(1) space and makes the fill logic explicit: advance `write` and zero each position one at a time.",
       ],
       testCase: {
         input: `nums = [0, 1, 0, 3, 12]`,

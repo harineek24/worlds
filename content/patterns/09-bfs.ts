@@ -89,7 +89,8 @@ def level_order(root):
     return result`,
       solutionExplanation: [
         "I'm seeding the queue with just the root — that's level 0. If the tree is empty I return early because there's nothing to process.",
-        "I'm snapshotting `len(queue)` at the top of each `while` iteration. That count tells me exactly how many nodes belong to the current level before I start enqueuing the next one.",
+        "`from collections import deque` + `queue = deque([root])` — I use deque instead of a plain list because `list.pop(0)` is O(n): Python has to shift every remaining element left. `deque.popleft()` is O(1) because a deque is a doubly-linked structure with a direct pointer to the front. For a tree with thousands of nodes, that difference compounds every level.",
+        "I'm snapshotting `len(queue)` at the top of each `while` iteration. That count tells me exactly how many nodes belong to the current level before I start enqueuing the next one. Without the snapshot, as I push children during the loop, `len(queue)` would grow — I'd drift into processing next-level nodes as if they were part of the current wave.",
         "Inside the inner loop I pop a node, record its value, then push its children. The children land in the queue after the current level's nodes, so the snapshot keeps the levels cleanly separated.",
         "I append the completed `level` list to `result` after the inner loop finishes — that's when the entire wave has been processed.",
       ],
@@ -163,6 +164,7 @@ def right_side_view(root):
     return result`,
       solutionExplanation: [
         "I'm doing standard level-order BFS — snapshot the level size, drain exactly that many nodes, enqueue their children.",
+        "`level_size = len(queue)` snapshot — I freeze the count before the inner loop because the queue grows as I enqueue children. If I checked `len(queue)` inside the loop instead of snapshotting, I'd process next-level nodes inside the current level's iteration, breaking level separation entirely.",
         "I'm using the loop index `i` to detect the last node in each level: when `i == level_size - 1`, that's the rightmost node processed, so I record it.",
         "By appending only the last node of each level, I naturally get the right side view without any extra bookkeeping.",
       ],
@@ -243,9 +245,10 @@ def oranges_rotting(grid):
     return minutes if fresh == 0 else -1`,
       solutionExplanation: [
         "I'm seeding the queue with ALL rotten oranges at once — that's the multi-source trick. Every rotten orange is a simultaneous starting point, so BFS spreads from all of them in parallel rather than one at a time.",
+        "`from collections import deque` with `queue.popleft()` — each BFS step processes a cell at the front of the queue. A list would make every `pop(0)` O(n), which for a large grid means O(rows×cols) shifts per dequeue. Deque keeps every operation O(1).",
         "I'm counting fresh oranges upfront. This lets me detect impossibility: if fresh > 0 after BFS, some oranges were isolated.",
-        "Each BFS level represents one minute. I snapshot the queue length to process exactly the oranges that turned rotten in the previous minute, then spread to their fresh neighbors.",
-        "When a fresh neighbor is infected, I mutate the grid to 2 to mark it visited and decrement `fresh`. Using the grid itself as the visited set avoids a separate data structure.",
+        "Each BFS level represents one minute. I snapshot the queue length (`level_size = len(queue)`) to process exactly the oranges that turned rotten in the previous minute, then spread to their fresh neighbors. The snapshot is necessary because enqueuing newly-rotten cells during the loop would otherwise bleed them into the current minute's processing.",
+        "When a fresh neighbor is infected, I mutate the grid to 2 to mark it visited and decrement `fresh`. Using the grid itself as the visited set avoids a separate data structure — checking `grid[nr][nc] == 1` is both the freshness test and the not-yet-visited check in a single condition.",
         "I return `minutes` if fresh hit zero, otherwise -1 — those oranges were unreachable.",
       ],
       testCase: {
@@ -318,8 +321,9 @@ def update_matrix(mat):
     return dist`,
       solutionExplanation: [
         "I'm initializing all distances to infinity, then setting every 0-cell to distance 0 and loading them all into the queue. This is multi-source BFS — every zero is a simultaneous origin.",
+        "`from collections import deque` — the queue here holds grid coordinates. With a list, every `pop(0)` would shift all remaining coordinates left (O(n)). With deque, `popleft()` is O(1). For an m×n grid with many cells this makes the difference between O((m×n)²) and O(m×n) total dequeue cost.",
         "BFS guarantees that the first time we reach a cell, it's via the shortest path. So when I see `dist[nr][nc] > dist[r][c] + 1`, I know I've found a shorter route and I relax the distance.",
-        "The relaxation condition `dist[nr][nc] > dist[r][c] + 1` doubles as the visited check — if a cell already has a distance ≤ current + 1, we don't re-enqueue it.",
+        "The relaxation condition `dist[nr][nc] > dist[r][c] + 1` doubles as the visited check — if a cell already has a distance ≤ current + 1, we don't re-enqueue it. This replaces a separate `visited` set entirely.",
         "The result matrix `dist` fills in naturally as BFS waves ripple outward from all zeros simultaneously.",
       ],
       testCase: {
@@ -395,10 +399,12 @@ def min_knight_moves(x: int, y: int) -> int:
     return -1`,
       solutionExplanation: [
         "I'm using `abs(x), abs(y)` to fold the problem into the first quadrant. By symmetry, the minimum moves to (x, y) equals the minimum to (|x|, |y|), which cuts the search space dramatically.",
+        "`from collections import deque` + `queue = deque([(0, 0, 0)])` — each element is a tuple of (row, col, moves). Using a list and `pop(0)` would be O(n) per step; on an infinite board with many reachable positions, that makes BFS quadratic. Deque keeps `popleft()` O(1).",
         "I seed BFS from (0,0) with 0 moves. Each node carries its move count so I don't need a separate distance map.",
+        "`visited = {(0, 0)}` — I use a set literal, not a list, because `(nr, nc) not in visited` needs to be O(1). A list check would be O(n) per neighbor per node. On a large chessboard with many visited positions this becomes a major bottleneck. Set membership testing uses hashing and is O(1) on average.",
         "The 8 knight-move deltas are all combinations of (±1, ±2) and (±2, ±1). BFS guarantees the first time we reach the target, it's with the fewest moves.",
         "I allow coordinates down to -2 to handle edge cases near the origin — a knight sometimes needs to step slightly negative before reaching a small positive target.",
-        "The `visited` set prevents re-processing. I add before enqueuing, not after dequeuing, to avoid duplicate entries in the queue.",
+        "I add to `visited` before enqueuing, not after dequeuing — this prevents duplicate entries in the queue. If I added after dequeuing, the same cell could be enqueued multiple times before it's ever processed.",
       ],
       testCase: {
         input: "x = 2, y = 1",
