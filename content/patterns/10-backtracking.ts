@@ -109,6 +109,20 @@ export const backtracking: Pattern = {
           answer: "backtrack(i + 1, path)",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "`result.append(path[:])` — I copy the path rather than appending `path` directly. Lists are passed by reference in Python, not by value. If I did `result.append(path)`, every entry in `result` would point to the same list object, which gets mutated by later appends and pops. By the time the function returns, every entry would show the same final (empty) state. `path[:]` creates a new list with the current contents, capturing a ___ at this moment in the recursion.",
+          answer: "snapshot",
+        },
+        {
+          line: "I'm starting each inner loop at `start` (not 0) so I only look ___ in the array. This ensures I never repeat elements or generate duplicate subsets.",
+          answer: "forward",
+        },
+        {
+          line: "`current_path.pop()` — I pop rather than reassign because `path` is a shared mutable list threaded through the recursion. `pop()` removes the last element in-place, exactly reversing the `append()` we did before recursing. If I instead wrote `path = path[:-1]`, I'd create a new local list and the outer call would still hold the old reference — the ___ would silently fail.",
+          answer: "backtrack",
+        },
+      ],
     },
     {
       id: "generate-parentheses",

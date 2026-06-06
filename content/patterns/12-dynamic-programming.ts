@@ -122,6 +122,10 @@ def countBits(n):
         { line: `prev2, prev1 = ___, ___`, answer: "prev1, curr" },
         { line: `dp[i] = dp[i ___ 1] + (i ___ 1)`, answer: ">>, &" },
       ],
+      explanationBlanks: [
+        { line: "I don't need the full array. I only ever look back two steps, so I track just prev1 and prev2 and slide them forward with `prev2, prev1 = prev1, curr`. Python evaluates the right side completely before assignment, so both variables update correctly in one line — no ___ variable needed. This reduces space from O(n) to O(1).", answer: "temporary" },
+        { line: "For counting bits, the key insight is that `i >> 1` (right-shift by 1) gives `i // 2`, which I've already solved. The bit that was dropped by the shift is recovered by `i & 1`. So `dp[i] = dp[i>>1] + (i&1)`. I use `[0] * (n + 1)` — the `* (n + 1)` allocates n+1 slots so I can use 1-indexed access: `dp[0]` is the ___ (0 has no set bits), and `dp[i]` is the answer for integer i.", answer: "base case" },
+      ],
     },
 
     {

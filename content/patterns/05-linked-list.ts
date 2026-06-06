@@ -474,6 +474,20 @@ return dummy.next`,
           "dummy.next is node(2) — the new head. All pairs swapped correctly.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "The rewiring is three pointer assignments and order is mandatory. First, `prev.next = b` (b jumps to the front of the pair). Then `a.next = b.next` (a takes b's old successor — you still have `b.next` because you haven't touched it yet). Finally `b.next = a` (completes the swap). If you set `b.next = a` before `a.next = b.next`, you lose b's original ___ permanently.",
+          answer: "successor",
+        },
+        {
+          line: "After swapping, `a` is now the second node of the pair and becomes the new `prev`. The next iteration's pair starts at `a.next`. Advancing `prev = a` is what makes this ___ — each swap leaves prev correctly positioned for the next pair.",
+          answer: "iterative",
+        },
+        {
+          line: "The tradeoff: iterative with dummy is O(1) space. A ___ solution is cleaner to read but uses O(n) stack space. In an interview, I'd mention both and implement the iterative version.",
+          answer: "recursive",
+        },
+      ],
       blanks: [
         { line: `dummy = ListNode(___)`, answer: "0" },
         { line: `while prev.___ and prev.next.___:`, answer: "next, next" },

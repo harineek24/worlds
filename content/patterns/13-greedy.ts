@@ -201,6 +201,20 @@ return True`,
         "If I finish the loop without getting stuck, every index was reachable, meaning the last index is reachable too. Return True.",
         "Syntax — why max(max_reach, i + nums[i]): I update max_reach with max() instead of a conditional assignment. Both are equivalent, but max() is more idiomatic for 'keep the best value seen so far'. It reads as the intent directly: 'max_reach is the maximum reachable index.'",
       ],
+      explanationBlanks: [
+        {
+          line: "I track ___: the furthest index reachable given all positions visited so far. The greedy idea is simple — at every position, I update the reachability frontier.",
+          answer: "max_reach",
+        },
+        {
+          line: "If I ever encounter index i that is beyond ___, I'm stuck. I could not have gotten here legitimately. Return False immediately.",
+          answer: "max_reach",
+        },
+        {
+          line: "If I finish the loop without getting stuck, every index was reachable, meaning the last index is reachable too. Return ___.",
+          answer: "True",
+        },
+      ],
       testCase: {
         input: "nums = [2, 3, 1, 1, 4]",
         expected: "true",
@@ -257,6 +271,20 @@ return jumps`,
         "As I scan each index in the current level, I track farthest: the furthest index reachable from anywhere in this level. That farthest becomes the end of the next level.",
         "When I reach i == curr_end, I've exhausted the current level. I must take a jump. I increment jumps and extend curr_end to farthest. I stop the loop before the last index because I don't need to jump away from it.",
         "Syntax — why range(len(nums) - 1): I stop one index short of the last element intentionally. If I processed the last index, I might spuriously increment jumps when i == curr_end there — but we've already reached the destination so no jump is needed. The loop range encodes this constraint explicitly rather than adding an if-check inside the loop.",
+      ],
+      explanationBlanks: [
+        {
+          line: "I think of this as ___ layers. Each jump is one level. curr_end marks where the current BFS level ends — the farthest index reached by the previous jump.",
+          answer: "BFS",
+        },
+        {
+          line: "As I scan each index in the current level, I track ___: the furthest index reachable from anywhere in this level. That farthest becomes the end of the next level.",
+          answer: "farthest",
+        },
+        {
+          line: "When I reach i == ___, I've exhausted the current level. I must take a jump. I increment jumps and extend curr_end to farthest. I stop the loop before the last index because I don't need to jump away from it.",
+          answer: "curr_end",
+        },
       ],
       testCase: {
         input: "nums = [2, 3, 1, 1, 4]",

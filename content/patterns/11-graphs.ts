@@ -428,6 +428,11 @@ def networkDelayTime(times, n, k):
         { line: `if nd ___ dist[neighbor]:`, answer: "<" },
         { line: `return max_dist if max_dist < float('inf') else ___`, answer: "-1" },
       ],
+      explanationBlanks: [
+        { line: "I initialize all distances to infinity except the source, which is 0. The heap starts with just `(0, k)`. I push tuples of `(distance, node)` — Python's heapq compares tuples ___, so putting distance first means the heap orders entries by distance automatically. Without this convention I'd need a custom comparator.", answer: "lexicographically" },
+        { line: "The stale-entry check `if d > dist[node]: continue` is needed because Python's heapq has no ___ operation. When a shorter path is found, I push a new entry rather than updating the old one. The stale entry is skipped here — cheaper than removing it from the heap.", answer: "decrease-key" },
+        { line: "The answer is the maximum value in `dist` — the last node to receive the signal determines total delay. If any node is still infinity, it was ___, so I return -1.", answer: "unreachable" },
+      ],
     },
   ],
 }

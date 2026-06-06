@@ -103,6 +103,20 @@ for i, val in enumerate(arr):
           answer: "len(stack) == 0",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm using a stack because bracket matching is inherently ___ — the most recently opened bracket must be the first one closed. A stack lets me remember the open bracket I'm waiting to close. I implement the stack as a plain Python list (`stack = []`) rather than `collections.deque` — deque is faster for popleft/appendleft, but here I only push and pop from the same end (the right). List `.append()` and `.pop()` are both O(1) amortized, which is all I need. A plain list also has less overhead and better cache locality for small stacks.",
+          answer: "LIFO",
+        },
+        {
+          line: "I define a mapping from each closing bracket to its expected opener. When I see a closing bracket, I peek at the stack top using `stack[-1]` — Python's negative indexing gives me the last element without removing it. This is a true peek: `stack[-1]` is far cleaner than the alternative of `stack.pop()` followed by pushing it back, which is both O(1)-wasteful and noisy. The condition `not stack or stack[-1] != matching[ch]` uses `not stack` first — this is deliberate ___. Python evaluates `and`/`or` left to right and stops early. By checking `not stack` before `stack[-1]`, I avoid an IndexError on an empty stack: if the stack is empty, the `or` short-circuits and the second operand is never evaluated.",
+          answer: "short-circuit evaluation",
+        },
+        {
+          line: "At the end, if the stack is empty, every opener was matched. If there's anything left, we have unmatched openers — invalid.",
+          answer: "unmatched openers",
+        },
+      ],
     },
 
     {

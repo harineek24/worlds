@@ -296,6 +296,20 @@ def mergeKLists(lists):
           "Every node was processed exactly once. The dummy node trick avoided any special handling for the result list head.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I seed the heap with the head of each list — one representative per list. `import heapq` is used here because we're repeatedly extracting the global minimum across k live cursors — exactly what a heap is built for. A naive scan across all k list heads each iteration would be O(nk); the heap reduces that to O(n log k). The heap tuple is (value, list_index, node). I include list_index as a tiebreaker because Python will try to compare nodes if values are equal, and ListNode isn't comparable — the tuple comparison short-circuits at list_index before reaching node.",
+          answer: "global minimum",
+        },
+        {
+          line: "Each iteration: `heapq.heappop(heap)` removes and returns the global minimum — O(log k). I attach the popped node to the result list, then push that node's successor (if it exists) from the same list. This is the key insight — each list contributes exactly one node to the heap at a time, keeping heap size ≤ k. I never peek with `heap[0]` here because I always want to consume and replace the minimum.",
+          answer: "heap size ≤ k",
+        },
+        {
+          line: "Time: O(n log k) where n is total nodes. Each node is pushed and popped once, and heap operations are O(log k). Space: O(k) for the heap.",
+          answer: "O(n log k)",
+        },
+      ],
       blanks: [
         { line: `heapq.heappush(heap, (node.val, ___, node))`, answer: "i" },
         { line: `val, i, node = heapq.heappop(___)`, answer: "heap" },
@@ -372,6 +386,20 @@ class MedianFinder:
           "lo has one extra element — odd count — so lo's max (2) is the median.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I split the stream into two halves: `lo` holds the smaller half as a max-heap (stored negated), `hi` holds the larger half as a min-heap (stored as-is). The invariant: every element in lo is ≤ every element in hi. Two heaps are used instead of one because a single heap can only give you the min or max, not both boundaries simultaneously — and the median sits at the boundary.",
+          answer: "median sits at the boundary",
+        },
+        {
+          line: "I always push to lo first using `heapq.heappush(self.lo, -num)`. The negation is the Python idiom for a max-heap: since `heapq` only supports min-heap, negating all values means the largest real value becomes the most negative stored value and floats to the root. Reading the max is then `-self.lo[0]` — peeking with `heap[0]` rather than popping, because we only want to inspect the boundary, not remove it. Then I enforce the ordering invariant — if lo's maximum exceeds hi's minimum, the boundary between halves is in the wrong place, so I move the offending element to hi.",
+          answer: "ordering invariant",
+        },
+        {
+          line: "findMedian is O(1): if sizes are unequal, the extra element in lo is the median, read with `-self.lo[0]` (peek, not pop). If equal, average the two boundary values. The tradeoff: O(log n) per insertion, O(1) per query — ideal for a stream where queries are frequent.",
+          answer: "O(1) per query",
+        },
+      ],
       blanks: [
         { line: `self.lo = []  # max-heap — store ___`, answer: "negated" },
         { line: `heapq.heappush(self.lo, ___)`, answer: "-num" },

@@ -421,6 +421,20 @@ heapq.heapify(heap)`,
           answer: "[merged[i - 1][1], merged[i][0]]",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm flattening all employee schedules into a single list of intervals. Free time is any gap in the combined schedule — it doesn't matter which employee owns which interval, only whether someone is working at any given moment. A heap-based approach (pushing one interval per employee and always advancing the smallest) would be more memory-efficient for huge inputs since it avoids materializing the full flat list. But the flat-then-sort approach is simpler to reason about — correct for interview purposes, and the ___ cost is the same.",
+          answer: "O(n log n)",
+        },
+        {
+          line: "The free time intervals are precisely the gaps between consecutive merged intervals. If merged[i] ends at time A and merged[i+1] starts at time B, then [A, B] is a window when nobody is working.",
+          answer: "nobody is working",
+        },
+        {
+          line: "I use `all_intervals[0][:]` (a slice copy) when seeding merged so I don't mutate the original input while extending `merged[-1][1]`. Without the copy, `merged[-1]` and `all_intervals[0]` would point to the same list object, and modifying the end time would silently corrupt the input.",
+          answer: "silently corrupt the input",
+        },
+      ],
     },
   ],
 }

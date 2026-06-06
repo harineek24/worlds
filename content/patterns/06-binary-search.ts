@@ -113,6 +113,20 @@ def minEatingSpeed(piles, h):
           "Left equals right — the loop exits. Left=4 is the minimum feasible speed. Any slower (speed 3) was already proven infeasible.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "The key reframe: instead of searching an array by index, I'm searching the *answer space*. The question becomes: what is the minimum speed k where I can finish in h hours? Binary search works here because feasibility is ___  — if speed k works, every speed > k also works.",
+          answer: "monotone",
+        },
+        {
+          line: "`left, right = 1, max(piles)` — these are the boundaries of the answer space, not array indices. Speed 1 is the slowest possible (floor of valid answers). Speed max(piles) guarantees every pile is eaten in one hour — that's the ceiling. Setting boundaries this way is the defining move of 'binary search on answer' problems: you're searching the range of ___ answers.",
+          answer: "plausible",
+        },
+        {
+          line: "`if hours <= h: right = mid` — when feasible, I set `right = mid` (not `mid - 1`) because `mid` itself could be the minimum answer. Cutting to `mid - 1` would discard a valid candidate. When infeasible, `left = mid + 1` is safe — mid is definitively too slow. I use `left < right` (not `<=`) because I'm converging on a ___, not searching for a specific value. When left == right, they've pinpointed the minimum feasible speed.",
+          answer: "boundary",
+        },
+      ],
       blanks: [
         { line: `left, right = ___, max(piles)`, answer: "1" },
         { line: `while left ___ right:`, answer: "<" },
