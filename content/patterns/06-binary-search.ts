@@ -200,6 +200,20 @@ def minEatingSpeed(piles, h):
           "Return index 4. One element checked per iteration — efficient elimination even without knowing where the pivot is.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "The core insight: even in a rotated array, at least one of the two halves around mid is always ___. The rotation can only break one side — the other side is clean. I use this to determine which half to search.",
+          answer: "sorted",
+        },
+        {
+          line: "I check if the left half [left..mid] is sorted by comparing `nums[left] <= nums[mid]`. If true, the left half has no rotation — it's a clean ascending sequence. If the target falls within `[nums[left], nums[mid])`, I go left; otherwise the target must be in the ___ half.",
+          answer: "right",
+        },
+        {
+          line: "I use `right = mid - 1` (not `mid`) here because this is classic binary search where I already confirmed `nums[mid] != target` before branching — mid is definitively not the answer, so I can safely exclude it. This is different from 'binary search on answer' problems where ___ might still be valid.",
+          answer: "mid",
+        },
+      ],
       blanks: [
         { line: `if nums[___] <= nums[mid]:`, answer: "left" },
         { line: `if nums[left] <= target < nums[___]:`, answer: "mid" },
@@ -277,6 +291,20 @@ def minEatingSpeed(piles, h):
           "left == right == 18. The minimum possible largest sum is 18.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "This is a 'minimize the maximum' problem — a classic signal for binary search on the answer space. The feasibility function is ___: if a max-sum cap of X works, so does X+1. That monotonicity is what makes binary search valid here.",
+          answer: "monotone",
+        },
+        {
+          line: "The feasibility check: given max allowed sum `mid`, I greedily build subarrays — keep adding elements until the next element would exceed `mid`, then start a new subarray. This gives the ___ possible number of subarrays for this cap.",
+          answer: "minimum",
+        },
+        {
+          line: "The greedy is correct because filling each subarray as much as possible minimizes the number of subarrays for a given cap. If even greedy needs more than k splits, no rearrangement can do better (and we can't reorder — subarrays must be ___ in the original order).",
+          answer: "contiguous",
+        },
+      ],
       blanks: [
         { line: `left, right = max(nums), ___(nums)`, answer: "sum" },
         { line: `count, curr = ___, 0`, answer: "1" },
@@ -371,6 +399,20 @@ def minEatingSpeed(piles, h):
           "Converged at 13. This value exists in the matrix, and exactly 8 elements are ≤ 13.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "The feasibility question: how many elements in the matrix are <= mid? If that count is >= k, then the kth smallest is <= mid (try smaller: `right = mid`). If count < k, the kth smallest is ___ mid (try larger: `left = mid + 1`).",
+          answer: "> mid",
+        },
+        {
+          line: "The count step exploits the sorted-rows-and-columns property with a bottom-left walk. If `matrix[row][col] <= mid`, every element above in that column is also <= mid — that's `row+1` elements in one operation. Move right. If `matrix[row][col] > mid`, move ___. This traverses at most 2n steps total — O(n) per binary search iteration.",
+          answer: "up",
+        },
+        {
+          line: "The invariant: when `left == right`, the value is guaranteed to exist in the matrix. The convergence point is always the smallest value with count >= k, and by the matrix's structure, that value must be a ___ element.",
+          answer: "real",
+        },
+      ],
       blanks: [
         { line: `left, right = matrix[0][0], matrix[n-1][___]`, answer: "n-1" },
         { line: `row, col = n - ___, 0`, answer: "1" },
@@ -452,6 +494,20 @@ def minEatingSpeed(piles, h):
           "left=right=15. Minimum capacity is 15.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "Classic 'minimize the capacity' problem — binary search on the answer space. `left, right = max(weights), sum(weights)` sets the answer-space boundaries: the minimum capacity can't be less than `max(weights)` (the heaviest package must fit on the ship), and can't exceed `sum(weights)` (one day ships everything). These are the boundaries of *valid answers*, not array indices — the core distinction of 'binary search on answer' vs ___ binary search.",
+          answer: "classic",
+        },
+        {
+          line: "The feasibility check: given capacity `mid`, I greedily load packages in sequence. If adding the next package would exceed `mid`, I start a new day. This greedy is optimal because orders are fixed — we ship in the given sequence. Filling each day ___ minimizes the number of days needed.",
+          answer: "maximally",
+        },
+        {
+          line: "This is structurally identical to Koko Eating Bananas — both binary-search on a 'minimum feasible value' with a greedy feasibility check. The template is: set answer-space bounds, check feasibility at mid, shrink toward the minimum feasible point. Recognizing the ___ is the skill; the implementation follows mechanically.",
+          answer: "pattern",
+        },
+      ],
       blanks: [
         { line: `left, right = max(weights), ___(weights)`, answer: "sum" },
         { line: `needed, curr = ___, 0`, answer: "1" },

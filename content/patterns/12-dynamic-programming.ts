@@ -171,6 +171,11 @@ def countBits(n):
         { line: `dp[i][j] = dp[___][j] + dp[i][___]`, answer: "i-1, j-1" },
         { line: `return dp[___][___]`, answer: "m-1, n-1" },
       ],
+      explanationBlanks: [
+        { line: "I initialize the entire first row and first column to 1. There's exactly one way to reach any cell in the first row (go right the whole way) and any cell in the first column (go down the whole way). I do this by initializing `dp = [[1] * n for _ in range(m)]` — every cell starts as 1, so the border cells are already correct without a separate ___ pass.", answer: "initialization" },
+        { line: "For any interior cell, the robot arrived either from above (`dp[i-1][j]`) or from the left (`dp[i][j-1]`). The total paths is the sum of those two — because every path to this cell must have passed through one of those two ___. I reference previous indices (`i-1`, `j-1`) because DP builds on already-solved subproblems.", answer: "neighbors" },
+        { line: "The table is sized `m x n` — no off-by-one buffer needed here because cells are 0-indexed and I access `dp[m-1][n-1]` directly. The answer is in the ___ corner after filling all interior cells.", answer: "bottom-right" },
+      ],
     },
 
     {
@@ -225,6 +230,11 @@ def countBits(n):
         { line: `if nums[j] ___ nums[i]:`, answer: "<" },
         { line: `dp[i] = max(dp[i], dp[j] ___ 1)`, answer: "+" },
         { line: `return ___(dp)`, answer: "max" },
+      ],
+      explanationBlanks: [
+        { line: "dp[i] represents the length of the longest increasing subsequence ending at index i. Every element alone is a subsequence of length 1, so I initialize all values to 1 with `dp = [1] * n`. Using `* n` (not `* (n+1)`) because this table is ___ to match the input array — dp[i] directly corresponds to nums[i].", answer: "0-indexed" },
+        { line: "I take `max(dp[i], dp[j] + 1)` across all valid j. This ensures dp[i] holds the best possible LIS ending at i, regardless of which ___ element I extended from.", answer: "earlier" },
+        { line: "The final answer is `max(dp)` — a single pass over the array — because the globally best LIS might end at any index, not necessarily the ___.", answer: "last one" },
       ],
     },
 
@@ -285,6 +295,11 @@ def countBits(n):
         { line: `if dp[j] and s[j:i] in ___:`, answer: "word_set" },
         { line: `dp[i] = ___`, answer: "True" },
         { line: `return dp[___]`, answer: "n" },
+      ],
+      explanationBlanks: [
+        { line: "For each position i, I scan all split points j before it. If the prefix up to j is already valid (`dp[j]` is True) and the substring `s[j:i]` is in the dictionary, then the prefix up to i is also valid. I reference `dp[j]` — a previously computed answer — and build forward. Filling ___ ensures dp[j] is always settled before it's read.", answer: "left-to-right" },
+        { line: "I convert wordDict to a set first. Checking `s[j:i] in word_set` is O(1) average. If wordDict stayed a list, each membership check would be O(k) where k is the ___ size — making the overall algorithm O(n² × k) instead of O(n²).", answer: "dictionary" },
+        { line: "The `break` is an optimization: once one valid split for position i is found, dp[i] is True regardless of remaining j values. No need to keep ___.", answer: "checking" },
       ],
     },
 
@@ -354,6 +369,11 @@ def countBits(n):
         { line: `dp[i] += dp[___]`, answer: "i-1" },
         { line: `if ___ <= two <= ___:`, answer: "'10', '26'" },
         { line: `dp[i] += dp[___]`, answer: "i-2" },
+      ],
+      explanationBlanks: [
+        { line: "dp[i] is the number of ways to decode the first i characters. I use `dp = [0] * (n + 1)` — size n+1, not n, because `dp[0]` is the base case (empty string: one way to decode nothing) and `dp[n]` is the final answer. The +1 avoids ___: without it, `dp[n]` would be out of bounds.", answer: "off-by-one" },
+        { line: "Two digits are valid only if `'10' <= two <= '26'`. String comparison works here because the strings have equal length — Python compares ___, which matches numeric order for zero-padded two-digit strings. If valid, I add `dp[i-2]` — the ways to decode everything before this two-digit group.", answer: "lexicographically" },
+        { line: "Both contributions can stack: if both single and two-digit decodes are valid at position i, dp[i] accumulates both. This is the ___ principle of counting — independent valid choices multiply the total count.", answer: "additive" },
       ],
     },
   ],

@@ -95,6 +95,20 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
         "Syntax — why dict instead of a TrieNode class: In Python interviews, a nested dict replaces an entire class definition. node.setdefault(c, {}) both creates and returns a child in one call — a TrieNode class would need a children dict anyway, plus __init__ boilerplate. The tradeoff is readability for complex operations (like deletion), but for insert/search/startsWith the dict approach is faster to write and equally correct.",
         "Syntax — why '#' as the end-of-word marker: Any sentinel key that cannot appear as a real character works. '#' is a common convention because it's not a letter, so it's visually distinct when you're staring at the trie structure during debugging. 'end', True, or 1 also work — the choice is convention, not correctness.",
       ],
+      explanationBlanks: [
+        {
+          line: "For insert, I walk the word character by character, using ___ to create a child node if it doesn't exist yet. After the last character I place a '#' key to mark this path as a complete word.",
+          answer: "setdefault",
+        },
+        {
+          line: "For search, I walk the same path. If any character is missing, the word isn't in the trie. After the last character I check for '#' — without it, the word is only a ___ of something longer, not an exact match.",
+          answer: "prefix",
+        },
+        {
+          line: "___ is identical to search except I don't check for '#' at the end. Reaching the end of the prefix without a missing node is enough confirmation.",
+          answer: "startsWith",
+        },
+      ],
       testCase: {
         input: 'insert("apple"), search("apple"), search("app"), startsWith("app")',
         expected: "true, false, true",
@@ -171,6 +185,20 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
         "Syntax — why [(0,1),(0,-1),(1,0),(-1,0)] for directions: Encoding four directions as a list of tuples lets me iterate over them in a loop instead of writing four separate if-branches. It's data-driven: adding diagonal support later means appending four more tuples, not duplicating DFS logic. Each tuple is (row delta, col delta), unpacked cleanly with 'for dr, dc in ...'.",
         "Syntax — why board[r][c] = '$' for visited: I mark visited cells in-place on the board rather than maintaining a separate visited set. This saves O(m*n) space and avoids keeping two data structures in sync. '$' works as the sentinel because the board only contains letters. On backtrack, I restore board[r][c] = ch to undo the mark.",
       ],
+      explanationBlanks: [
+        {
+          line: "I build a trie from all target words upfront. This lets the DFS ___ immediately — if the current character isn't in the trie node, there's no word starting with this prefix, and I stop.",
+          answer: "prune",
+        },
+        {
+          line: "I store the completed word string at the '#' node rather than just True. That way when I find a match deep in the DFS, I can collect the word directly without ___ it.",
+          answer: "reconstructing",
+        },
+        {
+          line: "Using a ___ for results handles the edge case where the same word can be found via multiple paths — it's only added once.",
+          answer: "set",
+        },
+      ],
       testCase: {
         input: 'board = [["o","a","a","n"],["e","t","a","e"],["i","h","k","r"],["i","f","l","v"]], words = ["oath","pea","eat","rain"]',
         expected: '["oath", "eat"]',
@@ -237,6 +265,20 @@ return result`,
         "If a node has '#', the word ending there was built one character at a time from valid prefixes. I track the longest such word encountered. Sorting ensures ties are broken lexicographically without extra comparison logic.",
         "Syntax — why sorted(words) before inserting: dict insertion order in Python 3.7+ is preserved, but that's not the reason to sort here. Sorting ensures that when we store child['#'] = word, lexicographically earlier words of the same length are stored first. Since we only update result when len(word) > len(result) (strictly greater), ties naturally favor the first one encountered — which is the lexicographically smaller one after sorting.",
         "Syntax — why a stack list for traversal: I use an explicit stack (list used as a stack with .append and .pop) for the DFS rather than recursion. For trie traversal the depth is bounded by word length (usually short), so recursion would also work. The list-based stack avoids Python's recursion limit concern and is a general habit worth practicing for graph problems.",
+      ],
+      explanationBlanks: [
+        {
+          line: "I insert all words into the trie, storing the word string at the '#' node as before. I sort words first so that when two words of the same length exist, the ___ smaller one is stored.",
+          answer: "lexicographically",
+        },
+        {
+          line: "I do a DFS/BFS traversal of the trie, but I only follow edges into child nodes that have '#' — meaning only into nodes where a complete word ends. This is the key constraint: every ___ must itself be a word in the dictionary.",
+          answer: "prefix",
+        },
+        {
+          line: "If a node has '#', the word ending there was built one character at a time from valid prefixes. I track the ___ such word encountered. Sorting ensures ties are broken lexicographically without extra comparison logic.",
+          answer: "longest",
+        },
       ],
       testCase: {
         input: 'words = ["w","wo","wor","worl","world"]',

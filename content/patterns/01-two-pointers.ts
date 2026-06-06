@@ -101,7 +101,7 @@ return True`,
       ],
       explanationBlanks: [
         {
-          line: "First I clean the input — lowercase everything and strip out anything that isn't a letter or digit. This gives me a pure sequence to compare. I use a ___ here instead of a for-loop that builds a list manually, because it's a single expression — more readable, and Python can optimize the construction slightly better for simple filters like this.",
+          line: "Filters: It iterates through every character c in the string s and keeps only those where c.isalnum() is True (alphanumeric characters: letters and numbers). Transforms: For each kept character, it converts it to lowercase using c.lower()This gives me a pure sequence to compare. I use a ___ here instead of a for-loop that builds a list manually, because it's a single expression — more readable, and Python can optimize the construction slightly better for simple filters like this.",
           answer: "list comprehension",
         },
         {
@@ -472,6 +472,20 @@ while write < len(nums):
         { line: `___ += 1`, answer: "write" },
         { line: `nums[write] = ___`, answer: "0" },
       ],
+      explanationBlanks: [
+        {
+          line: "I use a `write` pointer initialized to 0 — a plain integer, not a list index object or sentinel. It tracks the next position to place a non-zero value and only advances when we've actually written something, so it always points at the first unfilled slot. I use a for loop for the read pointer — `for read in range(len(nums))` — because the read pointer advances exactly one step per element regardless of what it finds. Only the ___ pointer moves conditionally.",
+          answer: "write",
+        },
+        {
+          line: "Every time the read pointer finds a non-zero value, I copy it to `nums[write]` using direct index assignment rather than `list.append` or any other method — because the constraint is ___ with no extra list, I'm reusing the existing array slots. Non-zeros are compacted to the front in their original relative order because I copy them left-to-right without rearranging.",
+          answer: "in-place",
+        },
+        {
+          line: "After the read scan, everything from `write` to the end is leftover space from elements that were moved forward. I fill it with zeros using a second while loop — `while write < len(nums)` — rather than a slice assignment like `nums[write:] = [0] * (len(nums) - write)`, because the while loop is ___ space and makes the fill logic explicit: advance `write` and zero each position one at a time.",
+          answer: "O(1)",
+        },
+      ],
     },
 
     {
@@ -531,6 +545,20 @@ while mid <= high:
         { line: `elif nums[mid] == ___: mid += 1`, answer: "1" },
         { line: `nums[mid], nums[high] = nums[___], nums[___]`, answer: "high, mid" },
         { line: `___ -= 1`, answer: "high" },
+      ],
+      explanationBlanks: [
+        {
+          line: "I use a while loop with condition `mid <= high` — not `mid < high` — because when `mid == high` there's still one unknown element at that position that needs to be classified. The loop terminates when `mid` passes `high`, meaning the ___ region is empty.",
+          answer: "unknown",
+        },
+        {
+          line: "If `nums[mid] == 0`, I swap with `nums[low]` using Python's tuple swap — `nums[low], nums[mid] = nums[mid], nums[low]` — which is atomic: no temp variable needed, and there's no risk of reading a half-updated value. Both `low` and `mid` advance: `low` because the 0-region grew, `mid` because the element swapped in from `low` was a confirmed 1 (it was already in the 1s region), so `mid` can safely move past it.",
+          answer: "tuple swap",
+        },
+        {
+          line: "If `nums[mid] == 2`, I swap with `nums[high]` — again using tuple swap — and shrink `high` with `high -= 1`. Critically, I do NOT advance `mid` here: the element just swapped in from `high` came from the unknown region and must be re-examined in the next iteration. Advancing `mid` here would silently ___ it.",
+          answer: "skip",
+        },
       ],
     },
   ],

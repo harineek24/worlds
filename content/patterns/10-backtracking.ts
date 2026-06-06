@@ -198,6 +198,20 @@ export const backtracking: Pattern = {
           answer: "if len(path) == 2 * n:",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I add `(` only when `open_count < n` — there are still open parens left to place. This ___ the search tree at the source: invalid prefixes are never explored.",
+          answer: "prunes",
+        },
+        {
+          line: "I add `)` only when `close_count < open_count` — there's an unmatched open paren waiting. This single condition guarantees every prefix is valid, so any complete string is automatically ___.",
+          answer: "well-formed",
+        },
+        {
+          line: "When the path reaches length `2 * n`, every paren is placed and the string is valid — I join the list into a string and record it. I use a list-of-characters `path` rather than string concatenation because strings are immutable in Python: `path + '('` would allocate a new string every time, making each level ___. List append is O(1); the join happens once at the leaf.",
+          answer: "O(n)",
+        },
+      ],
     },
     {
       id: "combination-sum",
@@ -267,6 +281,20 @@ export const backtracking: Pattern = {
         {
           line: "        if remaining < ___:",
           answer: "if remaining < 0:",
+        },
+      ],
+      explanationBlanks: [
+        {
+          line: "The key to allowing reuse is passing `i` (not `i + 1`) to the recursive call. This means the same ___ can be picked again at the next level.",
+          answer: "candidate",
+        },
+        {
+          line: "I'm passing `remaining` down the recursion rather than summing the path each time. When remaining hits 0, the path sums to the target — I record it. When remaining goes negative, this branch can never work and I ___ immediately.",
+          answer: "prune",
+        },
+        {
+          line: "`result.append(path[:])` at the base case — I must copy here for the same reason as always: `path` is a shared mutable list. Appending the reference means every stored result will reflect the final (___ ) state of `path` after all backtracks complete. `path[:]` snapshots the current contents.",
+          answer: "empty",
         },
       ],
     },
@@ -353,6 +381,20 @@ export const backtracking: Pattern = {
           answer: "if index == len(word):\n            return True",
         },
       ],
+      explanationBlanks: [
+        {
+          line: "I'm using the board itself as the visited marker — I temporarily overwrite the cell with `#` before recursing. This is O(1) extra memory. The alternative would be a separate `visited = set()` whose `in` check is O(1) on average, but the in-place marker avoids allocating and updating that set at every ___ frame.",
+          answer: "DFS",
+        },
+        {
+          line: "`board[r][c] = temp` after recursion — this is the ___ step. I restore the cell so that DFS paths starting from other cells (or other branches of this DFS) can still use it. Without this restore, marking a cell as `#` would permanently block it from all future paths.",
+          answer: "backtrack",
+        },
+        {
+          line: "At each DFS step I check three things in order: did we match the full word (base case), are we out of bounds, does the current cell match the expected character. Ordering these checks avoids index errors — the ___ check must come before the character check, otherwise `board[r][c]` would index out of range.",
+          answer: "bounds",
+        },
+      ],
     },
     {
       id: "palindrome-partitioning",
@@ -435,6 +477,20 @@ export const backtracking: Pattern = {
         {
           line: "                backtrack(___, path)",
           answer: "backtrack(end, path)",
+        },
+      ],
+      explanationBlanks: [
+        {
+          line: "I only recurse into a substring if it's a palindrome. This is the ___ step — non-palindrome prefixes are skipped entirely, not explored.",
+          answer: "pruning",
+        },
+        {
+          line: "When `start` reaches `len(s)`, we've partitioned the entire string and every part in `path` is a palindrome — so we record a ___.",
+          answer: "copy",
+        },
+        {
+          line: "`path.pop()` is the backtrack — it removes the substring we just appended, so the next `end` value (a longer cut from the same `start`) begins from the same ___. This is the undo of the `path.append(substring)` two lines above.",
+          answer: "prefix",
         },
       ],
     },

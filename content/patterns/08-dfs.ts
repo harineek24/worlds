@@ -119,6 +119,20 @@ def dfs(node):
           "Root combines: 1 + max(1, 2) = 3. The right subtree was deeper, so it determines the answer.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "Base case: `if not root: return 0`. Recursion is chosen over iteration here because trees have a natural recursive structure — the call stack directly mirrors the tree's node hierarchy. An iterative DFS would require an explicit stack and extra bookkeeping, making the code harder to read without any algorithmic gain. `not root` is used rather than `root is None` because it's more Pythonic and handles any falsy sentinel; for tree nodes these are equivalent, but `not node` is the standard idiom.",
+          answer: "call stack directly mirrors the tree's node hierarchy",
+        },
+        {
+          line: "I recurse into both subtrees first. I'm asking each child: what is the deepest path beneath you? The call returns only after fully resolving the entire subtree — this is the bottom-up pattern. I don't need to track state myself; the return value carries the result up through the call stack.",
+          answer: "bottom-up pattern",
+        },
+        {
+          line: "`return 1 + max(left, right)` — the `+ 1` counts the current node itself as one level. Without it, a single-node tree would return 0 instead of 1. `max` selects the deeper subtree because the question asks for the longest path down. Tradeoff: O(n) time visiting every node, O(h) space on the call stack where h is the height — O(log n) for balanced, O(n) worst case for a skewed tree.",
+          answer: "O(h) space on the call stack",
+        },
+      ],
       blanks: [
         { line: `if not root:`, answer: "root" },
         { line: `    return ___`, answer: "0" },
@@ -183,6 +197,20 @@ def dfs(node):
           "True propagates all the way to the caller.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "Two base cases, in order. `if not root: return False` — an empty node is not a leaf, so no valid path terminates here. `not root` vs `root is None`: both work for tree nodes, but `not root` is the Pythonic convention. Recursion is used over iteration because the top-down 'pass remaining sum down' pattern maps cleanly to parameters — each recursive call carries the updated remainder without any external stack management.",
+          answer: "top-down 'pass remaining sum down' pattern",
+        },
+        {
+          line: "Second base case: `if not root.left and not root.right` — this is a leaf. A valid path can only terminate at a leaf; stopping at an internal node would be a partial path. I check `remaining == root.val` here rather than subtracting first, to make the leaf condition explicit and self-contained.",
+          answer: "partial path",
+        },
+        {
+          line: "Recursive case: subtract the current node's value from the target and pass the remainder DOWN to both children. `return ... or ...` short-circuits — if the left subtree succeeds, Python never evaluates the right. This is an algorithmic win for trees that are heavily left-leaning and have an early match.",
+          answer: "short-circuits",
+        },
+      ],
       blanks: [
         { line: `if not root.left and not root.___:`, answer: "right" },
         { line: `    return root.val == ___`, answer: "targetSum" },
@@ -240,6 +268,20 @@ def dfs(node):
           "The False from node 4 propagates: root's right subtree failed, so the whole tree is not a valid BST.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "I pass valid bounds (lo, hi) DOWN to each node via parameters — the top-down DFS pattern. Every node must satisfy lo < node.val < hi. These bounds tighten as we go deeper. Recursion is chosen because bounds can be passed as function arguments naturally; an iterative approach would need a stack of (node, lo, hi) tuples, which is less readable. `if not node: return True` uses `not node` — Pythonic for None checks on tree nodes.",
+          answer: "bounds tighten as we go deeper",
+        },
+        {
+          line: "The critical insight: checking only parent-child relationships isn't enough. A classic trap is a node in a left subtree that's smaller than its immediate parent but larger than an ancestor — this violates BST globally. Passing bounds catches that. `float('-inf')` and `float('inf')` are used as the initial bounds because Python integers are unbounded, but `float` gives clean sentinel values for comparisons without special-casing.",
+          answer: "violates BST globally",
+        },
+        {
+          line: "When going left, the current node's value becomes the new upper bound: `dfs(node.left, lo, node.val)`. When going right, it becomes the new lower bound: `dfs(node.right, node.val, hi)`. The `and` short-circuits — if the left subtree fails, the right is never checked. This propagates 'everything in my left subtree must be less than me' all the way down without any extra data structures. Time: O(n), Space: O(h).",
+          answer: "new upper bound",
+        },
+      ],
       blanks: [
         { line: `def dfs(node, lo, ___):`, answer: "hi" },
         { line: `    if not (___ < node.val < hi):`, answer: "lo" },
@@ -318,6 +360,20 @@ def dfs(node):
           "The diameter is 3, passing through the root in this case — but the algorithm would find it even if it didn't.",
         ],
       },
+      explanationBlanks: [
+        {
+          line: "Each node can be the 'elbow' — the highest point of the longest path passing through it. At that node, the longest path length is left_depth + right_depth (number of edges down to the deepest leaf on each side). Recursion is the right tool here because the depth of a subtree is defined recursively — `return 1 + max(left, right)` reads exactly like the definition. The `+ 1` counts the current node as a level; without it, leaves would return 0 and the depths would be off by one throughout.",
+          answer: "left_depth + right_depth",
+        },
+        {
+          line: "I track a global maximum across all nodes because the longest diameter might pass through any node, not necessarily the root. `diameter = [0]` uses a single-element list as a mutable container. The alternative is `nonlocal diameter` with a plain integer — `nonlocal` is needed because Python closures can read outer variables but cannot rebind them without it. The list trick sidesteps `nonlocal` by mutating the container (which is already in scope) rather than rebinding the name. Both work; `nonlocal` is more explicit, the list trick is a common Python pattern you'll see in interviews.",
+          answer: "mutable container",
+        },
+        {
+          line: "The return value (`1 + max(left, right)`) is the depth of the current subtree — used by the parent to compute its own diameter. The side effect (`diameter[0] = max(...)`) updates the running global max. These are two separate concerns deliberately handled in a single O(n) pass rather than two separate traversals.",
+          answer: "single O(n) pass",
+        },
+      ],
       blanks: [
         { line: `diameter[0] = max(diameter[0], left + ___)`, answer: "right" },
         { line: `return 1 + ___(left, right)`, answer: "max" },

@@ -342,6 +342,20 @@ return result`,
         "When i == end, no character in this window escapes beyond it. The partition is sealed. I record its size and start fresh from i+1.",
         "Syntax — why {c: i for i, c in enumerate(s)}: This dict comprehension builds the last-occurrence map in one line. Because enumerate produces (index, char) pairs in order, later indices overwrite earlier ones for repeated characters — so the final dict naturally stores the last occurrence of each character. No explicit 'if char not already stored' check needed; the overwrite behavior does it for free.",
       ],
+      explanationBlanks: [
+        {
+          line: "First I build a map of each character's ___. This tells me: if I include character c in a partition, that partition must extend at least to last[c] to keep all occurrences of c together.",
+          answer: "last occurrence",
+        },
+        {
+          line: "I scan left to right, greedily extending the current partition's boundary to ___(end, last[c]) for each character. If any character in my current window appears later, the window must grow to include it.",
+          answer: "max",
+        },
+        {
+          line: "When i == end, no character in this window escapes beyond it. The partition is sealed. I record its size and start fresh from ___.",
+          answer: "i+1",
+        },
+      ],
       testCase: {
         input: 's = "ababcbacadefegdehijhklij"',
         expected: "[9, 7, 8]",
