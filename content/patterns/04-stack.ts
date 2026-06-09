@@ -113,7 +113,7 @@ for i, val in enumerate(arr):
           answer: "short-circuit evaluation",
         },
         {
-          line: "At the end, if the stack is empty, every opener was matched. If there's anything left, we have unmatched openers — invalid.",
+          line: "At the end, if the stack is empty, every opener was matched. If there's anything left, we have ___ — invalid.",
           answer: "unmatched openers",
         },
       ],

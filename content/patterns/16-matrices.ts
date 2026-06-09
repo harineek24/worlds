@@ -88,16 +88,20 @@ return result`,
       ],
       explanationBlanks: [
         {
-          line: "I maintain four boundary pointers: top, bottom, left, right. Each iteration of the while loop processes one full ___ of the spiral — the outermost layer — then shrinks the boundaries inward.",
-          answer: "ring",
-        },
-        {
-          line: "I traverse left-to-right along the top row, then top-to-bottom along the right column, then right-to-left along the bottom row, then bottom-to-top along the left column. After each direction, I shrink the corresponding ___.",
+          line: "I maintain four ___ pointers: top, bottom, left, right. Each iteration of the while loop processes one full ring of the spiral — the outermost layer — then shrinks the boundaries inward.",
           answer: "boundary",
         },
         {
-          line: "I add guards before the bottom row and left column traversals because after moving top and right, the layer may have collapsed to a single row or column. Without the guards, I'd traverse those cells ___.",
-          answer: "twice",
+          line: "I traverse left-to-right along the top row, then top-to-bottom along the right column, then right-to-left along the bottom row, then bottom-to-top along the left column. After each direction, I ___ the corresponding boundary.",
+          answer: "shrink",
+        },
+        {
+          line: "I add ___ before the bottom row and left column traversals because after moving top and right, the layer may have collapsed to a single row or column. Without the guards, I'd traverse those cells twice.",
+          answer: "guards",
+        },
+        {
+          line: "Syntax — why four separate for-loops instead of a direction-array loop: The spiral pattern has four distinct directional segments that share no common update logic — each one shrinks a different ___ pointer. A direction-array loop works well for uniform grid traversal (BFS, DFS), but here the bookkeeping after each direction differs, so four explicit loops are cleaner. Forcing it into a direction array would require index-tracking overhead that obscures the logic.",
+          answer: "boundary",
         },
       ],
       testCase: {
