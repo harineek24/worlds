@@ -115,12 +115,20 @@ def minEatingSpeed(piles, h):
       },
       explanationBlanks: [
         {
-          line: "The key reframe: instead of searching an array by index, I'm searching the *answer space*. The question becomes: what is the minimum speed k where I can finish in h hours? Binary search works here because feasibility is ___  — if speed k works, every speed > k also works.",
+          line: "The key reframe: instead of searching an array by index, I'm searching the *answer space*. The question becomes: what is the minimum speed k where I can finish in h hours? Binary search works here because feasibility is ___ — if speed k works, every speed > k also works.",
           answer: "monotone",
         },
         {
           line: "`left, right = 1, max(piles)` — these are the boundaries of the answer space, not array indices. Speed 1 is the slowest possible (floor of valid answers). Speed max(piles) guarantees every pile is eaten in one hour — that's the ceiling. Setting boundaries this way is the defining move of 'binary search on answer' problems: you're searching the range of ___ answers.",
           answer: "plausible",
+        },
+        {
+          line: "`mid = (left + right) // 2` — the `//` operator is ___ division. In Python 3, `/` always returns a float, so `(1 + 11) / 2` gives `6.0`. Using that as an index or speed would either crash or silently behave incorrectly. `//` truncates toward zero and gives an `int`.",
+          answer: "integer",
+        },
+        {
+          line: "The ___ check: given speed `mid`, how many hours does it take? For each pile, I need `ceil(pile / mid)` hours. If the total is <= h, mid is fast enough.",
+          answer: "feasibility",
         },
         {
           line: "`if hours <= h: right = mid` — when feasible, I set `right = mid` (not `mid - 1`) because `mid` itself could be the minimum answer. Cutting to `mid - 1` would discard a valid candidate. When infeasible, `left = mid + 1` is safe — mid is definitively too slow. I use `left < right` (not `<=`) because I'm converging on a ___, not searching for a specific value. When left == right, they've pinpointed the minimum feasible speed.",
@@ -206,12 +214,20 @@ def minEatingSpeed(piles, h):
           answer: "sorted",
         },
         {
-          line: "I check if the left half [left..mid] is sorted by comparing `nums[left] <= nums[mid]`. If true, the left half has no rotation — it's a clean ascending sequence. If the target falls within `[nums[left], nums[mid])`, I go left; otherwise the target must be in the ___ half.",
-          answer: "right",
+          line: "`left, right = 0, len(nums) - 1` — here the boundaries are array ___ (not an answer space), so `right` starts at the last valid index. `mid = (left + right) // 2` uses `//` for integer division — in Python 3, `/` gives a float, which would be invalid as an index.",
+          answer: "indices",
         },
         {
-          line: "I use `right = mid - 1` (not `mid`) here because this is classic binary search where I already confirmed `nums[mid] != target` before branching — mid is definitively not the answer, so I can safely exclude it. This is different from 'binary search on answer' problems where ___ might still be valid.",
-          answer: "mid",
+          line: "I check if the left half [left..mid] is sorted by comparing `nums[left] <= nums[mid]`. If true, the left half has no ___ — it's a clean ascending sequence. If the target falls within `[nums[left], nums[mid])`, I go left; otherwise the target must be in the right half.",
+          answer: "rotation",
+        },
+        {
+          line: "If the left half is not sorted, the rotation ___ lives in it, so the right half [mid..right] must be sorted. Same logic: if target falls within the right half's range `(nums[mid], nums[right]]`, go right; otherwise go left.",
+          answer: "pivot",
+        },
+        {
+          line: "I use `right = mid - 1` (not `mid`) here because this is classic binary search where I already confirmed `nums[mid] != target` before branching — mid is definitively not the answer, so I can safely ___ it. This is different from 'binary search on answer' problems where mid might still be valid.",
+          answer: "exclude",
         },
       ],
       blanks: [
@@ -293,12 +309,20 @@ def minEatingSpeed(piles, h):
       },
       explanationBlanks: [
         {
-          line: "This is a 'minimize the maximum' problem — a classic signal for binary search on the answer space. The feasibility function is ___: if a max-sum cap of X works, so does X+1. That monotonicity is what makes binary search valid here.",
-          answer: "monotone",
+          line: "This is a '___ the maximum' problem — a classic signal for binary search on the answer space. The feasibility function is monotone: if a max-sum cap of X works, so does X+1. That monotonicity is what makes binary search valid here.",
+          answer: "minimize",
         },
         {
-          line: "The feasibility check: given max allowed sum `mid`, I greedily build subarrays — keep adding elements until the next element would exceed `mid`, then start a new subarray. This gives the ___ possible number of subarrays for this cap.",
-          answer: "minimum",
+          line: "`left, right = max(nums), sum(nums)` — these are the boundaries of the *answer space*, not array indices. The answer can't be less than `max(nums)` because that element must appear in some subarray. It can't exceed `sum(nums)` because one subarray holding everything is always a valid (if unoptimized) split. Setting boundaries to the range of valid answers, rather than array indices, is the core move of 'binary search on answer' problems. `mid = (left + right) // 2` uses `//` to keep mid an integer — it represents a ___, not an index, but it still must be a whole number.",
+          answer: "sum",
+        },
+        {
+          line: "The ___ check: given max allowed sum `mid`, I greedily build subarrays — keep adding elements until the next element would exceed `mid`, then start a new subarray. This gives the minimum possible number of subarrays for this cap.",
+          answer: "feasibility",
+        },
+        {
+          line: "`if count <= k: right = mid` — when feasible, I use `right = mid` not `mid - 1`, because `mid` itself could be the minimum valid cap. Cutting to `mid - 1` would skip the answer. When infeasible (`count > k`), `mid` is definitively too small, so `left = mid + 1` safely ___ it.",
+          answer: "discards",
         },
         {
           line: "The greedy is correct because filling each subarray as much as possible minimizes the number of subarrays for a given cap. If even greedy needs more than k splits, no rearrangement can do better (and we can't reorder — subarrays must be ___ in the original order).",
@@ -401,12 +425,20 @@ def minEatingSpeed(piles, h):
       },
       explanationBlanks: [
         {
+          line: "I binary search on the *value* space, not the index space. `left, right = matrix[0][0], matrix[n-1][n-1]` — these are the smallest and largest values in the matrix, which define the range of valid answers. This is 'binary search on ___': the search space is the range of possible answer values, not array positions. `mid = (left + right) // 2` uses `//` because mid represents a value (integer), and Python 3's `/` would give a float.",
+          answer: "answer",
+        },
+        {
           line: "The feasibility question: how many elements in the matrix are <= mid? If that count is >= k, then the kth smallest is <= mid (try smaller: `right = mid`). If count < k, the kth smallest is ___ mid (try larger: `left = mid + 1`).",
           answer: "> mid",
         },
         {
-          line: "The count step exploits the sorted-rows-and-columns property with a bottom-left walk. If `matrix[row][col] <= mid`, every element above in that column is also <= mid — that's `row+1` elements in one operation. Move right. If `matrix[row][col] > mid`, move ___. This traverses at most 2n steps total — O(n) per binary search iteration.",
-          answer: "up",
+          line: "The count step exploits the sorted-rows-and-columns property with a ___ walk. If `matrix[row][col] <= mid`, every element above in that column is also <= mid — that's `row+1` elements in one operation. Move right. If `matrix[row][col] > mid`, move up. This traverses at most 2n steps total — O(n) per binary search iteration.",
+          answer: "bottom-left",
+        },
+        {
+          line: "Why `right = mid` and not `mid - 1` when feasible: mid might not exist in the matrix as a value — it's a ___ of a value range. We can't exclude it because the actual answer might not have been a midpoint; we need `left` and `right` to converge onto a real matrix value. Setting `right = mid` preserves mid as a candidate until convergence.",
+          answer: "midpoint",
         },
         {
           line: "The invariant: when `left == right`, the value is guaranteed to exist in the matrix. The convergence point is always the smallest value with count >= k, and by the matrix's structure, that value must be a ___ element.",
@@ -500,8 +532,16 @@ def minEatingSpeed(piles, h):
           answer: "classic",
         },
         {
+          line: "`mid = (left + right) // 2` — `//` for ___ division because mid represents a weight capacity, which must be a whole number. Python 3's `/` would yield a float, breaking the comparison `curr + w > mid` with floating-point imprecision and making the result invalid as a capacity.",
+          answer: "integer",
+        },
+        {
           line: "The feasibility check: given capacity `mid`, I greedily load packages in sequence. If adding the next package would exceed `mid`, I start a new day. This greedy is optimal because orders are fixed — we ship in the given sequence. Filling each day ___ minimizes the number of days needed.",
           answer: "maximally",
+        },
+        {
+          line: "`if needed <= days: right = mid` — feasible means `mid` could be the answer, so I keep it as a candidate with `right = mid` (not `mid - 1`). Infeasible means `mid` is definitively too small: `left = mid + 1` safely discards it. `left < right` (not `<=`) drives ___ to a single value rather than overshooting.",
+          answer: "convergence",
         },
         {
           line: "This is structurally identical to Koko Eating Bananas — both binary-search on a 'minimum feasible value' with a greedy feasibility check. The template is: set answer-space bounds, check feasibility at mid, shrink toward the minimum feasible point. Recognizing the ___ is the skill; the implementation follows mechanically.",

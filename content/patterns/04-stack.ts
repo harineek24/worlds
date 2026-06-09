@@ -283,16 +283,24 @@ for i, val in enumerate(arr):
       ],
       explanationBlanks: [
         {
-          line: "I'm storing indices in the stack, not characters. This lets me calculate lengths directly from ___. The stack is a plain list — `.append(i)` to push and `.pop()` to remove the top. I never need to peek without removing on the pop path here; the only peek is `stack[-1]` when computing the length after a pop, which reads the new top without disturbing it.",
-          answer: "index differences",
+          line: "I'm storing ___ in the stack, not characters. This lets me calculate lengths directly from index differences. The stack is a plain list — `.append(i)` to push and `.pop()` to remove the top. I never need to peek without removing on the pop path here; the only peek is `stack[-1]` when computing the length after a pop, which reads the new top without disturbing it.",
+          answer: "indices",
         },
         {
-          line: "I seed the stack with -1 as a 'base' index. The length of a valid sequence ending at index i is `i - stack[-1]`. Using `stack[-1]` here (negative indexing, last element) is crucial: after every valid match, the stack top holds the last 'boundary' index, and I compute the span from there to i without knowing how deep the stack is. The base -1 ensures this works even when the sequence starts at index 0 — `0 - (-1) = 1`, which is the correct length.",
+          line: "I seed the stack with ___ as a 'base' index. The length of a valid sequence ending at index i is `i - stack[-1]`. Using `stack[-1]` here (negative indexing, last element) is crucial: after every valid match, the stack top holds the last 'boundary' index, and I compute the span from there to i without knowing how deep the stack is. The base -1 ensures this works even when the sequence starts at index 0 — `0 - (-1) = 1`, which is the correct length.",
           answer: "-1",
         },
         {
-          line: "The key insight: the stack always has at least one element (the base). When we compute `i - stack[-1]`, that `stack[-1]` is the last 'invalid' index — everything between it and i is a valid run.",
-          answer: "last 'invalid' index",
+          line: "For '(', I push its index — it's a potential ___ of a valid sequence.",
+          answer: "start",
+        },
+        {
+          line: "For ')', I always pop first. If the stack becomes empty after popping, the current ')' is unmatched — it becomes the new base by pushing i. If the stack is non-empty after popping, `stack[-1]` (the new top) is the last boundary index — the length of the current valid run is `i - stack[-1]`. This ___ pattern is idiomatic: accessing `stack[-1]` is O(1) and leaves the stack intact for future iterations.",
+          answer: "peek-without-remove",
+        },
+        {
+          line: "The key insight: the stack always has at least one element (the base). When we compute `i - stack[-1]`, that `stack[-1]` is the last ___ — everything between it and i is a valid run.",
+          answer: "'invalid' index",
         },
       ],
     },
@@ -369,12 +377,16 @@ for i, val in enumerate(arr):
           answer: "monotonic decreasing stack",
         },
         {
-          line: "I push indices, not temperatures, because I need to compute the distance (i - j). I can always look up the temperature via `temperatures[stack[-1]]` — this is a peek: I read the top of the stack without removing it first, just to decide whether to pop. If the peek tells me to pop, I then call `stack.pop()` to actually remove it. This two-step (peek then conditionally pop) is the correct pattern — not `stack.pop()` followed by pushing back on failure.",
-          answer: "peek then conditionally pop",
+          line: "I push indices, not temperatures, because I need to compute the ___ (i - j). I can always look up the temperature via `temperatures[stack[-1]]` — this is a peek: I read the top of the stack without removing it first, just to decide whether to pop. If the peek tells me to pop, I then call `stack.pop()` to actually remove it. This two-step (peek then conditionally pop) is the correct pattern — not `stack.pop()` followed by pushing back on failure.",
+          answer: "distance",
         },
         {
-          line: "After the inner while loop, I push the current index. Any indices still in the stack at the end have no warmer future day — their answer stays 0.",
-          answer: "no warmer future day",
+          line: "For each new temperature, I pop all indices from the stack that have a colder temperature. For each popped index j, the current day i is the first warmer day — `answer[j] = ___ `.",
+          answer: "i - j",
+        },
+        {
+          line: "After the inner while loop, I push the current index. Any indices still in the stack at the end have no warmer future day — their answer stays ___.",
+          answer: "0",
         },
       ],
     },
@@ -459,16 +471,20 @@ for i, val in enumerate(arr):
       ],
       explanationBlanks: [
         {
-          line: "I'm using a monotonic increasing stack of indices. The key insight: a bar can extend a rectangle as far left as the nearest shorter bar to its left, and as far right as the nearest shorter bar to its right. When a shorter bar forces us to pop, that's exactly the moment we can calculate the rectangle. The stack is a plain list — `.append(i)` and `.pop()` at the tail are O(1) amortized. I use `while stack and heights[stack[-1]] > curr_height:` — `stack` is checked first (short-circuit safety), then I peek at the top via `heights[stack[-1]]` to decide whether to pop. The peek reads the top index and looks up its height without removing anything. Only after confirming the pop is warranted do I call `stack.pop()` inside the loop body.",
-          answer: "nearest shorter bar",
+          line: "I'm using a ___ of indices. The key insight: a bar can extend a rectangle as far left as the nearest shorter bar to its left, and as far right as the nearest shorter bar to its right. When a shorter bar forces us to pop, that's exactly the moment we can calculate the rectangle. The stack is a plain list — `.append(i)` and `.pop()` at the tail are O(1) amortized. I use `while stack and heights[stack[-1]] > curr_height:` — `stack` is checked first (short-circuit safety), then I peek at the top via `heights[stack[-1]]` to decide whether to pop. The peek reads the top index and looks up its height without removing anything. Only after confirming the pop is warranted do I call `stack.pop()` inside the loop body.",
+          answer: "monotonic increasing stack",
         },
         {
           line: "I iterate to n+1 and use a ___ of 0 at index n. This forces all remaining bars to be popped and evaluated at the end — without this, bars that are never smaller than anything to their right would never get their rectangle computed.",
           answer: "sentinel height",
         },
         {
-          line: "The formula `w = i if not stack else i - stack[-1] - 1` uses `stack[-1]` (negative index, last element) to peek at the new stack top after the pop. This peek is O(1) and gives us the left boundary of the rectangle. I use `not stack` as the guard before `stack[-1]` — the same safe short-circuit ordering as in the while condition above. If the stack is empty after the pop, there's nothing to the left that's shorter, so the rectangle's left boundary is index 0 and width equals i.",
-          answer: "left boundary of the rectangle",
+          line: "When I pop height h from index j, the width of the rectangle is: the current index i (right boundary, exclusive) minus the new stack top + 1 (left boundary, exclusive). If the stack is empty after popping, the rectangle spans from index 0 to i-1, so ___ = i.",
+          answer: "width",
+        },
+        {
+          line: "The formula `w = i if not stack else i - stack[-1] - 1` uses `stack[-1]` (negative index, last element) to peek at the new stack top after the pop. This peek is O(1) and gives us the ___ of the rectangle. I use `not stack` as the guard before `stack[-1]` — the same safe short-circuit ordering as in the while condition above. If the stack is empty after the pop, there's nothing to the left that's shorter, so the rectangle's left boundary is index 0 and width equals i.",
+          answer: "left boundary",
         },
       ],
     },

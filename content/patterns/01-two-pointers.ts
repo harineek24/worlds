@@ -608,12 +608,20 @@ while mid <= high:
       ],
       explanationBlanks: [
         {
+          line: "I initialize three pointers in one ___ assignment: `low, mid, high = 0, 0, len(nums) - 1`. This is idiomatic Python for multi-variable initialization — cleaner than three separate lines and makes the starting state of all three regions visible at once. The regions are: everything before `low` is confirmed 0s, `low` to `mid-1` is confirmed 1s, `mid` to `high` is unknown, after `high` is confirmed 2s. I start with the entire array unknown.",
+          answer: "tuple",
+        },
+        {
           line: "I use a while loop with condition `mid <= high` — not `mid < high` — because when `mid == high` there's still one unknown element at that position that needs to be classified. The loop terminates when `mid` passes `high`, meaning the ___ region is empty.",
           answer: "unknown",
         },
         {
-          line: "If `nums[mid] == 0`, I swap with `nums[low]` using Python's tuple swap — `nums[low], nums[mid] = nums[mid], nums[low]` — which is atomic: no temp variable needed, and there's no risk of reading a half-updated value. Both `low` and `mid` advance: `low` because the 0-region grew, `mid` because the element swapped in from `low` was a confirmed 1 (it was already in the 1s region), so `mid` can safely move past it.",
+          line: "If `nums[mid] == 0`, I swap with `nums[low]` using Python's ___ — `nums[low], nums[mid] = nums[mid], nums[low]` — which is atomic: no temp variable needed, and there's no risk of reading a half-updated value. Both `low` and `mid` advance: `low` because the 0-region grew, `mid` because the element swapped in from `low` was a confirmed 1 (it was already in the 1s region), so `mid` can safely move past it.",
           answer: "tuple swap",
+        },
+        {
+          line: "If `nums[mid] == 1`, it's already in the right region — just advance `mid` with `mid += 1` to shrink the ___ zone. No swap needed; the element is already where it belongs.",
+          answer: "unknown",
         },
         {
           line: "If `nums[mid] == 2`, I swap with `nums[high]` — again using tuple swap — and shrink `high` with `high -= 1`. Critically, I do NOT advance `mid` here: the element just swapped in from `high` came from the unknown region and must be re-examined in the next iteration. Advancing `mid` here would silently ___ it.",

@@ -299,9 +299,11 @@ def countBits(n):
         { line: `return dp[___]`, answer: "n" },
       ],
       explanationBlanks: [
+        { line: "dp[i] means the first i characters of s can be validly segmented. I use `dp = [False] * (n + 1)` with size n+1, not n — this is the ___ pattern. `dp[0]` is the base case (empty string, trivially segmented), and `dp[i]` represents the answer for the first i characters. Without the +1, `dp[n]` would be out of bounds.", answer: "1-indexed" },
         { line: "For each position i, I scan all split points j before it. If the prefix up to j is already valid (`dp[j]` is True) and the substring `s[j:i]` is in the dictionary, then the prefix up to i is also valid. I reference `dp[j]` — a previously computed answer — and build forward. Filling ___ ensures dp[j] is always settled before it's read.", answer: "left-to-right" },
         { line: "I convert wordDict to a set first. Checking `s[j:i] in word_set` is O(1) average. If wordDict stayed a list, each membership check would be O(k) where k is the ___ size — making the overall algorithm O(n² × k) instead of O(n²).", answer: "dictionary" },
         { line: "The `break` is an optimization: once one valid split for position i is found, dp[i] is True regardless of remaining j values. No need to keep ___.", answer: "checking" },
+        { line: "The final answer is `dp[n]` — whether the entire string of ___ characters can be segmented.", answer: "n" },
       ],
     },
 
@@ -374,6 +376,9 @@ def countBits(n):
       ],
       explanationBlanks: [
         { line: "dp[i] is the number of ways to decode the first i characters. I use `dp = [0] * (n + 1)` — size n+1, not n, because `dp[0]` is the base case (empty string: one way to decode nothing) and `dp[n]` is the final answer. The +1 avoids ___: without it, `dp[n]` would be out of bounds.", answer: "off-by-one" },
+        { line: "dp[1] is set explicitly based on whether the first character is '0'. A '0' can't map to any letter as a single digit, so dp[1] = 0. This handles the ___ before the main loop begins at i=2.", answer: "edge case" },
+        { line: "At each position i, I consider two choices. For the single-digit path, `one = s[i-1]` — the last character. For the two-digit path, `two = s[i-2:i]` — the last two characters. Python ___ notation makes extracting these substrings concise.", answer: "slice" },
+        { line: "Single digit is valid only if `one != '0'`. If valid, I add `dp[i-1]` — all the ways to decode up to the previous position. I reference `dp[i-1]` because DP builds on already-solved subproblems; this cell was filled in an ___ iteration.", answer: "earlier" },
         { line: "Two digits are valid only if `'10' <= two <= '26'`. String comparison works here because the strings have equal length — Python compares ___, which matches numeric order for zero-padded two-digit strings. If valid, I add `dp[i-2]` — the ways to decode everything before this two-digit group.", answer: "lexicographically" },
         { line: "Both contributions can stack: if both single and two-digit decodes are valid at position i, dp[i] accumulates both. This is the ___ principle of counting — independent valid choices multiply the total count.", answer: "additive" },
       ],

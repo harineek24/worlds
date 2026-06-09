@@ -73,6 +73,10 @@ return count`,
       ],
       explanationBlanks: [
         {
+          line: "I maintain a ___ sum as I scan left to right. At each position, running_sum is the sum from index 0 to here.",
+          answer: "running",
+        },
+        {
           line: "I want to know: how many times has (running_sum - k) appeared as a running sum before? If running_sum_at_j - running_sum_at_i == k, then the subarray from i+1 to j sums to k. The hashmap ___ stores exactly those previous running sums.",
           answer: "seen",
         },
@@ -81,8 +85,16 @@ return count`,
           answer: "count",
         },
         {
-          line: "This is ___ time and O(n) space — one pass with a hashmap.",
+          line: "This is O(n) time and ___ space — one pass with a hashmap.",
           answer: "O(n)",
+        },
+        {
+          line: "Syntax — why defaultdict(int): defaultdict(int) returns 0 for any missing key instead of raising ___. This means seen[running_sum - k] is always safe to read even before that sum has been recorded — it just returns 0, which is the correct count (zero prior occurrences). Without defaultdict I'd need seen.get(running_sum - k, 0) on every lookup.",
+          answer: "KeyError",
+        },
+        {
+          line: "Syntax — why prefix sum by subtraction: The core insight is that prefix[j] - prefix[i] = sum(nums[i..j-1]). By recording running sums in a hashmap as we go, each lookup running_sum - k checks: 'is there a previous ___ sum that differs from the current one by exactly k?' This is O(1) per query versus O(n) if we recomputed each subarray sum from scratch.",
+          answer: "prefix",
         },
       ],
       testCase: {
@@ -145,8 +157,8 @@ return total`,
       ],
       explanationBlanks: [
         {
-          line: "I build a prefix sum array where prefix[i] is the number of vowels in word[0..i-1]. This lets me answer 'how many vowels in word[i..j]?' in ___ as prefix[j+1] - prefix[i].",
-          answer: "O(1)",
+          line: "I build a ___ sum array where prefix[i] is the number of vowels in word[0..i-1]. This lets me answer 'how many vowels in word[i..j]?' in O(1) as prefix[j+1] - prefix[i].",
+          answer: "prefix",
         },
         {
           line: "I then iterate over all (i, j) pairs to sum up vowel counts for every substring. With prefix sums, each query is O(1), so the total is ___ rather than O(n³).",
@@ -155,6 +167,14 @@ return total`,
         {
           line: "An even cleverer O(n) approach uses ___ counting: vowel at position i contributes to (i+1) * (n-i) substrings. But the prefix sum approach demonstrates the pattern cleanly.",
           answer: "contribution",
+        },
+        {
+          line: "Syntax — why prefix = [0] * (n + 1): The array has n+1 elements so that prefix[0] = 0 serves as the ___ case representing the empty prefix. This means prefix[i] holds the sum of the first i elements (indices 0 through i-1). With this convention, the range sum formula prefix[j+1] - prefix[i] works uniformly for all ranges including those starting at index 0 — no special-casing needed.",
+          answer: "base",
+        },
+        {
+          line: "Syntax — why prefix[j+1] - prefix[i] for range sum: prefix[j+1] is the cumulative count of vowels from position 0 up to and including position j. Subtracting prefix[i] removes the contribution of positions 0 through i-1. What remains is exactly the vowel count for the range [i, j]. The ___ offset in the index is the direct consequence of the n+1-length convention — it's not arbitrary.",
+          answer: "+1",
         },
       ],
       testCase: {
@@ -206,16 +226,24 @@ return total`,
       ],
       explanationBlanks: [
         {
-          line: "In the constructor, I precompute prefix sums. prefix[i] holds the sum of all elements from index 0 up to index i-1. I make the array one element longer than nums to avoid off-by-one handling — ___[0] = 0 always.",
-          answer: "prefix",
+          line: "In the constructor, I precompute prefix sums. prefix[i] holds the sum of all elements from index 0 up to index i-1. I make the array one element ___ than nums to avoid off-by-one handling — prefix[0] = 0 always.",
+          answer: "longer",
         },
         {
-          line: "For any query ___(left, right), I return prefix[right+1] - prefix[left]. This works because prefix[right+1] includes all elements 0..right, and subtracting prefix[left] removes all elements 0..left-1, leaving exactly the sum of elements left..right.",
-          answer: "sumRange",
+          line: "For any query sumRange(left, right), I return prefix[right+1] - prefix[left]. This works because prefix[right+1] includes all elements 0..right, and subtracting prefix[left] removes all elements 0..left-1, leaving exactly the ___ of elements left..right.",
+          answer: "sum",
         },
         {
-          line: "Construction is O(n), each query is ___. This is the canonical use case for prefix sums.",
-          answer: "O(1)",
+          line: "Construction is O(n), each query is O(1). This is the ___ use case for prefix sums.",
+          answer: "canonical",
+        },
+        {
+          line: "Syntax — why [0] * (len(nums) + 1): The multiplication creates a list of zeros of the correct length in one expression. The n+1 length is essential: prefix[0] must equal 0 (the sum of zero elements), and prefix[n] must equal the ___. Allocating n+1 upfront lets the build loop run cleanly as prefix[i+1] = prefix[i] + nums[i] for i in range(n) with no boundary gymnastics.",
+          answer: "total sum",
+        },
+        {
+          line: "Syntax — why return prefix[right+1] - prefix[left] not prefix[right] - prefix[left-1]: The +1 offset is tied to the array convention where prefix[i] = sum of first i elements (not first i+1). Using prefix[left-1] would fail when left=0 (index -1 in Python wraps to the last element, a ___ bug). The n+1-length design with prefix[0]=0 eliminates that edge case entirely.",
+          answer: "silent",
         },
       ],
       testCase: {

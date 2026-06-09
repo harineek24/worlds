@@ -98,12 +98,16 @@ freq[arr[left]] -= 1`,
       ],
       explanationBlanks: [
         {
+          line: "I seed the window with `sum(arr[:k])` — a ___ sum — rather than manually looping to accumulate the first `k` elements. This is the only O(k) operation in the whole function. I use `sum()` on a slice here instead of `sum(arr[i] for i in range(k))` because the slice version is simpler and Python's built-in `sum` on a list slice is implemented in C, so it's faster in practice. Every subsequent step will be O(1).",
+          answer: "slice",
+        },
+        {
           line: "The sliding step is the key insight: `window_sum += arr[right] - arr[right - k]`. Instead of recomputing the sum of k elements from scratch each time — which would be ___ overall — I add the incoming element at `right` and subtract the outgoing element at `right - k`. The expression `arr[right - k]` is the element that just left the window: since the window is exactly size k, the element that fell off the left is always `k` positions behind `right`. One arithmetic operation replaces an inner loop.",
           answer: "O(nk)",
         },
         {
-          line: "I track the running maximum using `max_sum = max(max_sum, window_sum)` — a built-in `max()` call rather than an if statement. Both are equivalent, but `max()` as an expression assigned back to `max_sum` is idiomatic Python: it reads as 'max_sum is the maximum of itself and the new candidate', which matches the mental model exactly.",
-          answer: "if statement",
+          line: "I track the running maximum using `max_sum = max(max_sum, window_sum)` — a built-in `max()` call rather than an ___ statement. Both are equivalent, but `max()` as an expression assigned back to `max_sum` is idiomatic Python: it reads as 'max_sum is the maximum of itself and the new candidate', which matches the mental model exactly.",
+          answer: "if",
         },
       ],
     },
@@ -162,16 +166,20 @@ freq[arr[left]] -= 1`,
       ],
       explanationBlanks: [
         {
-          line: "The key inversion: instead of tracking which k cards you pick from the ends, I track the (n-k) cards you leave behind in the middle. Maximizing picked points is equivalent to ___ the sum of the middle window. This turns an awkward 'pick from both ends' problem — which has no obvious pointer strategy — into a clean fixed-size sliding window over a contiguous middle segment.",
-          answer: "minimizing",
+          line: "The key ___: instead of tracking which k cards you pick from the ends, I track the (n-k) cards you leave behind in the middle. Maximizing picked points is equivalent to minimizing the sum of the middle window. This turns an awkward 'pick from both ends' problem — which has no obvious pointer strategy — into a clean fixed-size sliding window over a contiguous middle segment.",
+          answer: "inversion",
         },
         {
-          line: "I seed the first window with `sum(cardPoints[:window_size])` and slide it using the same O(1) add-and-subtract trick: `window_sum += cardPoints[right] - cardPoints[right - window_size]`. I track the minimum with `min_sum = min(min_sum, window_sum)` — using `min()` as an expression rather than an if statement, for the same reason I'd use `max()`: it reads as a clean running-minimum update.",
+          line: "I compute `total = sum(cardPoints)` upfront using the built-in `sum()` rather than accumulating with a loop — it's one line and communicates 'the total of the entire array' instantly. If `window_size == 0`, all cards are taken and `total` is the answer; the early return avoids dividing by zero or sliding a ___ window.",
+          answer: "zero-size",
+        },
+        {
+          line: "I seed the first window with `sum(cardPoints[:window_size])` and slide it using the same ___ add-and-subtract trick: `window_sum += cardPoints[right] - cardPoints[right - window_size]`. I track the minimum with `min_sum = min(min_sum, window_sum)` — using `min()` as an expression rather than an if statement, for the same reason I'd use `max()`: it reads as a clean running-minimum update.",
           answer: "O(1)",
         },
         {
-          line: "The answer is `total - min_sum`. I return this single expression rather than computing the picked-card sum directly — the ___ is the whole point of the algorithm, and spelling it out here as a subtraction makes the logic explicit: whatever the middle contributes least, the ends contribute most.",
-          answer: "inversion",
+          line: "The answer is `total - min_sum`. I return this single expression rather than computing the picked-card sum directly — the inversion is the whole point of the algorithm, and spelling it out here as a ___ makes the logic explicit: whatever the middle contributes least, the ends contribute most.",
+          answer: "subtraction",
         },
       ],
     },
@@ -245,8 +253,12 @@ def max_sum_distinct(nums, k):
           answer: "frequency counter",
         },
         {
-          line: "Once the window reaches size k — checked with `right - left + 1 == k` — I check validity: `len(freq) == k` means every element appears exactly once (if any key had count > 1, `freq` would have fewer distinct keys than elements). I use `len(freq)` as the distinctness check rather than tracking a separate `duplicates` counter because deleting zero-frequency keys keeps `len(freq)` accurate at all times.",
-          answer: "len(freq)",
+          line: "I expand the window by adding each new element with `freq[nums[right]] += 1` and adding its value to `window_sum`. I use a ___ loop for the right pointer — `for right in range(len(nums))` — because right always advances one step per element, making a for loop the correct abstraction. The window grows until it hits exactly size k.",
+          answer: "for",
+        },
+        {
+          line: "Once the window reaches size k — checked with `right - left + 1 == k` — I check validity: `len(freq) == k` means every element appears exactly once (if any key had count > 1, `freq` would have fewer distinct keys than elements). I use `len(freq)` as the ___ check rather than tracking a separate `duplicates` counter because deleting zero-frequency keys keeps `len(freq)` accurate at all times.",
+          answer: "distinctness",
         },
         {
           line: "Whether or not the window was valid, I slide it forward: subtract `nums[left]` from `window_sum`, decrement `freq[nums[left]]`, delete the key if its count hits 0 (using `del freq[nums[left]]` — not `pop`, because I want an explicit deletion that's clear at a glance), and advance `left`. Deleting zero-count keys is what keeps ___ reliable as the distinctness check.",
@@ -325,12 +337,16 @@ def max_sum_distinct(nums, k):
       ],
       explanationBlanks: [
         {
-          line: "Every time I add a character, I immediately check `if freq[s[right]] > 1` — a while loop rather than an if statement — because a single shrink step might not resolve the duplicate. I need to keep shrinking until the count of the newly added character specifically drops back to 1. A while loop expresses 'keep going until the condition is resolved', whereas an ___ would only shrink once and might leave the window in an invalid state.",
-          answer: "if",
+          line: "I use a plain dict `freq = {}` rather than `defaultdict(int)` here — and I access it with `freq.get(s[right], 0)` instead of `freq[s[right]]`. I use `dict.get(key, 0)` instead of direct indexing because the character might not exist in the dict yet — `.get` with a default of 0 avoids a ___ without needing a try/except or an `in` check first. I chose a plain dict over `defaultdict` here because there's no import needed and the `.get` pattern is explicit about the 'might not exist' case.",
+          answer: "KeyError",
         },
         {
-          line: "The shrink loop removes characters from the left one by one: decrement `freq[s[left]]`, delete the key if the count hits 0 (to keep the dict clean), and advance `left`. I use `del freq[s[left]]` rather than leaving the zero-count key in the dict — while it wouldn't affect correctness here, keeping the dict clean is good practice and prevents the dict from growing without bound on long strings.",
-          answer: "del freq[s[left]]",
+          line: "Every time I add a character, I immediately check `if freq[s[right]] > 1` — a ___ loop rather than an if statement — because a single shrink step might not resolve the duplicate. I need to keep shrinking until the count of the newly added character specifically drops back to 1. A while loop expresses 'keep going until the condition is resolved', whereas an if would only shrink once and might leave the window in an invalid state.",
+          answer: "while",
+        },
+        {
+          line: "The shrink loop removes characters from the left one by one: decrement `freq[s[left]]`, delete the key if the count hits 0 (to keep the dict clean), and advance `left`. I use `del freq[s[left]]` rather than leaving the zero-count key in the dict — while it wouldn't affect correctness here, keeping the dict clean is good practice and prevents the dict from growing without ___ on long strings.",
+          answer: "bound",
         },
         {
           line: "After the while loop, the window is guaranteed valid — `freq[s[right]] == 1`, meaning the newest character appears exactly once. I record `right - left + 1` as the window size using `max(max_len, right - left + 1)` — a single expression that updates the ___ without a conditional branch.",

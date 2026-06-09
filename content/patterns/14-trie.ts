@@ -207,8 +207,20 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
           answer: "reconstructing",
         },
         {
-          line: "Using a ___ for results handles the edge case where the same word can be found via multiple paths — it's only added once.",
-          answer: "set",
+          line: "The DFS starts from every ___ on the board. At each step I descend both the board and the trie simultaneously. I mark visited cells with '$' to avoid reuse, then restore them on backtrack.",
+          answer: "cell",
+        },
+        {
+          line: "Using a set for results handles the edge case where the same word can be found via multiple ___ — it's only added once.",
+          answer: "paths",
+        },
+        {
+          line: "Syntax — why [(0,1),(0,-1),(1,0),(-1,0)] for directions: Encoding four directions as a list of tuples lets me iterate over them in a loop instead of writing four separate if-branches. It's data-driven: adding diagonal support later means appending four more tuples, not duplicating DFS logic. Each tuple is (___, col delta), unpacked cleanly with 'for dr, dc in ...'.",
+          answer: "row delta",
+        },
+        {
+          line: "Syntax — why board[r][c] = '$' for visited: I mark visited cells ___ on the board rather than maintaining a separate visited set. This saves O(m*n) space and avoids keeping two data structures in sync. '$' works as the sentinel because the board only contains letters. On backtrack, I restore board[r][c] = ch to undo the mark.",
+          answer: "in-place",
         },
       ],
       testCase: {
@@ -280,8 +292,8 @@ return result`,
       ],
       explanationBlanks: [
         {
-          line: "I insert all words into the trie, storing the word string at the '#' node as before. I sort words first so that when two words of the same length exist, the ___ smaller one is stored.",
-          answer: "lexicographically",
+          line: "I insert all words into the trie, storing the word string at the '#' node as before. I ___ words first so that when two words of the same length exist, the lexicographically smaller one is stored.",
+          answer: "sort",
         },
         {
           line: "I do a DFS/BFS traversal of the trie, but I only follow edges into child nodes that have '#' — meaning only into nodes where a complete word ends. This is the key constraint: every ___ must itself be a word in the dictionary.",
@@ -290,6 +302,14 @@ return result`,
         {
           line: "If a node has '#', the word ending there was built one character at a time from valid prefixes. I track the ___ such word encountered. Sorting ensures ties are broken lexicographically without extra comparison logic.",
           answer: "longest",
+        },
+        {
+          line: "Syntax — why sorted(words) before inserting: dict insertion order in Python 3.7+ is preserved, but that's not the reason to sort here. Sorting ensures that when we store child['#'] = word, lexicographically earlier words of the same length are stored first. Since we only update result when len(word) ___ len(result) (strictly greater), ties naturally favor the first one encountered — which is the lexicographically smaller one after sorting.",
+          answer: ">",
+        },
+        {
+          line: "Syntax — why a stack list for traversal: I use an explicit stack (list used as a stack with .append and .pop) for the DFS rather than ___. For trie traversal the depth is bounded by word length (usually short), so recursion would also work. The list-based stack avoids Python's recursion limit concern and is a general habit worth practicing for graph problems.",
+          answer: "recursion",
         },
       ],
       testCase: {
