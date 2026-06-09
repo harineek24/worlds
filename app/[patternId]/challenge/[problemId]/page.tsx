@@ -156,7 +156,10 @@ export default function ChallengePage({
               <ol className="flex flex-col gap-3">
                 {problem.solutionExplanation.map((line, i) => {
                   const blankOffset = showCode ? problem.blanks.length : 0
-                  const blankMatch = problem.explanationBlanks.findIndex((b) => b.line === line)
+                  // Match by reconstructing full text: blank.line with ___ replaced by answer
+                  const blankMatch = problem.explanationBlanks.findIndex(
+                    (b) => b.line.replace("___", b.answer) === line
+                  )
                   const absoluteIndex = blankOffset + blankMatch
                   const isCorrect =
                     blankMatch !== -1 &&
