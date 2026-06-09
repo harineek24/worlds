@@ -103,13 +103,19 @@ export default async function StudyPage({
           }
         />
 
-        {/* Test Yourself */}
-        <div className="flex justify-end pb-8">
+        {/* Test Yourself — two separate modes */}
+        <div className="flex justify-end gap-3 pb-8">
           <Link
-            href={`/${patternId}/challenge/${problemId}`}
-            className="px-8 py-3 bg-[#5c3d1e] hover:bg-[#7a5230] text-[#f5e6c8] font-mono text-sm rounded transition-colors"
+            href={`/${patternId}/challenge/${problemId}?mode=explanation`}
+            className="px-6 py-3 border border-[#5c3d1e] hover:bg-[#2a1f0e] text-[#a0845c] hover:text-[#f5e6c8] font-mono text-sm rounded transition-colors"
           >
-            Test Yourself →
+            Test Reasoning →
+          </Link>
+          <Link
+            href={`/${patternId}/challenge/${problemId}?mode=code`}
+            className="px-6 py-3 bg-[#5c3d1e] hover:bg-[#7a5230] text-[#f5e6c8] font-mono text-sm rounded transition-colors"
+          >
+            Test Code →
           </Link>
         </div>
 

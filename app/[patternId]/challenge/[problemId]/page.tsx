@@ -3,66 +3,11 @@
 import { use, useState } from "react"
 import { notFound } from "next/navigation"
 import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { getPattern } from "@/content"
 import PhilosophyBanner from "@/components/PhilosophyBanner"
 import TwoColumn from "@/components/TwoColumn"
 import FillBlank from "@/components/FillBlank"
-
-// Render an explanation sentence that may contain ___ blanks inline
-function ExplanationLine({
-  line,
-  blankIndex,
-  blanks,
-  answers,
-  submitted,
-  onChangeBlank,
-}: {
-  line: string
-  blankIndex: number
-  blanks: { line: string; answer: string }[]
-  answers: string[]
-  submitted: boolean
-  onChangeBlank: (absoluteIndex: number, value: string) => void
-}) {
-  // Check if this explanation line matches an explanationBlank entry
-  const matchIndex = blanks.findIndex((b) => b.line === line)
-  if (matchIndex === -1) {
-    // No blank — render full text
-    return <p className="text-[#c8a97e] text-sm leading-relaxed">{line}</p>
-  }
-
-  // Has a blank — split on ___ and render with input
-  const absoluteIndex = blankIndex + matchIndex
-  const parts = line.split("___")
-  const isCorrect = answers[absoluteIndex]?.trim() === blanks[matchIndex].answer
-
-  return (
-    <p className="text-[#c8a97e] text-sm leading-relaxed flex items-center flex-wrap gap-1">
-      {parts.map((part, j) => (
-        <span key={j} className="flex items-center gap-1">
-          <span>{part}</span>
-          {j < parts.length - 1 && (
-            <input
-              value={answers[absoluteIndex] ?? ""}
-              onChange={(e) => onChangeBlank(absoluteIndex, e.target.value)}
-              disabled={submitted}
-              className={`w-28 px-2 py-0.5 rounded text-center font-mono text-xs outline-none border transition-colors ${
-                !submitted
-                  ? "bg-[#1a1208] border-[#5c3d1e] text-[#f5e6c8] focus:border-[#a0845c]"
-                  : isCorrect
-                  ? "bg-[#0d2b0d] border-[#2d6a2d] text-[#6fcf6f]"
-                  : "bg-[#2b0d0d] border-[#6a2d2d] text-[#cf6f6f]"
-              }`}
-            />
-          )}
-          {submitted && !isCorrect && j === parts.length - 1 && (
-            <span className="text-[#6a2d2d] text-xs ml-1">→ {blanks[matchIndex].answer}</span>
-          )}
-        </span>
-      ))}
-    </p>
-  )
-}
 
 export default function ChallengePage({
   params,
@@ -70,26 +15,42 @@ export default function ChallengePage({
   params: Promise<{ patternId: string; problemId: string }>
 }) {
   const { patternId, problemId } = use(params)
+  const searchParams = useSearchParams()
+  const mode = searchParams.get("mode") ?? "both" // "code" | "explanation" | "both"
+
   const pattern = getPattern(patternId)
   if (!pattern) notFound()
 
   const problem = pattern.problems.find((p) => p.id === problemId)
   if (!problem) notFound()
 
-  const totalBlanks = problem.blanks.length + problem.explanationBlanks.length
-  const [answers, setAnswers] = useState<string[]>(Array(totalBlanks).fill(""))
+  const showCode = mode === "code" || mode === "both"
+  const showExplanation = mode === "explanation" || mode === "both"
+
+  const activeBlanks = [
+    ...(showCode ? problem.blanks : []),
+    ...(showExplanation ? problem.explanationBlanks : []),
+  ]
+
+  const [answers, setAnswers] = useState<string[]>(Array(activeBlanks.length).fill(""))
   const [submitted, setSubmitted] = useState(false)
 
-  // Code blanks use indices 0..blanks.length-1
-  // Explanation blanks use indices blanks.length..totalBlanks-1
-  const codeAnswers = answers.slice(0, problem.blanks.length)
-  const explAnswers = answers.slice(problem.blanks.length)
+  // When mode=code: code answers are 0..blanks.length-1
+  // When mode=explanation: expl answers are 0..explanationBlanks.length-1
+  // When mode=both: code first, expl after
+  const codeAnswers = showCode ? answers.slice(0, problem.blanks.length) : []
+  const explAnswers = showExplanation
+    ? answers.slice(showCode ? problem.blanks.length : 0)
+    : []
 
-  const codeCorrect = problem.blanks.filter((b, i) => codeAnswers[i]?.trim() === b.answer).length
-  const explCorrect = problem.explanationBlanks.filter(
-    (b, i) => explAnswers[i]?.trim() === b.answer
-  ).length
+  const codeCorrect = showCode
+    ? problem.blanks.filter((b, i) => codeAnswers[i]?.trim() === b.answer).length
+    : 0
+  const explCorrect = showExplanation
+    ? problem.explanationBlanks.filter((b, i) => explAnswers[i]?.trim() === b.answer).length
+    : 0
   const correct = codeCorrect + explCorrect
+  const total = activeBlanks.length
 
   function handleChange(index: number, value: string) {
     setAnswers((prev) => {
@@ -101,15 +62,18 @@ export default function ChallengePage({
 
   const nextProblem = pattern.problems[pattern.problems.findIndex((p) => p.id === problemId) + 1]
 
+  const modeLabel =
+    mode === "code" ? "Test Code" : mode === "explanation" ? "Test Reasoning" : "Test Yourself"
+
   return (
     <div className="flex flex-col min-h-screen">
       <PhilosophyBanner philosophy={pattern.philosophy} />
 
       <div className="flex flex-col gap-8 px-10 py-8">
 
-        {/* Problem + Pattern */}
+        {/* Mode indicator + Problem */}
         <TwoColumn
-          label="Problem"
+          label={modeLabel}
           left={
             <div className="flex flex-col gap-3">
               <div className="flex items-center gap-3">
@@ -146,27 +110,54 @@ export default function ChallengePage({
           }
         />
 
-        {/* Code blanks (left) + Explanation blanks (right) */}
-        <TwoColumn
-          label="Fill in the Blanks"
-          left={
-            <div className="flex flex-col gap-4">
-              <p className="text-[#a0845c] text-xs uppercase tracking-widest">Code</p>
+        {/* Code blanks — shown in "code" or "both" mode */}
+        {showCode && (
+          <TwoColumn
+            label="Fill in the Blanks — Code"
+            left={
               <FillBlank
                 blanks={problem.blanks}
                 submitted={submitted}
                 answers={codeAnswers}
                 onChange={(i, v) => handleChange(i, v)}
               />
-            </div>
-          }
-          right={
-            <div className="flex flex-col gap-4">
-              <p className="text-[#a0845c] text-xs uppercase tracking-widest">Reasoning — fill the gaps</p>
+            }
+            right={
+              submitted ? (
+                <div className="flex flex-col gap-3">
+                  <p className="text-[#a0845c] text-xs uppercase tracking-widest mb-1">Solution</p>
+                  <pre className="text-[#c8a97e] text-sm leading-7 font-mono whitespace-pre-wrap">
+                    {problem.solution}
+                  </pre>
+                </div>
+              ) : (
+                <p className="text-[#4a3520] font-mono text-xs italic">Solution revealed on submit</p>
+              )
+            }
+          />
+        )}
+
+        {/* Explanation blanks — shown in "explanation" or "both" mode */}
+        {showExplanation && (
+          <TwoColumn
+            label="Fill in the Blanks — Reasoning"
+            left={
+              submitted ? (
+                <pre className="text-[#c8a97e] text-sm leading-7 font-mono whitespace-pre-wrap">
+                  {problem.solution}
+                </pre>
+              ) : (
+                <pre className="text-[#c8a97e] text-sm leading-7 font-mono whitespace-pre-wrap">
+                  {problem.solution}
+                </pre>
+              )
+            }
+            right={
               <ol className="flex flex-col gap-3">
                 {problem.solutionExplanation.map((line, i) => {
+                  const blankOffset = showCode ? problem.blanks.length : 0
                   const blankMatch = problem.explanationBlanks.findIndex((b) => b.line === line)
-                  const absoluteIndex = problem.blanks.length + blankMatch
+                  const absoluteIndex = blankOffset + blankMatch
                   const isCorrect =
                     blankMatch !== -1 &&
                     answers[absoluteIndex]?.trim() === problem.explanationBlanks[blankMatch].answer
@@ -210,11 +201,11 @@ export default function ChallengePage({
                   )
                 })}
               </ol>
-            </div>
-          }
-        />
+            }
+          />
+        )}
 
-        {/* Trace + Trace explanations */}
+        {/* Trace — always shown */}
         <TwoColumn
           label={`Trace — ${problem.testCase.input}`}
           left={
@@ -244,19 +235,36 @@ export default function ChallengePage({
         <div className="flex items-center justify-between border-t border-[#2a1f0e] pt-6 pb-8">
           <div>
             {submitted && (
-              <p className={`font-mono text-sm ${correct === totalBlanks ? "text-[#6fcf6f]" : "text-[#cfb06f]"}`}>
-                {correct}/{totalBlanks} correct
-                {correct === totalBlanks ? " — clean run" : " — review the study page"}
+              <p className={`font-mono text-sm ${correct === total ? "text-[#6fcf6f]" : "text-[#cfb06f]"}`}>
+                {correct}/{total} correct
+                {correct === total ? " — clean run" : " — review the study page"}
               </p>
             )}
           </div>
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <Link
               href={`/${patternId}/study/${problemId}`}
               className="px-5 py-3 border border-[#5c3d1e] text-[#a0845c] hover:text-[#f5e6c8] font-mono text-sm rounded transition-colors"
             >
               ← Back to Study
             </Link>
+            {/* Switch mode buttons */}
+            {!submitted && mode !== "code" && (
+              <Link
+                href={`/${patternId}/challenge/${problemId}?mode=code`}
+                className="px-5 py-3 border border-[#5c3d1e] text-[#a0845c] hover:text-[#f5e6c8] font-mono text-sm rounded transition-colors"
+              >
+                Switch to Code
+              </Link>
+            )}
+            {!submitted && mode !== "explanation" && (
+              <Link
+                href={`/${patternId}/challenge/${problemId}?mode=explanation`}
+                className="px-5 py-3 border border-[#5c3d1e] text-[#a0845c] hover:text-[#f5e6c8] font-mono text-sm rounded transition-colors"
+              >
+                Switch to Reasoning
+              </Link>
+            )}
             {!submitted ? (
               <button
                 onClick={() => setSubmitted(true)}
