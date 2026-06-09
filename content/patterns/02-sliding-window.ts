@@ -421,12 +421,16 @@ def max_sum_distinct(nums, k):
       ],
       explanationBlanks: [
         {
-          line: "I maintain `freq` as a plain dict accessed with `freq.get(s[right], 0)` — same reasoning as the previous problem: `.get` with a default of 0 avoids a KeyError when a character is seen for the first time, without needing to import `defaultdict` or check membership first. I also track `max_freq` — the count of the most common character in the current window. The key formula: `window_size - max_freq` = the number of non-dominant characters = the minimum ___ needed to make the whole window uniform.",
-          answer: "replacements",
+          line: "I maintain `freq` as a plain dict accessed with `freq.get(s[right], 0)` — same reasoning as the previous problem: `.get` with a default of 0 avoids a KeyError when a character is seen for the first time, without needing to import `defaultdict` or check membership first. I also track `max_freq` — the count of the most common character in the current window. The key formula: `window_size - max_freq` = the number of ___ characters = the minimum replacements needed to make the whole window uniform.",
+          answer: "non-dominant",
         },
         {
-          line: "I update `max_freq` with `max_freq = max(max_freq, freq[s[right]])` each time a character is added. Critically, I never decrease `max_freq` even when shrinking the window — this is a deliberate optimization. `max_freq` acts as a floor: we only care about finding windows at least as large as the best one found so far, and a lower `max_freq` could never produce a longer valid window than we've already seen.",
-          answer: "max_freq",
+          line: "I update `max_freq` with `max_freq = max(max_freq, freq[s[right]])` each time a character is added. Critically, I never ___ `max_freq` even when shrinking the window — this is a deliberate optimization. `max_freq` acts as a floor: we only care about finding windows at least as large as the best one found so far, and a lower `max_freq` could never produce a longer valid window than we've already seen.",
+          answer: "decrease",
+        },
+        {
+          line: "The validity check uses a while loop: `while (right - left + 1) - max_freq > k`. I use while rather than if because after one shrink step the condition might still be violated — but in practice, with the stale `max_freq` optimization, the window shrinks by at most ___ per invalid step (never more), so the loop body runs at most once per right position. The while is still correct and generalizes cleanly.",
+          answer: "1",
         },
         {
           line: "After potentially shrinking, the window is valid. I record its size with `max_len = max(max_len, right - left + 1)`. Because we only ever shrink by one when the window is invalid, the window size never decreases below its previous maximum — it either stays the same or grows as `right` advances. This ___ behavior is what makes the algorithm O(n): each element enters and exits the window at most once.",

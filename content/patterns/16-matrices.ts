@@ -169,12 +169,20 @@ for row in matrix:
           answer: "transpose",
         },
         {
+          line: "The transpose swaps matrix[i][j] with matrix[j][i] for all i < j. I only iterate over the ___ (j starts at i+1) to avoid double-swapping back to the original.",
+          answer: "upper triangle",
+        },
+        {
           line: "After transposing, reversing each row completes the rotation. Both operations are in-place with O(1) extra space. The insight is recognizing the rotation as a composition of two ___.",
           answer: "reflections",
         },
         {
-          line: "The transpose swaps matrix[i][j] with matrix[j][i] for all i < j. I only iterate over the ___ (j starts at i+1) to avoid double-swapping back to the original.",
-          answer: "upper triangle",
+          line: "Syntax — why in-place modification instead of a new matrix: The problem requires it, and it saves O(n²) space. Python's ___ assignment (a, b = b, a) makes in-place swapping a one-liner with no temp variable needed. row.reverse() also modifies in-place. If the problem allowed a new matrix, creating one would be simpler to reason about — but in-place shows you understand memory constraints.",
+          answer: "simultaneous",
+        },
+        {
+          line: "Syntax — why for j in range(i+1, n) for the transpose: Starting j at i+1 restricts swaps to the upper triangle. If j started at 0 or i, you'd swap each pair ___, returning to the original. Starting at i would also swap an element with itself (a no-op but wasted work). i+1 is the minimal range that touches each off-diagonal pair exactly once.",
+          answer: "twice",
         },
       ],
       testCase: {
