@@ -27,17 +27,17 @@ export default function ChallengePage({
   const showCode = mode === "code" || mode === "both"
   const showExplanation = mode === "explanation" || mode === "both"
 
+  // Filter out any explanationBlanks entries that have no ___ — agents sometimes wrote full text
+  const validExplBlanks = (problem.explanationBlanks ?? []).filter((b) => b.line.includes("___"))
+
   const activeBlanks = [
     ...(showCode ? problem.blanks : []),
-    ...(showExplanation ? (problem.explanationBlanks ?? []) : []),
+    ...(showExplanation ? validExplBlanks : []),
   ]
 
   const [answers, setAnswers] = useState<string[]>(Array(activeBlanks.length).fill(""))
   const [submitted, setSubmitted] = useState(false)
 
-  // When mode=code: code answers are 0..blanks.length-1
-  // When mode=explanation: expl answers are 0..explanationBlanks.length-1
-  // When mode=both: code first, expl after
   const codeAnswers = showCode ? answers.slice(0, problem.blanks.length) : []
   const explAnswers = showExplanation
     ? answers.slice(showCode ? problem.blanks.length : 0)
@@ -47,7 +47,7 @@ export default function ChallengePage({
     ? problem.blanks.filter((b, i) => codeAnswers[i]?.trim() === b.answer).length
     : 0
   const explCorrect = showExplanation
-    ? (problem.explanationBlanks ?? []).filter((b, i) => explAnswers[i]?.trim() === b.answer).length
+    ? validExplBlanks.filter((b, i) => explAnswers[i]?.trim() === b.answer).length
     : 0
   const correct = codeCorrect + explCorrect
   const total = activeBlanks.length
@@ -148,9 +148,9 @@ export default function ChallengePage({
             }
             right={
               <ol className="flex flex-col gap-3">
-                {(problem.explanationBlanks ?? []).length === 0 ? (
+                {validExplBlanks.length === 0 ? (
                   <p className="text-[#4a3520] font-mono text-xs italic">No reasoning blanks for this problem yet.</p>
-                ) : (problem.explanationBlanks ?? []).map((blank, i) => {
+                ) : validExplBlanks.map((blank, i) => {
                   const absoluteIndex = (showCode ? problem.blanks.length : 0) + i
                   const isCorrect = answers[absoluteIndex]?.trim() === blank.answer
                   const parts = blank.line.split("___")
