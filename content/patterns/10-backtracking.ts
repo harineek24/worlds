@@ -111,6 +111,10 @@ export const backtracking: Pattern = {
       ],
       explanationBlanks: [
         {
+          line: "I'm appending a copy of `path` at the very start of every recursive call — before the loop. This records every ___ as a valid subset, including the empty set.",
+          answer: "prefix",
+        },
+        {
           line: "`result.append(path[:])` — I copy the path rather than appending `path` directly. Lists are passed by reference in Python, not by value. If I did `result.append(path)`, every entry in `result` would point to the same list object, which gets mutated by later appends and pops. By the time the function returns, every entry would show the same final (empty) state. `path[:]` creates a new list with the current contents, capturing a ___ at this moment in the recursion.",
           answer: "snapshot",
         },

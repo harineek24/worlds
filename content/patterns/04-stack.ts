@@ -193,16 +193,24 @@ for i, val in enumerate(arr):
       ],
       explanationBlanks: [
         {
-          line: "I'm using a stack to handle nesting — when I enter a '[', I freeze the current string and its repetition count on the stack. This lets me build the inner string fresh, then combine when I hit ']'. The stack is a plain list: I push with `stack.append((current, k))` and restore with `stack.pop()`. Both are O(1) amortized. I push a tuple `(current, k)` rather than two separate pushes — packing context into one tuple keeps the stack depth meaningful (one frame per nesting level) and lets me unpack cleanly with `prev_string, repeat = stack.pop()`.",
-          answer: "one frame per nesting level",
+          line: "I'm using a stack to handle nesting — when I enter a '[', I freeze the current string and its repetition count on the stack. This lets me build the inner string fresh, then combine when I hit ']'. The stack is a plain list: I push with `stack.append((current, k))` and restore with `stack.pop()`. Both are O(1) amortized. I push a ___ `(current, k)` rather than two separate pushes — packing context into one tuple keeps the stack depth meaningful (one frame per nesting level) and lets me unpack cleanly with `prev_string, repeat = stack.pop()`.",
+          answer: "tuple",
         },
         {
           line: "I track k as the number being built digit by digit (k = k * 10 + digit handles ___ like '12[a]'). I track current as the string being built at the current nesting level.",
           answer: "multi-digit numbers",
         },
         {
-          line: "On ']', I pop the saved context using `stack.pop()` — this removes and returns the top element in O(1). The current string is the completed inner piece — I repeat it `repeat` times and prepend the outer string (prev_string) that was waiting for it. I don't peek (`stack[-1]`) here because I always need to consume the saved frame, not just read it.",
+          line: "On '[', I push (current, k) to save the outer context, then reset both. Now I'm building the ___ from scratch.",
+          answer: "inner string",
+        },
+        {
+          line: "On ']', I pop the saved context using `stack.pop()` — this removes and returns the top element in O(1). The current string is the completed inner piece — I repeat it `repeat` times and prepend the outer string (prev_string) that was waiting for it. I don't peek (`stack[-1]`) here because I always need to ___, not just read it.",
           answer: "consume the saved frame",
+        },
+        {
+          line: "On a regular character, I just extend current. At the end, ___ holds the fully decoded string.",
+          answer: "current",
         },
       ],
     },

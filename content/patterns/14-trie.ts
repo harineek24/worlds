@@ -97,6 +97,10 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
       ],
       explanationBlanks: [
         {
+          line: "I'm using a ___ dict as the trie. Each node is a dict whose keys are characters leading to child nodes. I start from self.root for every operation.",
+          answer: "nested",
+        },
+        {
           line: "For insert, I walk the word character by character, using ___ to create a child node if it doesn't exist yet. After the last character I place a '#' key to mark this path as a complete word.",
           answer: "setdefault",
         },
@@ -105,8 +109,16 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
           answer: "prefix",
         },
         {
-          line: "___ is identical to search except I don't check for '#' at the end. Reaching the end of the prefix without a missing node is enough confirmation.",
-          answer: "startsWith",
+          line: "startsWith is identical to search except I don't check for '#' at the end. Reaching the end of the prefix without a missing node is enough ___.",
+          answer: "confirmation",
+        },
+        {
+          line: "Syntax — why dict instead of a TrieNode class: In Python interviews, a nested dict replaces an entire class definition. node.setdefault(c, {}) both ___ and returns a child in one call — a TrieNode class would need a children dict anyway, plus __init__ boilerplate. The tradeoff is readability for complex operations (like deletion), but for insert/search/startsWith the dict approach is faster to write and equally correct.",
+          answer: "creates",
+        },
+        {
+          line: "Syntax — why '#' as the end-of-word marker: Any ___ key that cannot appear as a real character works. '#' is a common convention because it's not a letter, so it's visually distinct when you're staring at the trie structure during debugging. 'end', True, or 1 also work — the choice is convention, not correctness.",
+          answer: "sentinel",
         },
       ],
       testCase: {

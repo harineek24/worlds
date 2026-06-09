@@ -458,16 +458,24 @@ return count`,
       ],
       explanationBlanks: [
         {
-          line: "I sort first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which would allocate a new list. The key insight after sorting: for a triple (a ≤ b ≤ c), only one inequality matters: a + b > c. The other two are automatically satisfied because c is the largest. This reduces a ___ check to one.",
-          answer: "3-condition",
+          line: "I sort first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which would allocate a new list. The key insight after sorting: for a triple (a ≤ b ≤ c), only one ___ matters: a + b > c. The other two are automatically satisfied because c is the largest. This reduces a 3-condition check to one.",
+          answer: "inequality",
+        },
+        {
+          line: "I fix the largest side using `k` as the outer loop variable, iterating backward with `range(len(nums) - 1, 1, -1)`. I use a for loop for the outer iteration because `k` always advances by exactly one position — unlike the inner two pointers which move conditionally. Starting from the right ensures the fixed element is always the true ___ of the triple.",
+          answer: "maximum",
         },
         {
           line: "If `nums[left] + nums[right] > nums[k]`, then every value between left and right-1 also satisfies the inequality with `right` (since the array is sorted and all those values are ≥ nums[left]). So I count `right - left` valid triangles in one step rather than iterating through them — this is the O(n²) speedup over the naïve ___ approach.",
           answer: "O(n³)",
         },
         {
-          line: "If the sum is too small, `nums[left]` is the bottleneck — it's the smaller of the two remaining sides. Moving `left` rightward with `left += 1` is the only way to increase the sum, because `right` is already as large as it can be for this inner loop.",
-          answer: "left += 1",
+          line: "After bulk-counting, I move `right` inward with `right -= 1` to try the next candidate for the second-largest side. I don't need to reset `left` — valid pairs from the previous `right` are still valid candidates for the new, ___ `right`.",
+          answer: "smaller",
+        },
+        {
+          line: "If the sum is too small, `nums[left]` is the ___ — it's the smaller of the two remaining sides. Moving `left` rightward with `left += 1` is the only way to increase the sum, because `right` is already as large as it can be for this inner loop.",
+          answer: "bottleneck",
         },
       ],
     },

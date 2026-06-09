@@ -504,6 +504,14 @@ return dummy.next`,
       },
       explanationBlanks: [
         {
+          line: "`dummy = ListNode(0); dummy.next = head` — the ___ node gives `prev` a real predecessor before the list begins. Without it, swapping the very first pair would require special-casing the head: `head = b; ...`. The dummy absorbs that branch so every swap, including the first, goes through the same `prev.next = b` assignment. The value 0 is never read.",
+          answer: "dummy",
+        },
+        {
+          line: "Each iteration processes one pair: `a` is the first node, `b` is the second. The loop condition `prev.next and prev.next.next` ensures there are at least two nodes left — a single trailing node gets left in ___, which is correct.",
+          answer: "place",
+        },
+        {
           line: "The rewiring is three pointer assignments and order is mandatory. First, `prev.next = b` (b jumps to the front of the pair). Then `a.next = b.next` (a takes b's old successor — you still have `b.next` because you haven't touched it yet). Finally `b.next = a` (completes the swap). If you set `b.next = a` before `a.next = b.next`, you lose b's original ___ permanently.",
           answer: "successor",
         },
