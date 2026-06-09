@@ -132,12 +132,20 @@ def level_order(root):
       ],
       explanationBlanks: [
         {
-          line: "I'm snapshotting `len(queue)` at the top of each `while` iteration. That count tells me exactly how many nodes belong to the current level before I start enqueuing the next one. Without the snapshot, as I push children during the loop, `len(queue)` would grow — I'd drift into processing next-level nodes as if they were part of the current ___.",
-          answer: "wave",
+          line: "I'm seeding the queue with just the root — that's level 0. If the tree is ___ I return early because there's nothing to process.",
+          answer: "empty",
         },
         {
           line: "`from collections import deque` + `queue = deque([root])` — I use deque instead of a plain list because `list.pop(0)` is O(n): Python has to shift every remaining element left. `deque.popleft()` is ___ because a deque is a doubly-linked structure with a direct pointer to the front. For a tree with thousands of nodes, that difference compounds every level.",
           answer: "O(1)",
+        },
+        {
+          line: "I'm snapshotting `len(queue)` at the top of each `while` iteration. That count tells me exactly how many nodes belong to the current level before I start enqueuing the next one. Without the snapshot, as I push children during the loop, `len(queue)` would grow — I'd drift into processing next-level nodes as if they were part of the current ___.",
+          answer: "wave",
+        },
+        {
+          line: "Inside the inner loop I pop a node, record its value, then push its children. The children land in the queue after the current level's nodes, so the ___ keeps the levels cleanly separated.",
+          answer: "snapshot",
         },
         {
           line: "I append the completed `level` list to `result` after the ___ loop finishes — that's when the entire wave has been processed.",
@@ -216,12 +224,20 @@ def right_side_view(root):
       ],
       explanationBlanks: [
         {
-          line: "I'm using the loop index `i` to detect the last node in each level: when `i == level_size - 1`, that's the ___ node processed, so I record it.",
-          answer: "rightmost",
+          line: "I'm doing standard level-order BFS — snapshot the level size, drain exactly that many nodes, enqueue their ___.",
+          answer: "children",
         },
         {
           line: "`level_size = len(queue)` snapshot — I freeze the count before the inner loop because the queue grows as I enqueue children. If I checked `len(queue)` inside the loop instead of snapshotting, I'd process next-level nodes inside the current level's iteration, breaking level ___ entirely.",
           answer: "separation",
+        },
+        {
+          line: "I'm using the loop index `i` to detect the last node in each level: when `i == level_size - 1`, that's the ___ node processed, so I record it.",
+          answer: "rightmost",
+        },
+        {
+          line: "By appending only the last node of each level, I naturally get the right side view without any extra ___.",
+          answer: "bookkeeping",
         },
       ],
     },
@@ -315,12 +331,24 @@ def oranges_rotting(grid):
           answer: "multi-source",
         },
         {
-          line: "When a fresh neighbor is infected, I mutate the grid to 2 to mark it visited and decrement `fresh`. Using the grid itself as the ___ set avoids a separate data structure — checking `grid[nr][nc] == 1` is both the freshness test and the not-yet-visited check in a single condition.",
-          answer: "visited",
+          line: "`from collections import deque` with `queue.popleft()` — each BFS step processes a cell at the front of the queue. A list would make every `pop(0)` O(n), which for a large grid means O(rows×cols) shifts per dequeue. Deque keeps every operation ___.",
+          answer: "O(1)",
+        },
+        {
+          line: "I'm counting fresh oranges upfront. This lets me detect impossibility: if fresh > 0 after BFS, some oranges were ___.",
+          answer: "isolated",
         },
         {
           line: "Each BFS level represents one minute. I snapshot the queue length (`level_size = len(queue)`) to process exactly the oranges that turned rotten in the previous minute, then spread to their fresh neighbors. The snapshot is necessary because enqueuing newly-rotten cells during the loop would otherwise bleed them into the current minute's ___.",
           answer: "processing",
+        },
+        {
+          line: "When a fresh neighbor is infected, I mutate the grid to 2 to mark it visited and decrement `fresh`. Using the grid itself as the ___ set avoids a separate data structure — checking `grid[nr][nc] == 1` is both the freshness test and the not-yet-visited check in a single condition.",
+          answer: "visited",
+        },
+        {
+          line: "I return `minutes` if fresh hit zero, otherwise ___ — those oranges were unreachable.",
+          answer: "-1",
         },
       ],
     },
@@ -406,12 +434,20 @@ def update_matrix(mat):
           answer: "multi-source",
         },
         {
+          line: "`from collections import deque` — the queue here holds grid coordinates. With a list, every `pop(0)` would shift all remaining coordinates left (O(n)). With deque, `popleft()` is ___. For an m×n grid with many cells this makes the difference between O((m×n)²) and O(m×n) total dequeue cost.",
+          answer: "O(1)",
+        },
+        {
           line: "BFS guarantees that the first time we reach a cell, it's via the shortest path. So when I see `dist[nr][nc] > dist[r][c] + 1`, I know I've found a shorter route and I ___ the distance.",
           answer: "relax",
         },
         {
           line: "The relaxation condition `dist[nr][nc] > dist[r][c] + 1` doubles as the ___ check — if a cell already has a distance ≤ current + 1, we don't re-enqueue it. This replaces a separate `visited` set entirely.",
           answer: "visited",
+        },
+        {
+          line: "The result matrix `dist` fills in naturally as BFS waves ripple outward from all zeros ___.",
+          answer: "simultaneously",
         },
       ],
     },
@@ -494,12 +530,28 @@ def min_knight_moves(x: int, y: int) -> int:
           answer: "search",
         },
         {
-          line: "I add to `visited` before enqueuing, not after dequeuing — this prevents duplicate entries in the queue. If I added after dequeuing, the same cell could be ___ multiple times before it's ever processed.",
-          answer: "enqueued",
+          line: "`from collections import deque` + `queue = deque([(0, 0, 0)])` — each element is a tuple of (row, col, moves). Using a list and `pop(0)` would be O(n) per step; on an infinite board with many reachable positions, that makes BFS ___. Deque keeps `popleft()` O(1).",
+          answer: "quadratic",
+        },
+        {
+          line: "I seed BFS from (0,0) with 0 moves. Each node carries its move count so I don't need a separate ___ map.",
+          answer: "distance",
         },
         {
           line: "`visited = {(0, 0)}` — I use a set literal, not a list, because `(nr, nc) not in visited` needs to be O(1). A list check would be ___ per neighbor per node. On a large chessboard with many visited positions this becomes a major bottleneck. Set membership testing uses hashing and is O(1) on average.",
           answer: "O(n)",
+        },
+        {
+          line: "The 8 knight-move deltas are all combinations of (±1, ±2) and (±2, ±1). BFS guarantees the first time we reach the target, it's with the fewest ___.",
+          answer: "moves",
+        },
+        {
+          line: "I allow coordinates down to -2 to handle ___ cases near the origin — a knight sometimes needs to step slightly negative before reaching a small positive target.",
+          answer: "edge",
+        },
+        {
+          line: "I add to `visited` before enqueuing, not after dequeuing — this prevents duplicate entries in the queue. If I added after dequeuing, the same cell could be ___ multiple times before it's ever processed.",
+          answer: "enqueued",
         },
       ],
     },

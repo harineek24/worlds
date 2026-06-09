@@ -62,16 +62,20 @@ return max_profit`,
       ],
       explanationBlanks: [
         {
-          line: "This is ___ time and O(1) space — one pass, two variables.",
-          answer: "O(n)",
+          line: "I'm tracking the ___ price seen so far as I scan left to right. At every new price, I ask: if I had bought at the cheapest point so far and sold today, what's my profit? That's the greedy insight — I always want to buy as cheap as possible before the current day.",
+          answer: "minimum",
         },
         {
           line: "I update ___ at each step with price - min_price. I never need to look back because any optimal buy must be to the left of the sell, and I've already tracked the best buy to the left.",
           answer: "max_profit",
         },
         {
-          line: "I'm tracking the minimum price seen so far as I scan left to right. At every new price, I ask: if I had bought at the cheapest point so far and sold today, what's my profit? That's the ___ insight — I always want to buy as cheap as possible before the current day.",
-          answer: "greedy",
+          line: "This is O(n) time and ___ space — one pass, two variables.",
+          answer: "O(1)",
+        },
+        {
+          line: "Syntax — why ___: I initialize min_price to float('inf') rather than a large number like 10**9. float('inf') is always larger than any real number, so the first price will always beat it and become the initial minimum. A hardcoded large number is fragile — if prices can exceed it, the logic breaks. inf is mathematically correct and requires no assumption about input magnitude.",
+          answer: "float('inf')",
         },
       ],
       testCase: {
@@ -135,16 +139,20 @@ return start if total_tank >= 0 else -1`,
       ],
       explanationBlanks: [
         {
-          line: "First the feasibility check: if total gas across all stations is less than total cost, it's impossible to complete the circuit regardless of starting point. I track ___ for this check at the end.",
-          answer: "total_tank",
+          line: "First the ___ check: if total gas across all stations is less than total cost, it's impossible to complete the circuit regardless of starting point. I track total_tank for this check at the end.",
+          answer: "feasibility",
         },
         {
-          line: "If a solution exists, I find it greedily. I maintain curr_tank as I scan. If curr_tank goes negative after station i, then stations 0 through i are all invalid starting points — any path through them would drain the tank before reaching i+1. So I reset and try starting from ___.",
-          answer: "i+1",
+          line: "If a solution exists, I find it greedily. I maintain curr_tank as I scan. If curr_tank goes negative after station i, then stations 0 through i are all invalid starting points — any path through them would ___ the tank before reaching i+1. So I reset and try starting from i+1.",
+          answer: "drain",
         },
         {
-          line: "The greedy guarantee: if ___ >= 0, exactly one valid start exists. By process of elimination, the last candidate standing after all resets is the answer.",
-          answer: "total_tank",
+          line: "The greedy guarantee: if total_tank >= 0, exactly ___ valid start exists. By process of elimination, the last candidate standing after all resets is the answer.",
+          answer: "one",
+        },
+        {
+          line: "Syntax — why range(len(gas)): I iterate by ___ rather than by value because I need the index i to update start = i + 1. Iterating over values with 'for diff in ...' would lose that. This is a general rule: when you need the position of the element, not just the element, use range(len(...)) or enumerate.",
+          answer: "index",
         },
       ],
       testCase: {
@@ -203,16 +211,20 @@ return True`,
       ],
       explanationBlanks: [
         {
-          line: "I track ___: the furthest index reachable given all positions visited so far. The greedy idea is simple — at every position, I update the reachability frontier.",
-          answer: "max_reach",
+          line: "I track max_reach: the furthest index ___ given all positions visited so far. The greedy idea is simple — at every position, I update the reachability frontier.",
+          answer: "reachable",
         },
         {
-          line: "If I ever encounter index i that is beyond ___, I'm stuck. I could not have gotten here legitimately. Return False immediately.",
-          answer: "max_reach",
+          line: "If I ever encounter index i that is beyond max_reach, I'm ___. I could not have gotten here legitimately. Return False immediately.",
+          answer: "stuck",
         },
         {
           line: "If I finish the loop without getting stuck, every index was reachable, meaning the last index is reachable too. Return ___.",
           answer: "True",
+        },
+        {
+          line: "Syntax — why max(max_reach, i + nums[i]): I update max_reach with ___ instead of a conditional assignment. Both are equivalent, but max() is more idiomatic for 'keep the best value seen so far'. It reads as the intent directly: 'max_reach is the maximum reachable index.'",
+          answer: "max()",
         },
       ],
       testCase: {
@@ -274,16 +286,20 @@ return jumps`,
       ],
       explanationBlanks: [
         {
-          line: "I think of this as ___ layers. Each jump is one level. curr_end marks where the current BFS level ends — the farthest index reached by the previous jump.",
-          answer: "BFS",
+          line: "I think of this as BFS layers. Each ___ is one level. curr_end marks where the current BFS level ends — the farthest index reached by the previous jump.",
+          answer: "jump",
         },
         {
-          line: "As I scan each index in the current level, I track ___: the furthest index reachable from anywhere in this level. That farthest becomes the end of the next level.",
-          answer: "farthest",
+          line: "As I scan each index in the current level, I track farthest: the furthest index reachable from anywhere in this level. That farthest becomes the ___ of the next level.",
+          answer: "end",
         },
         {
-          line: "When I reach i == ___, I've exhausted the current level. I must take a jump. I increment jumps and extend curr_end to farthest. I stop the loop before the last index because I don't need to jump away from it.",
-          answer: "curr_end",
+          line: "When I reach i == curr_end, I've exhausted the current level. I must take a ___. I increment jumps and extend curr_end to farthest. I stop the loop before the last index because I don't need to jump away from it.",
+          answer: "jump",
+        },
+        {
+          line: "Syntax — why range(len(nums) - 1): I stop one index short of the last element intentionally. If I processed the last index, I might spuriously ___ jumps when i == curr_end there — but we've already reached the destination so no jump is needed. The loop range encodes this constraint explicitly rather than adding an if-check inside the loop.",
+          answer: "increment",
         },
       ],
       testCase: {
@@ -344,16 +360,20 @@ return result`,
       ],
       explanationBlanks: [
         {
-          line: "First I build a map of each character's ___. This tells me: if I include character c in a partition, that partition must extend at least to last[c] to keep all occurrences of c together.",
-          answer: "last occurrence",
+          line: "First I build a map of each character's last ___. This tells me: if I include character c in a partition, that partition must extend at least to last[c] to keep all occurrences of c together.",
+          answer: "occurrence",
         },
         {
-          line: "I scan left to right, greedily extending the current partition's boundary to ___(end, last[c]) for each character. If any character in my current window appears later, the window must grow to include it.",
-          answer: "max",
+          line: "I scan left to right, greedily extending the current partition's ___ to max(end, last[c]) for each character. If any character in my current window appears later, the window must grow to include it.",
+          answer: "boundary",
         },
         {
-          line: "When i == end, no character in this window escapes beyond it. The partition is sealed. I record its size and start fresh from ___.",
-          answer: "i+1",
+          line: "When i == end, no character in this window escapes beyond it. The partition is ___. I record its size and start fresh from i+1.",
+          answer: "sealed",
+        },
+        {
+          line: "Syntax — why {c: i for i, c in enumerate(s)}: This dict comprehension builds the last-occurrence map in one line. Because enumerate produces (index, char) pairs in order, later indices ___ earlier ones for repeated characters — so the final dict naturally stores the last occurrence of each character. No explicit 'if char not already stored' check needed; the overwrite behavior does it for free.",
+          answer: "overwrite",
         },
       ],
       testCase: {

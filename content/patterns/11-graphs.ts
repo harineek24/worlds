@@ -135,6 +135,8 @@ def canFinish(numCourses, prerequisites):
         { line: `return completed == ___`, answer: "numCourses" },
       ],
       explanationBlanks: [
+        { line: "I'm building a directed graph where an edge b → a means 'b must come before a'. I use `defaultdict(list)` for the adjacency list — accessing a missing key in a plain dict raises KeyError, but ___ auto-initializes missing keys with an empty list, so `graph[b].append(a)` just works without a guard.", answer: "defaultdict" },
+        { line: "I track each node's in-degree using a dict comprehension: `{i: 0 for i in range(numCourses)}`. This is more readable and Pythonic than initializing an empty dict and filling it in a loop — the entire structure is created in one ___.", answer: "expression" },
         { line: "I seed the queue with `deque([n for n in in_degree if in_degree[n] == 0])`. The list comprehension filters all zero-in-degree nodes in one line; wrapping it in deque gives O(1) popleft instead of O(n) for a plain list. These are courses safe to take ___.", answer: "immediately" },
         { line: "Each time I process a node, I increment a counter. When I finish a course, I reduce the in-degree of every course that depended on it. If any drop to zero, they're now ___ and join the queue.", answer: "unblocked" },
         { line: "If the counter equals numCourses at the end, every course was reachable — no cycle. If it's less, some courses were locked in a cycle and could never be scheduled. The count is the ___ detector.", answer: "cycle" },
@@ -204,6 +206,7 @@ def findOrder(numCourses, prerequisites):
         { line: `return order if len(order) == ___ else []`, answer: "numCourses" },
       ],
       explanationBlanks: [
+        { line: "The setup is identical to Course Schedule — `defaultdict(list)` for the adjacency list (auto-initializes missing keys, no KeyError), and a dict comprehension `{i: 0 for i in range(numCourses)}` for in-degrees (one expression, no ___ needed).", answer: "loop" },
         { line: "The queue is seeded with `deque([n for n in in_degree if in_degree[n] == 0])`: the list comprehension builds the zero-in-degree frontier, and deque wraps it for O(1) popleft. The only difference from Course Schedule is what I do as I process nodes — instead of incrementing a counter, I append each node to an `order` list. Kahn's algorithm naturally produces a valid ___ order because a node is appended only after all its prerequisites have been processed.", answer: "topological" },
         { line: "The cycle check is the same: if the order list is shorter than numCourses, some nodes were permanently stuck above in-degree 0 (trapped in a ___) and never entered the queue. I return an empty list in that case.", answer: "cycle" },
       ],
@@ -280,7 +283,9 @@ def findOrder(numCourses, prerequisites):
         { line: `count ___ 1`, answer: "+=" },
       ],
       explanationBlanks: [
+        { line: "I scan every cell in the grid. Whenever I find an unvisited land cell ('1'), I've discovered a new island — I increment the count and immediately ___ from that cell to flood-fill the entire island.", answer: "DFS" },
         { line: "The DFS visits every connected land cell and marks it '0' in-place. This in-place mutation serves as the ___ set — no extra data structure needed. A plain dict or set would require O(m×n) extra space; mutating the grid is O(1).", answer: "visited" },
+        { line: "The base case for DFS checks bounds and cell value in a single compound condition. This naturally stops the flood fill at water and at the grid ___ — the recursion simply returns without doing anything.", answer: "boundary" },
         { line: "After DFS returns, the entire island has been erased from the grid, so the outer scan continues cleanly to the next undiscovered island. Three separate ___ means three islands.", answer: "flood fills" },
       ],
     },
@@ -349,6 +354,7 @@ def pacificAtlantic(heights):
       explanationBlanks: [
         { line: "The trick is to ___ the problem. Instead of simulating water flowing down from every cell (which would be O(m×n) BFS each), I flow upward from each ocean's border — asking 'which cells can reach this ocean?' by only stepping to neighbors that are equal or higher height.", answer: "reverse" },
         { line: "I run multi-source BFS from all Pacific-border cells simultaneously. `visited.update(starts)` marks all seed cells in one call before the loop begins. Every cell BFS can reach while going uphill (heights[nr][nc] >= heights[r][c]) corresponds to a cell from which water would flow downhill to the ___.", answer: "Pacific" },
+        { line: "I do the same BFS from all Atlantic-border cells. The BFS function is shared — `pac` and `atl` are passed as the `visited` set argument, so the same logic fills both ___ sets.", answer: "reachable" },
         { line: "The final answer is a list comprehension over all cells: `[[r,c] for r in range(rows) for c in range(cols) if (r,c) in pac and (r,c) in atl]`. Using sets for pac and atl makes each membership check O(1) — if these were lists, the ___ would be O(m×n) per cell.", answer: "intersection" },
       ],
     },
@@ -429,8 +435,11 @@ def networkDelayTime(times, n, k):
         { line: `return max_dist if max_dist < float('inf') else ___`, answer: "-1" },
       ],
       explanationBlanks: [
+        { line: "I build a weighted directed adjacency list using `defaultdict(list)`. Each node maps to a list of (neighbor, weight) pairs. ___ means I can call `graph[u].append(...)` for any u without first checking if u exists as a key.", answer: "defaultdict" },
         { line: "I initialize all distances to infinity except the source, which is 0. The heap starts with just `(0, k)`. I push tuples of `(distance, node)` — Python's heapq compares tuples ___, so putting distance first means the heap orders entries by distance automatically. Without this convention I'd need a custom comparator.", answer: "lexicographically" },
+        { line: "Dijkstra's works by always processing the node with the smallest known distance first. The ___ guarantees this in O(log n) per pop. When I pop a node, I have its final shortest distance.", answer: "min-heap" },
         { line: "The stale-entry check `if d > dist[node]: continue` is needed because Python's heapq has no ___ operation. When a shorter path is found, I push a new entry rather than updating the old one. The stale entry is skipped here — cheaper than removing it from the heap.", answer: "decrease-key" },
+        { line: "For each neighbor, I compute the candidate distance `nd = d + weight`. If it's better than the recorded distance, I update `dist[neighbor]` and push `(nd, neighbor)` to the ___.", answer: "heap" },
         { line: "The answer is the maximum value in `dist` — the last node to receive the signal determines total delay. If any node is still infinity, it was ___, so I return -1.", answer: "unreachable" },
       ],
     },

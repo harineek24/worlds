@@ -101,12 +101,20 @@ return False`,
       },
       explanationBlanks: [
         {
-          line: "I use Floyd's tortoise-and-hare algorithm. Both pointers start at head. Slow moves one step at a time, fast moves two. If there's no cycle, fast will eventually fall off the ___ of the list.",
-          answer: "end",
+          line: "I use Floyd's ___-and-hare algorithm. Both pointers start at head. Slow moves one step at a time, fast moves two. If there's no cycle, fast will eventually fall off the end of the list.",
+          answer: "tortoise",
         },
         {
-          line: "The insight is mathematical: if a cycle exists, fast and slow are both inside it. Fast gains one node on slow every iteration. Eventually it ___ slow — they must meet. The gap between them decreases by one each step, so meeting is guaranteed.",
-          answer: "laps",
+          line: "The insight is mathematical: if a cycle exists, fast and slow are both inside it. Fast gains one node on slow every iteration. Eventually it laps slow — they must meet. The ___ between them decreases by one each step, so meeting is guaranteed.",
+          answer: "gap",
+        },
+        {
+          line: "`slow = fast = head` — why start both at head rather than fast at head.next: starting at the same node handles single-element lists without a ___ case. It also keeps the math clean — we check for equality *after* moving, so the initial shared position never triggers a false positive.",
+          answer: "special",
+        },
+        {
+          line: "I check for the ___ condition inside the loop, after moving both pointers. If they ever point to the same node, there's a cycle.",
+          answer: "meeting",
         },
         {
           line: "If fast reaches null or fast.next reaches null, there's no cycle — a linear list has an end. The `while fast and fast.next` guard handles both: `fast` catches a null tail, `fast.next` prevents a ___ when fast is at the last node. Return false.",
@@ -190,6 +198,10 @@ return True`,
       },
       explanationBlanks: [
         {
+          line: "Step 1 — find the ___ using slow/fast pointers. `slow = fast = head` — both start at head because we want slow to land *at* the midpoint, not one before it. The loop condition `while fast and fast.next` lets slow reach the exact middle when fast hits the end or one step from it.",
+          answer: "midpoint",
+        },
+        {
           line: "Step 2 — I reverse the second half in place, starting from slow. The critical line is `next_node = curr.next` — this saves the original next pointer *before* overwriting it with `curr.next = prev`. Once you reassign `curr.next`, the original next is gone; `next_node` is the only ___ left. Skipping this save is the most common linked-list bug. The tradeoff: I'm mutating the list, which is usually acceptable in interviews unless asked otherwise.",
           answer: "reference",
         },
@@ -198,8 +210,8 @@ return True`,
           answer: "mirror",
         },
         {
-          line: "I only need to walk as far as right goes — the reversed half is the shorter or equal half. When right runs out, every value ___.",
-          answer: "matched",
+          line: "I only need to walk as far as right goes — the ___ half is the shorter or equal half. When right runs out, every value matched.",
+          answer: "reversed",
         },
       ],
       blanks: [
@@ -286,8 +298,20 @@ return dummy.next`,
           answer: "predecessor",
         },
         {
+          line: "I advance fast exactly n+1 steps from dummy. This creates a ___ of n+1 nodes between slow and fast. The key insight: when fast reaches null (the end), slow is exactly one node before the target.",
+          answer: "gap",
+        },
+        {
           line: "Why n+1 and not n? Because I want slow to land on the node *before* the target, not *on* the target. I need the predecessor to perform the deletion — a linked list has no ___, so you must arrive at the predecessor first.",
           answer: "back-pointer",
+        },
+        {
+          line: "I advance both pointers together until fast falls off the end. The ___ between them stays constant at n+1 throughout this phase.",
+          answer: "gap",
+        },
+        {
+          line: "When fast is null, slow.next is the node to remove. I bypass it by setting `slow.next = slow.next.next`. The deleted node becomes ___ and is garbage collected.",
+          answer: "unreachable",
         },
         {
           line: "I return `dummy.next` — not `head` — because if the original head was the deleted node, `head` is now ___. `dummy.next` always reflects the current first real node.",
@@ -382,6 +406,10 @@ while second:
       },
       explanationBlanks: [
         {
+          line: "This problem is three sub-problems ___ together: find the midpoint, reverse the back half, then merge the two halves alternately.",
+          answer: "chained",
+        },
+        {
           line: "Step 1 — the loop condition here is `while fast.next and fast.next.next`, not the usual `while fast and fast.next`. This small change makes slow land at the *last node of the first half* rather than the first node of the second half — so `slow.next` is exactly where the second half begins, enabling a clean cut. Choosing the wrong condition shifts the ___ by one and creates an off-by-one in the merge.",
           answer: "midpoint",
         },
@@ -390,8 +418,8 @@ while second:
           answer: "cycles",
         },
         {
-          line: "Step 3 — I interleave by saving both halves' next pointers (`tmp1`, `tmp2`) before any rewiring. This is the same principle as the reversal save: you cannot read `first.next` after you have already reassigned it. Two saves, then two wires, then two advances — order matters. The loop runs until second is exhausted — first half may have one extra node in odd-length lists, which is ___.",
-          answer: "correct",
+          line: "Step 3 — I ___ by saving both halves' next pointers (`tmp1`, `tmp2`) before any rewiring. This is the same principle as the reversal save: you cannot read `first.next` after you have already reassigned it. Two saves, then two wires, then two advances — order matters. The loop runs until second is exhausted — first half may have one extra node in odd-length lists, which is correct.",
+          answer: "interleave",
         },
       ],
       blanks: [

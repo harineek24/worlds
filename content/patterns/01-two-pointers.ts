@@ -101,16 +101,32 @@ return True`,
       ],
       explanationBlanks: [
         {
-          line: "Filters: It iterates through every character c in the string s and keeps only those where c.isalnum() is True (alphanumeric characters: letters and numbers). Transforms: For each kept character, it converts it to lowercase using c.lower()This gives me a pure sequence to compare. I use a ___ here instead of a for-loop that builds a list manually, because it's a single expression — more readable, and Python can optimize the construction slightly better for simple filters like this.",
+          line: "First I clean the input — lowercase everything and strip out anything that isn't a letter or digit. The expression [c.lower() for c in s if c.isalnum()] is a Python ___ that performs two operations on a string s:",
           answer: "list comprehension",
         },
         {
-          line: "I place one pointer at the start and one at the end. Since a palindrome is symmetric, these two positions should always match. I use a while loop instead of a for loop because the termination condition is dynamic — both pointers move inward but the loop ends when they meet, not after a fixed number of steps, so I need a condition check at each iteration rather than a fixed range.",
-          answer: "while loop",
+          line: "Filters: It iterates through every character c in the string s and keeps only those where c.isalnum() is True (alphanumeric characters: letters and numbers). Transforms: For each kept character, it converts it to lowercase using c.lower()This gives me a pure sequence to compare. I use a list comprehension here instead of a for-loop that builds a list manually, because it's a single expression — more readable, and Python can optimize the construction slightly better for simple filters like this.",
+          answer: "list comprehension",
+        },
+        {
+          line: "The choice between a for loop and a ___ loop depends entirely on whether you know the number of iterations in advance",
+          answer: "while",
+        },
+        {
+          line: "I place one pointer at the start and one at the end. Since a palindrome is ___, these two positions should always match. I use a while loop instead of a for loop because the termination condition is dynamic — both pointers move inward but the loop ends when they meet, not after a fixed number of steps, so I need a condition check at each iteration rather than a fixed range.",
+          answer: "symmetric",
         },
         {
           line: "If the characters at left and right don't match, I can immediately return False. No need to continue — the ___ is already broken. Returning early here avoids scanning the rest of the string pointlessly.",
           answer: "symmetry",
+        },
+        {
+          line: "If they match, I move both pointers one step inward using `+= 1` and `-= 1` on separate lines rather than a tuple assignment — both are equivalent here, but the separate lines make the intent clear: left moves right, right moves ___.",
+          answer: "left",
+        },
+        {
+          line: "If I make it through the entire loop without returning False, every pair matched — it's a ___. I return True at the function level rather than inside the loop so this only executes once all pairs are confirmed.",
+          answer: "palindrome",
         },
       ],
     },
@@ -163,8 +179,16 @@ while left < right:
       ],
       explanationBlanks: [
         {
-          line: "I start with the widest possible window — leftmost and rightmost elements. This gives me the full range to work with. I use a while loop instead of a for loop because the termination condition is dynamic — the two pointers move at different rates depending on what we find at each step, so I need a condition check rather than a fixed iteration count.",
-          answer: "while loop",
+          line: "I start with the widest possible window — leftmost and rightmost elements. This gives me the full range to work with. I use a ___ loop instead of a for loop because the termination condition is dynamic — the two pointers move at different rates depending on what we find at each step, so I need a condition check rather than a fixed iteration count.",
+          answer: "while",
+        },
+        {
+          line: "I sum the two values the pointers point at and store the result in a local variable `s`. This is the candidate answer for this window — computing it once and reusing it avoids ___ in each branch of the if-elif-else.",
+          answer: "recalculating",
+        },
+        {
+          line: "If the sum matches the target exactly, I've found the pair. I return `[left + 1, right + 1]` as a list literal rather than a tuple because the problem specifies a list return — and the `+ 1` offset is applied inline rather than in a separate step to keep the return ___.",
+          answer: "concise",
         },
         {
           line: "If the sum is too small, I need a larger value. Since the array is ___, moving left rightward is the only way to increase the sum without touching right. I use `left += 1` rather than reassigning `left = left + 1` — the augmented assignment is idiomatic Python and makes the directional intent obvious.",
@@ -241,16 +265,32 @@ return max_water`,
       ],
       explanationBlanks: [
         {
-          line: "Area is width times height. I use `min(height[left], height[right])` rather than an if-else to select the shorter wall — `min()` is a single expression that communicates 'the bottleneck' directly. Width is `right - left`, the distance between the two pointers.",
+          line: "I start at the widest possible container — outermost walls. Width can only decrease from here, so I need to find height gains that compensate. I use a ___ loop instead of a for loop because both pointers move independently toward each other — neither has a fixed step size, so a condition-based loop is the right tool.",
+          answer: "while",
+        },
+        {
+          line: "I initialize `max_water = 0` as a plain integer rather than using `float('-inf')` — because area is always non-negative here, 0 is a safe and semantically clear ___ value.",
+          answer: "starting",
+        },
+        {
+          line: "Area is width times height. I use `min(height[left], height[right])` rather than an if-else to select the shorter wall — `min()` is a single expression that communicates 'the ___' directly. Width is `right - left`, the distance between the two pointers.",
           answer: "bottleneck",
+        },
+        {
+          line: "I update the running maximum using `max(max_water, water)` rather than an ___ — `max()` as an expression assigned back to `max_water` is idiomatic Python and keeps the update to one line without a conditional branch.",
+          answer: "if statement",
         },
         {
           line: "The ___ wall is the bottleneck — it's capping the height. Moving the shorter wall inward is the only move that could possibly find a better container. Moving the taller wall inward could only reduce width without any chance of increasing height, so that direction is provably suboptimal.",
           answer: "shorter",
         },
         {
-          line: "I update the running maximum using `max(max_water, water)` rather than an if statement — `max()` as an expression assigned back to `max_water` is idiomatic Python and keeps the update to one line without a conditional branch.",
-          answer: "if statement",
+          line: "If they're equal, either move works — the code falls into the `else` branch and moves right, which is a valid ___. The choice doesn't affect correctness.",
+          answer: "convention",
+        },
+        {
+          line: "Return `max_water` — the best ___ found across all evaluated windows.",
+          answer: "area",
         },
       ],
     },
@@ -335,16 +375,28 @@ return result`,
       ],
       explanationBlanks: [
         {
-          line: "I sort the array first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which allocates a new list. Since we don't need to preserve the original order for this problem, in-place is the right call. Sorting is also what makes two pointers viable: it gives us directionality so that 'sum too small → move left rightward' and 'sum too large → move right leftward' are provably correct moves.",
-          answer: "two pointers",
+          line: "I sort the array first using `.sort()` — in-place, ___ extra space — rather than `sorted()` which allocates a new list. Since we don't need to preserve the original order for this problem, in-place is the right call. Sorting is also what makes two pointers viable: it gives us directionality so that 'sum too small → move left rightward' and 'sum too large → move right leftward' are provably correct moves.",
+          answer: "O(1)",
         },
         {
-          line: "Duplicate skip for the anchor: if `nums[i] == nums[i-1]`, this anchor value has already been explored fully. I check `i > 0` first to avoid an index-out-of-bounds on the first iteration — it's a guard condition, not the main check.",
+          line: "I iterate over each element as the fixed anchor using a for loop with `range(len(nums) - 2)` — I stop at len-2 because I need at least two more elements to the right for the pair. A for loop is correct here because the anchor advances exactly one position per outer iteration — no conditional ___.",
+          answer: "step size",
+        },
+        {
+          line: "Duplicate skip for the anchor: if `nums[i] == nums[i-1]`, this anchor value has already been explored fully. I check `i > 0` first to avoid an ___ on the first iteration — it's a guard condition, not the main check.",
           answer: "index-out-of-bounds",
+        },
+        {
+          line: "For each fixed anchor, I initialize `left` and `right` for a fresh two-pointer search on the remaining subarray. I use a ___ loop here because the two inner pointers move at different rates depending on the sum — a for loop with a fixed range couldn't express the variable termination.",
+          answer: "while",
         },
         {
           line: "When I find a valid triplet, I `append` it to `result` as a list literal `[nums[i], nums[left], nums[right]]` rather than a tuple — the problem asks for a list of lists, so I match the expected type exactly. Then I use inner while loops to skip adjacent duplicates on both sides before advancing the pointers, which is the ___ step.",
           answer: "deduplication",
+        },
+        {
+          line: "If the sum is negative, the pair is too small — `left += 1` moves to a larger value. If positive, `right -= 1` moves to a smaller one. The sorted order guarantees these are the correct directions. Using `elif` rather than separate `if` checks is important: only ___ pointer should move per iteration.",
+          answer: "one",
         },
       ],
     },

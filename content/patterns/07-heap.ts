@@ -224,6 +224,10 @@ def findClosestElements(arr, k, x):
           answer: "left boundary",
         },
         {
+          line: "At each mid, I compare two distances: how far x is from the left edge of the window (arr[mid]) vs. how far x is from the element just beyond the right edge (arr[mid+k]). This tells me whether the window should slide right or stay. The `//` integer division for `mid` is deliberate — it avoids floating-point and matches Python's floor semantics.",
+          answer: "floor semantics",
+        },
+        {
           line: "If x - arr[mid] > arr[mid+k] - x, the right neighbor is closer to x than the left edge, so sliding the window right will improve it — set lo = mid+1. Otherwise, hi = mid. The strict `>` (not `>=`) handles ties: equal distances default to hi = mid, which keeps the left (smaller) elements — matching the problem's tiebreak rule. Tradeoff vs. a heap: O(log(n-k) + k) here vs. O(n log k) with a heap. Binary search wins when n is large and k is small.",
           answer: "tiebreak rule",
         },
@@ -300,6 +304,10 @@ def mergeKLists(lists):
         {
           line: "I seed the heap with the head of each list — one representative per list. `import heapq` is used here because we're repeatedly extracting the global minimum across k live cursors — exactly what a heap is built for. A naive scan across all k list heads each iteration would be O(nk); the heap reduces that to O(n log k). The heap tuple is (value, list_index, node). I include list_index as a tiebreaker because Python will try to compare nodes if values are equal, and ListNode isn't comparable — the tuple comparison short-circuits at list_index before reaching node.",
           answer: "global minimum",
+        },
+        {
+          line: "I use a dummy head node to simplify the linked list construction — I never have to special-case the first node. This is a standard Python idiom for building linked lists: start with a throwaway node, then return dummy.next.",
+          answer: "dummy head node",
         },
         {
           line: "Each iteration: `heapq.heappop(heap)` removes and returns the global minimum — O(log k). I attach the popped node to the result list, then push that node's successor (if it exists) from the same list. This is the key insight — each list contributes exactly one node to the heap at a time, keeping heap size ≤ k. I never peek with `heap[0]` here because I always want to consume and replace the minimum.",
@@ -394,6 +402,10 @@ class MedianFinder:
         {
           line: "I always push to lo first using `heapq.heappush(self.lo, -num)`. The negation is the Python idiom for a max-heap: since `heapq` only supports min-heap, negating all values means the largest real value becomes the most negative stored value and floats to the root. Reading the max is then `-self.lo[0]` — peeking with `heap[0]` rather than popping, because we only want to inspect the boundary, not remove it. Then I enforce the ordering invariant — if lo's maximum exceeds hi's minimum, the boundary between halves is in the wrong place, so I move the offending element to hi.",
           answer: "ordering invariant",
+        },
+        {
+          line: "I then enforce the size invariant: lo can have at most one more element than hi (to handle odd counts). If either heap is too large, I rebalance by moving the boundary element. Each move uses `heapq.heappop` (destructive, O(log n)) followed by `heapq.heappush` (O(log n)) — unavoidable here since we're actually transferring elements between heaps.",
+          answer: "size invariant",
         },
         {
           line: "findMedian is O(1): if sizes are unequal, the extra element in lo is the median, read with `-self.lo[0]` (peek, not pop). If equal, average the two boundary values. The tradeoff: O(log n) per insertion, O(1) per query — ideal for a stream where queries are frequent.",
