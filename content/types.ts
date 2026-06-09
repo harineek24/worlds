@@ -18,7 +18,7 @@ export interface Problem {
   patternKeywords: string[] // shown on right side of problem row
   solution: string // full code
   solutionExplanation: string[] // line-by-line, interviewer voice — shown in full on study page
-  explanationBlanks: Blank[] // key terms blanked out in the explanation on challenge page
+  explanationBlanks?: Blank[] // key terms blanked out in the explanation on challenge page
   testCase: TestCase
   blanks: Blank[] // code fill-in-the-blanks for challenge page
 }

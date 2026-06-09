@@ -29,7 +29,7 @@ export default function ChallengePage({
 
   const activeBlanks = [
     ...(showCode ? problem.blanks : []),
-    ...(showExplanation ? problem.explanationBlanks : []),
+    ...(showExplanation ? (problem.explanationBlanks ?? []) : []),
   ]
 
   const [answers, setAnswers] = useState<string[]>(Array(activeBlanks.length).fill(""))
@@ -47,7 +47,7 @@ export default function ChallengePage({
     ? problem.blanks.filter((b, i) => codeAnswers[i]?.trim() === b.answer).length
     : 0
   const explCorrect = showExplanation
-    ? problem.explanationBlanks.filter((b, i) => explAnswers[i]?.trim() === b.answer).length
+    ? (problem.explanationBlanks ?? []).filter((b, i) => explAnswers[i]?.trim() === b.answer).length
     : 0
   const correct = codeCorrect + explCorrect
   const total = activeBlanks.length
@@ -157,13 +157,13 @@ export default function ChallengePage({
                 {problem.solutionExplanation.map((line, i) => {
                   const blankOffset = showCode ? problem.blanks.length : 0
                   // Match by reconstructing full text: blank.line with ___ replaced by answer
-                  const blankMatch = problem.explanationBlanks.findIndex(
+                  const blankMatch = (problem.explanationBlanks ?? []).findIndex(
                     (b) => b.line.replace("___", b.answer) === line
                   )
                   const absoluteIndex = blankOffset + blankMatch
                   const isCorrect =
                     blankMatch !== -1 &&
-                    answers[absoluteIndex]?.trim() === problem.explanationBlanks[blankMatch].answer
+                    answers[absoluteIndex]?.trim() === (problem.explanationBlanks ?? [])[blankMatch].answer
 
                   return (
                     <li key={i} className="flex gap-3">
@@ -191,7 +191,7 @@ export default function ChallengePage({
                               )}
                               {submitted && !isCorrect && j === arr.length - 1 && (
                                 <span className="text-[#6a2d2d] text-xs ml-1">
-                                  → {problem.explanationBlanks[blankMatch].answer}
+                                  → {(problem.explanationBlanks ?? [])[blankMatch].answer}
                                 </span>
                               )}
                             </span>
