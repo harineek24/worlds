@@ -1,26 +1,9 @@
 "use client"
 
 import Link from "next/link"
-import { useParams } from "next/navigation"
+import { usePathname, useParams } from "next/navigation"
 import { patterns } from "@/content"
-
-const COMING_SOON = [
-  "Sliding Window",
-  "Binary Search",
-  "Stack",
-  "Linked List",
-  "Trees",
-  "Tries",
-  "Heap / Priority Queue",
-  "Backtracking",
-  "Graphs",
-  "1D Dynamic Programming",
-  "2D Dynamic Programming",
-  "Greedy",
-  "Intervals",
-  "Math & Geometry",
-  "Bit Manipulation",
-]
+import { aiTopics } from "@/content/ai-eng"
 
 const DIFFICULTY_DOT: Record<string, string> = {
   easy: "bg-[#2d6a2d]",
@@ -30,6 +13,8 @@ const DIFFICULTY_DOT: Record<string, string> = {
 
 export default function Sidebar() {
   const params = useParams()
+  const pathname = usePathname()
+  const isAi = pathname?.startsWith("/ai/")
   const activePattern = params?.patternId as string
   const activeProblem = params?.problemId as string
 
@@ -46,7 +31,7 @@ export default function Sidebar() {
               <Link
                 href={`/${p.id}/study/${p.problems[0].id}`}
                 className={`text-sm px-3 py-2 rounded font-mono transition-colors block ${
-                  isActive
+                  isActive && !isAi
                     ? "text-[#f5e6c8]"
                     : "text-[#a0845c] hover:text-[#f5e6c8] hover:bg-[#2a1f0e]"
                 }`}
@@ -55,7 +40,7 @@ export default function Sidebar() {
               </Link>
 
               {/* Problems list — only shown when this pattern is active */}
-              {isActive && (
+              {isActive && !isAi && (
                 <div className="ml-3 mt-1 mb-2 flex flex-col gap-0.5 border-l border-[#3a2510] pl-3">
                   {p.problems.map((prob) => {
                     const isProblemActive = activeProblem === prob.id
@@ -80,14 +65,50 @@ export default function Sidebar() {
           )
         })}
 
-        {/* Coming soon patterns — dimmed, not clickable */}
-        <div className="mt-4 border-t border-[#2a1f0e] pt-4 flex flex-col gap-1">
-          {COMING_SOON.map((name) => (
-            <span key={name} className="text-xs px-3 py-2 text-[#4a3520] font-mono cursor-default">
-              {name}
-            </span>
-          ))}
-        </div>
+      </nav>
+
+      <p className="text-[#a0845c] text-xs uppercase tracking-widest mb-6 mt-8 font-mono">AI Engineering</p>
+
+      <nav className="flex flex-col gap-1">
+        {aiTopics.map((p) => {
+          const isActive = isAi && activePattern === p.id
+          return (
+            <div key={p.id}>
+              <Link
+                href={`/ai/${p.id}/study/${p.problems[0].id}`}
+                className={`text-sm px-3 py-2 rounded font-mono transition-colors block ${
+                  isActive
+                    ? "text-[#f5e6c8]"
+                    : "text-[#a0845c] hover:text-[#f5e6c8] hover:bg-[#2a1f0e]"
+                }`}
+              >
+                {p.patternName}
+              </Link>
+
+              {isActive && (
+                <div className="ml-3 mt-1 mb-2 flex flex-col gap-0.5 border-l border-[#3a2510] pl-3">
+                  {p.problems.map((prob) => {
+                    const isProblemActive = activeProblem === prob.id
+                    return (
+                      <Link
+                        key={prob.id}
+                        href={`/ai/${p.id}/study/${prob.id}`}
+                        className={`text-xs py-1.5 px-2 rounded font-mono flex items-center gap-2 transition-colors ${
+                          isProblemActive
+                            ? "bg-[#5c3d1e] text-[#f5e6c8]"
+                            : "text-[#7a5c38] hover:text-[#c8a97e] hover:bg-[#2a1f0e]"
+                        }`}
+                      >
+                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${DIFFICULTY_DOT[prob.difficulty]}`} />
+                        <span className="truncate">{prob.title}</span>
+                      </Link>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
+          )
+        })}
       </nav>
     </aside>
   )
