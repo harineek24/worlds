@@ -398,7 +398,7 @@ def assign_variant(user_id: str, treatment_pct: float) -> str:
         trace: [
           `digest = sha256("user_42".encode("utf-8")).hexdigest()  → e.g. "4f2a91c3e8b7..."`,
           `digest[:8] = "4f2a91c3"`,
-          `int("4f2a91c3", 16) = 1getting1330872003 (example)`,
+          `int("4f2a91c3", 16) = 1330872003 (example)`,
           `bucket = 1330872003 / 4294967295 ≈ 0.3098`,
           `0.3098 < 0.5  → return "B"`,
           `repeat call with same user_id, same treatment_pct → identical digest → same "B"`,
