@@ -1,4 +1,3 @@
-import { llmFundamentals } from "./patterns/01-llm-fundamentals"
 import { promptEngineering } from "./patterns/02-prompt-engineering"
 import { ragRetrieval } from "./patterns/03-rag-retrieval"
 import { finetuning } from "./patterns/04-finetuning"
@@ -11,7 +10,6 @@ import { Pattern } from "../types"
 // Sidebar order follows lockedinai.com/blog/ai-engineer-interview-questions curriculum
 // To add a new topic: create content/ai-eng/patterns/XX-name.ts, import it here, add to array
 export const aiTopics: Pattern[] = [
-  llmFundamentals,
   promptEngineering,
   ragRetrieval,
   finetuning,

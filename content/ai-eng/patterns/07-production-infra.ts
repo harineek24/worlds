@@ -73,7 +73,9 @@ class ModelTier:
       prompt:
         "Design a rate limiter for an LLM API client that allows at most `capacity` requests, refilling at `rate` tokens per second. Implement an `allow_request()` method that returns True if a request can proceed (and consumes a token) or False if the caller should back off.",
       patternKeywords: ["rate limiting", "token bucket", "throttling", "API client"],
-      solution: `class TokenBucket:
+      solution: `import time
+
+class TokenBucket:
     def __init__(self, capacity, rate):
         self.capacity = capacity
         self.rate = rate
@@ -147,16 +149,20 @@ class ModelTier:
       prompt:
         "You're seeing duplicate prompts hit your LLM API, wasting money on identical calls. Write a `cached_call(prompt, model_fn)` function that hashes a normalized version of the prompt and returns a cached response if available, otherwise calls the model and stores the result.",
       patternKeywords: ["caching", "memoization", "hashing", "cost optimization"],
-      solution: `_cache = {}
+      solution: `import hashlib
 
-def cached_call(prompt, model_fn):
-    normalized = " ".join(prompt.strip().lower().split())
-    key = hashlib.sha256(normalized.encode()).hexdigest()
-    if key in _cache:
-        return _cache[key]
-    response = model_fn(prompt)
-    _cache[key] = response
-    return response`,
+class PromptCache:
+    def __init__(self):
+        self._cache = {}
+
+    def cached_call(self, prompt, model_fn):
+        normalized = " ".join(prompt.strip().lower().split())
+        key = hashlib.sha256(normalized.encode()).hexdigest()
+        if key in self._cache:
+            return self._cache[key]
+        response = model_fn(prompt)
+        self._cache[key] = response
+        return response`,
       solutionExplanation: [
         "I normalize the prompt with `\" \".join(prompt.strip().lower().split())` — stripping leading/trailing whitespace, lowercasing, and collapsing internal whitespace runs into single spaces. This means '  What is Python?' and 'what is python?' hash to the same key, catching trivial formatting differences that would otherwise cause cache misses on functionally identical prompts.",
         "I hash the normalized string with `hashlib.sha256(...).hexdigest()` rather than using the raw string as a dict key directly. SHA-256 gives a fixed-length key regardless of prompt length — important if prompts can be very long (cache keys stay small and uniform), and it avoids storing potentially sensitive raw prompt text as the dict key in logs or memory dumps.",
@@ -182,11 +188,11 @@ def cached_call(prompt, model_fn):
         ],
       },
       blanks: [
-        { line: `normalized = " ".join(prompt.strip().___().split())`, answer: "lower" },
-        { line: `key = hashlib.___(normalized.encode()).hexdigest()`, answer: "sha256" },
-        { line: `if key in ___:`, answer: "_cache" },
-        { line: `response = model_fn(___)`, answer: "prompt" },
-        { line: `_cache[key] = ___`, answer: "response" },
+        { line: `        normalized = " ".join(prompt.strip().___().split())`, answer: "lower" },
+        { line: `        key = hashlib.___(normalized.encode()).hexdigest()`, answer: "sha256" },
+        { line: `        if key in ___:`, answer: "self._cache" },
+        { line: `        response = model_fn(___)`, answer: "prompt" },
+        { line: `        self._cache[key] = ___`, answer: "response" },
       ],
       explanationBlanks: [
         {

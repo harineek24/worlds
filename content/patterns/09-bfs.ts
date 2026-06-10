@@ -62,9 +62,16 @@ while queue:
       prompt:
         "Given the root of a binary tree, return an array of arrays where each inner array contains the values of nodes at that depth, left to right.",
       patternKeywords: ["bfs", "level-order", "tree", "queue"],
-      solution: `from collections import deque
+      solution: `from typing import List, Optional
+from collections import deque
 
-def level_order(root):
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def level_order(root: Optional[TreeNode]) -> List[List[int]]:
     if not root:
         return []
 
@@ -160,9 +167,16 @@ def level_order(root):
       prompt:
         "Given the root of a binary tree, return a list of the values of the rightmost node at each level (right side view).",
       patternKeywords: ["bfs", "level-order", "tree", "rightmost"],
-      solution: `from collections import deque
+      solution: `from typing import List, Optional
+from collections import deque
 
-def right_side_view(root):
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+def right_side_view(root: Optional[TreeNode]) -> List[int]:
     if not root:
         return []
 
@@ -248,9 +262,10 @@ def right_side_view(root):
       prompt:
         "You are given an m×n grid. Each cell is 0 (empty), 1 (fresh orange), or 2 (rotten orange). Every minute, any fresh orange adjacent (4-directionally) to a rotten orange becomes rotten. Return the minimum number of minutes until no fresh orange remains, or -1 if it is impossible.",
       patternKeywords: ["bfs", "multi-source", "grid", "shortest-path"],
-      solution: `from collections import deque
+      solution: `from typing import List
+from collections import deque
 
-def oranges_rotting(grid):
+def oranges_rotting(grid: List[List[int]]) -> int:
     rows, cols = len(grid), len(grid[0])
     queue = deque()
     fresh = 0
@@ -359,9 +374,10 @@ def oranges_rotting(grid):
       prompt:
         "Given an m×n binary matrix of 0s and 1s, return a matrix of the same size where each cell contains the distance to the nearest 0.",
       patternKeywords: ["bfs", "multi-source", "grid", "distance"],
-      solution: `from collections import deque
+      solution: `from typing import List
+from collections import deque
 
-def update_matrix(mat):
+def update_matrix(mat: List[List[int]]) -> List[List[int]]:
     rows, cols = len(mat), len(mat[0])
     dist = [[float('inf')] * cols for _ in range(rows)]
     queue = deque()

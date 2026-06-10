@@ -67,13 +67,16 @@ curr.next = prev        # now safe to overwrite`,
       prompt:
         "Given the head of a linked list, determine if the linked list has a cycle in it. A cycle exists if some node can be reached again by continuously following the next pointer. Return true if there is a cycle, false otherwise.",
       patternKeywords: ["cycle", "loop", "slow fast", "meet"],
-      solution: `slow = fast = head
-while fast and fast.next:
-    slow = slow.next
-    fast = fast.next.next
-    if slow == fast:
-        return True
-return False`,
+      solution: `from typing import Optional
+
+def hasCycle(head: Optional[ListNode]) -> bool:
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
+        if slow == fast:
+            return True
+    return False`,
       solutionExplanation: [
         "I use Floyd's tortoise-and-hare algorithm. Both pointers start at head. Slow moves one step at a time, fast moves two. If there's no cycle, fast will eventually fall off the end of the list.",
         "The insight is mathematical: if a cycle exists, fast and slow are both inside it. Fast gains one node on slow every iteration. Eventually it laps slow — they must meet. The gap between them decreases by one each step, so meeting is guaranteed.",
@@ -122,11 +125,11 @@ return False`,
         },
       ],
       blanks: [
-        { line: `slow = fast = ___`, answer: "head" },
-        { line: `while fast and fast.___:`, answer: "next" },
-        { line: `slow = slow.___`, answer: "next" },
-        { line: `fast = fast.next.___`, answer: "next" },
-        { line: `if slow ___ fast:`, answer: "==" },
+        { line: `    slow = fast = ___`, answer: "head" },
+        { line: `    while fast and fast.___:`, answer: "next" },
+        { line: `        slow = slow.___`, answer: "next" },
+        { line: `        fast = fast.next.___`, answer: "next" },
+        { line: `        if slow ___ fast:`, answer: "==" },
       ],
     },
 
@@ -137,29 +140,32 @@ return False`,
       prompt:
         "Given the head of a singly linked list, return true if it is a palindrome or false otherwise. A palindrome reads the same forward and backward. Solve it in O(n) time and O(1) space.",
       patternKeywords: ["palindrome", "reverse", "midpoint", "compare halves"],
-      solution: `# Step 1: find midpoint
-slow = fast = head
-while fast and fast.next:
-    slow = slow.next
-    fast = fast.next.next
+      solution: `from typing import Optional
 
-# Step 2: reverse second half
-prev = None
-curr = slow
-while curr:
-    next_node = curr.next
-    curr.next = prev
-    prev = curr
-    curr = next_node
+def isPalindrome(head: Optional[ListNode]) -> bool:
+    # Step 1: find midpoint
+    slow = fast = head
+    while fast and fast.next:
+        slow = slow.next
+        fast = fast.next.next
 
-# Step 3: compare
-left, right = head, prev
-while right:
-    if left.val != right.val:
-        return False
-    left = left.next
-    right = right.next
-return True`,
+    # Step 2: reverse second half
+    prev = None
+    curr = slow
+    while curr:
+        next_node = curr.next
+        curr.next = prev
+        prev = curr
+        curr = next_node
+
+    # Step 3: compare
+    left, right = head, prev
+    while right:
+        if left.val != right.val:
+            return False
+        left = left.next
+        right = right.next
+    return True`,
       solutionExplanation: [
         "Step 1 — find the midpoint using slow/fast pointers. `slow = fast = head` — both start at head because we want slow to land *at* the midpoint, not one before it. The loop condition `while fast and fast.next` lets slow reach the exact middle when fast hits the end or one step from it.",
         "Step 2 — I reverse the second half in place, starting from slow. The critical line is `next_node = curr.next` — this saves the original next pointer *before* overwriting it with `curr.next = prev`. Once you reassign `curr.next`, the original next is gone; `next_node` is the only reference left. Skipping this save is the most common linked-list bug. The tradeoff: I'm mutating the list, which is usually acceptable in interviews unless asked otherwise.",
@@ -215,13 +221,13 @@ return True`,
         },
       ],
       blanks: [
-        { line: `while fast and fast.___:`, answer: "next" },
-        { line: `next_node = curr.___`, answer: "next" },
-        { line: `curr.next = ___`, answer: "prev" },
-        { line: `prev = ___`, answer: "curr" },
-        { line: `curr = ___`, answer: "next_node" },
-        { line: `left, right = head, ___`, answer: "prev" },
-        { line: `if left.___ != right.val:`, answer: "val" },
+        { line: `    while fast and fast.___:`, answer: "next" },
+        { line: `        next_node = curr.___`, answer: "next" },
+        { line: `        curr.next = ___`, answer: "prev" },
+        { line: `        prev = ___`, answer: "curr" },
+        { line: `        curr = ___`, answer: "next_node" },
+        { line: `    left, right = head, ___`, answer: "prev" },
+        { line: `        if left.___ != right.val:`, answer: "val" },
       ],
     },
 
@@ -232,22 +238,25 @@ return True`,
       prompt:
         "Given the head of a linked list, remove the nth node from the end of the list and return its head. Do it in one pass.",
       patternKeywords: ["nth from end", "fixed gap", "two pointers", "one pass"],
-      solution: `dummy = ListNode(0)
-dummy.next = head
-fast = slow = dummy
+      solution: `from typing import Optional
 
-# advance fast n+1 steps so gap between slow and fast is n+1
-for _ in range(n + 1):
-    fast = fast.next
+def removeNthFromEnd(head: Optional[ListNode], n: int) -> Optional[ListNode]:
+    dummy = ListNode(0)
+    dummy.next = head
+    fast = slow = dummy
 
-# move both until fast hits end
-while fast:
-    slow = slow.next
-    fast = fast.next
+    # advance fast n+1 steps so gap between slow and fast is n+1
+    for _ in range(n + 1):
+        fast = fast.next
 
-# slow is now just before the node to delete
-slow.next = slow.next.next
-return dummy.next`,
+    # move both until fast hits end
+    while fast:
+        slow = slow.next
+        fast = fast.next
+
+    # slow is now just before the node to delete
+    slow.next = slow.next.next
+    return dummy.next`,
       solutionExplanation: [
         "`dummy = ListNode(0); dummy.next = head` — the dummy node exists so that slow always has a valid predecessor for deletion. Without it, removing the original head would require `if node == head: head = head.next` as a special case. The dummy absorbs that branch: slow can always do `slow.next = slow.next.next` regardless of which node is targeted. The value 0 is arbitrary — it's never read.",
         "I advance fast exactly n+1 steps from dummy. This creates a gap of n+1 nodes between slow and fast. The key insight: when fast reaches null (the end), slow is exactly one node before the target.",
@@ -319,12 +328,12 @@ return dummy.next`,
         },
       ],
       blanks: [
-        { line: `dummy = ListNode(___)`, answer: "0" },
-        { line: `for _ in range(n + ___):`, answer: "1" },
-        { line: `fast = fast.___`, answer: "next" },
-        { line: `while ___:`, answer: "fast" },
-        { line: `slow.next = slow.next.___`, answer: "next" },
-        { line: `return dummy.___`, answer: "next" },
+        { line: `    dummy = ListNode(___)`, answer: "0" },
+        { line: `    for _ in range(n + ___):`, answer: "1" },
+        { line: `        fast = fast.___`, answer: "next" },
+        { line: `    while ___:`, answer: "fast" },
+        { line: `    slow.next = slow.next.___`, answer: "next" },
+        { line: `    return dummy.___`, answer: "next" },
       ],
     },
 
@@ -335,33 +344,36 @@ return dummy.next`,
       prompt:
         "Given the head of a singly linked-list L0 → L1 → ... → Ln, reorder it to: L0 → Ln → L1 → Ln-1 → L2 → Ln-2 → ... You may not modify the values in the list's nodes. Only nodes themselves may be changed.",
       patternKeywords: ["interleave", "reorder", "reverse second half", "merge alternating"],
-      solution: `# Step 1: find midpoint
-slow = fast = head
-while fast.next and fast.next.next:
-    slow = slow.next
-    fast = fast.next.next
+      solution: `from typing import Optional
 
-# Step 2: reverse second half
-second = slow.next
-slow.next = None   # cut the list
-prev = None
-curr = second
-while curr:
-    next_node = curr.next
-    curr.next = prev
-    prev = curr
-    curr = next_node
-second = prev
+def reorderList(head: Optional[ListNode]) -> None:
+    # Step 1: find midpoint
+    slow = fast = head
+    while fast.next and fast.next.next:
+        slow = slow.next
+        fast = fast.next.next
 
-# Step 3: merge alternating
-first = head
-while second:
-    tmp1 = first.next
-    tmp2 = second.next
-    first.next = second
-    second.next = tmp1
-    first = tmp1
-    second = tmp2`,
+    # Step 2: reverse second half
+    second = slow.next
+    slow.next = None   # cut the list
+    prev = None
+    curr = second
+    while curr:
+        next_node = curr.next
+        curr.next = prev
+        prev = curr
+        curr = next_node
+    second = prev
+
+    # Step 3: merge alternating
+    first = head
+    while second:
+        tmp1 = first.next
+        tmp2 = second.next
+        first.next = second
+        second.next = tmp1
+        first = tmp1
+        second = tmp2`,
       solutionExplanation: [
         "This problem is three sub-problems chained together: find the midpoint, reverse the back half, then merge the two halves alternately.",
         "Step 1 — the loop condition here is `while fast.next and fast.next.next`, not the usual `while fast and fast.next`. This small change makes slow land at the *last node of the first half* rather than the first node of the second half — so `slow.next` is exactly where the second half begins, enabling a clean cut. Choosing the wrong condition shifts the midpoint by one and creates an off-by-one in the merge.",
@@ -423,14 +435,14 @@ while second:
         },
       ],
       blanks: [
-        { line: `while fast.___ and fast.next.___:`, answer: "next, next" },
-        { line: `second = slow.___`, answer: "next" },
-        { line: `slow.next = ___`, answer: "None" },
-        { line: `curr.next = ___`, answer: "prev" },
-        { line: `first.next = ___`, answer: "second" },
-        { line: `second.next = ___`, answer: "tmp1" },
-        { line: `first = ___`, answer: "tmp1" },
-        { line: `second = ___`, answer: "tmp2" },
+        { line: `    while fast.___ and fast.next.___:`, answer: "next, next" },
+        { line: `    second = slow.___`, answer: "next" },
+        { line: `    slow.next = ___`, answer: "None" },
+        { line: `        curr.next = ___`, answer: "prev" },
+        { line: `        first.next = ___`, answer: "second" },
+        { line: `        second.next = ___`, answer: "tmp1" },
+        { line: `        first = ___`, answer: "tmp1" },
+        { line: `        second = ___`, answer: "tmp2" },
       ],
     },
 
@@ -441,23 +453,26 @@ while second:
       prompt:
         "Given a linked list, swap every two adjacent nodes and return its head. You must solve the problem without modifying the values in the list's nodes (i.e., only node swaps are allowed).",
       patternKeywords: ["swap pairs", "adjacent", "iterative rewire", "dummy head"],
-      solution: `dummy = ListNode(0)
-dummy.next = head
-prev = dummy
+      solution: `from typing import Optional
 
-while prev.next and prev.next.next:
-    a = prev.next
-    b = prev.next.next
+def swapPairs(head: Optional[ListNode]) -> Optional[ListNode]:
+    dummy = ListNode(0)
+    dummy.next = head
+    prev = dummy
 
-    # rewire
-    prev.next = b
-    a.next = b.next
-    b.next = a
+    while prev.next and prev.next.next:
+        a = prev.next
+        b = prev.next.next
 
-    # advance
-    prev = a
+        # rewire
+        prev.next = b
+        a.next = b.next
+        b.next = a
 
-return dummy.next`,
+        # advance
+        prev = a
+
+    return dummy.next`,
       solutionExplanation: [
         "`dummy = ListNode(0); dummy.next = head` — the dummy node gives `prev` a real predecessor before the list begins. Without it, swapping the very first pair would require special-casing the head: `head = b; ...`. The dummy absorbs that branch so every swap, including the first, goes through the same `prev.next = b` assignment. The value 0 is never read.",
         "Each iteration processes one pair: `a` is the first node, `b` is the second. The loop condition `prev.next and prev.next.next` ensures there are at least two nodes left — a single trailing node gets left in place, which is correct.",
@@ -525,14 +540,14 @@ return dummy.next`,
         },
       ],
       blanks: [
-        { line: `dummy = ListNode(___)`, answer: "0" },
-        { line: `while prev.___ and prev.next.___:`, answer: "next, next" },
-        { line: `a = prev.___`, answer: "next" },
-        { line: `b = prev.next.___`, answer: "next" },
-        { line: `prev.next = ___`, answer: "b" },
-        { line: `a.next = b.___`, answer: "next" },
-        { line: `b.next = ___`, answer: "a" },
-        { line: `prev = ___`, answer: "a" },
+        { line: `    dummy = ListNode(___)`, answer: "0" },
+        { line: `    while prev.___ and prev.next.___:`, answer: "next, next" },
+        { line: `        a = prev.___`, answer: "next" },
+        { line: `        b = prev.next.___`, answer: "next" },
+        { line: `        prev.next = ___`, answer: "b" },
+        { line: `        a.next = b.___`, answer: "next" },
+        { line: `        b.next = ___`, answer: "a" },
+        { line: `        prev = ___`, answer: "a" },
       ],
     },
   ],

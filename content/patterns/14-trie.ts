@@ -159,36 +159,37 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
       prompt:
         "Given an m x n board of characters and a list of strings words, return all words on the board. Each word must be constructed from letters of sequentially adjacent cells (horizontally or vertically neighboring). The same letter cell may not be used more than once in a word.",
       patternKeywords: ["board", "word search", "DFS", "trie", "multiple words", "backtracking"],
-      solution: `def findWords(board, words):
-    trie = {}
-    for word in words:
-        node = trie
-        for c in word:
-            node = node.setdefault(c, {})
-        node['#'] = word  # store word at end node
+      solution: `class Solution:
+    def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
+        trie = {}
+        for word in words:
+            node = trie
+            for c in word:
+                node = node.setdefault(c, {})
+            node['#'] = word  # store word at end node
 
-    rows, cols = len(board), len(board[0])
-    result = set()
+        rows, cols = len(board), len(board[0])
+        result = set()
 
-    def dfs(r, c, node):
-        ch = board[r][c]
-        if ch not in node:
-            return
-        next_node = node[ch]
-        if '#' in next_node:
-            result.add(next_node['#'])
-        board[r][c] = '$'  # mark visited
-        for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
-            nr, nc = r + dr, c + dc
-            if 0 <= nr < rows and 0 <= nc < cols and board[nr][nc] != '$':
-                dfs(nr, nc, next_node)
-        board[r][c] = ch  # restore
+        def dfs(r, c, node):
+            ch = board[r][c]
+            if ch not in node:
+                return
+            next_node = node[ch]
+            if '#' in next_node:
+                result.add(next_node['#'])
+            board[r][c] = '$'  # mark visited
+            for dr, dc in [(0,1),(0,-1),(1,0),(-1,0)]:
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < rows and 0 <= nc < cols and board[nr][nc] != '$':
+                    dfs(nr, nc, next_node)
+            board[r][c] = ch  # restore
 
-    for r in range(rows):
-        for c in range(cols):
-            dfs(r, c, trie)
+        for r in range(rows):
+            for c in range(cols):
+                dfs(r, c, trie)
 
-    return list(result)`,
+        return list(result)`,
       solutionExplanation: [
         "I build a trie from all target words upfront. This lets the DFS prune immediately — if the current character isn't in the trie node, there's no word starting with this prefix, and I stop.",
         "I store the completed word string at the '#' node rather than just True. That way when I find a match deep in the DFS, I can collect the word directly without reconstructing it.",
@@ -243,15 +244,15 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
       },
       blanks: [
         {
-          line: "node['#'] = ___",
+          line: "    node['#'] = ___",
           answer: "word",
         },
         {
-          line: "if ch not in node:",
+          line: "        if ch not in node:",
           answer: "if ch not in node:",
         },
         {
-          line: "board[r][c] = '___'  # mark visited",
+          line: "        board[r][c] = '___'  # mark visited",
           answer: "$",
         },
       ],
@@ -263,26 +264,28 @@ node = node.setdefault(c, {})  # create child if missing, then descend`,
       prompt:
         "Given an array of strings words representing an English dictionary, return the longest word in words that can be built one character at a time by other words in words. If there is more than one possible answer, return the longest word with the smallest lexicographical order. If there is no answer, return the empty string.",
       patternKeywords: ["build one character", "prefix exists", "dictionary", "longest word"],
-      solution: `trie = {}
-for word in sorted(words):
-    node = trie
-    for c in word:
-        node = node.setdefault(c, {})
-    node['#'] = word
+      solution: `class Solution:
+    def longestWord(self, words: List[str]) -> str:
+        trie = {}
+        for word in sorted(words):
+            node = trie
+            for c in word:
+                node = node.setdefault(c, {})
+            node['#'] = word
 
-result = ''
-stack = [trie]
-while stack:
-    node = stack.pop()
-    for c, child in node.items():
-        if c == '#':
-            continue
-        if '#' in child:
-            word = child['#']
-            if len(word) > len(result):
-                result = word
-            stack.append(child)
-return result`,
+        result = ''
+        stack = [trie]
+        while stack:
+            node = stack.pop()
+            for c, child in node.items():
+                if c == '#':
+                    continue
+                if '#' in child:
+                    word = child['#']
+                    if len(word) > len(result):
+                        result = word
+                    stack.append(child)
+        return result`,
       solutionExplanation: [
         "I insert all words into the trie, storing the word string at the '#' node as before. I sort words first so that when two words of the same length exist, the lexicographically smaller one is stored.",
         "I do a DFS/BFS traversal of the trie, but I only follow edges into child nodes that have '#' — meaning only into nodes where a complete word ends. This is the key constraint: every prefix must itself be a word in the dictionary.",
@@ -334,15 +337,15 @@ return result`,
       },
       blanks: [
         {
-          line: "if '#' in ___:",
+          line: "                if '#' in ___:",
           answer: "child",
         },
         {
-          line: "if len(word) > len(___):",
+          line: "                    if len(word) > len(___):",
           answer: "result",
         },
         {
-          line: "stack.append(___)",
+          line: "                    stack.append(___)",
           answer: "child",
         },
       ],

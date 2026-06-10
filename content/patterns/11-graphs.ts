@@ -72,9 +72,10 @@ while queue:
       prompt:
         "There are numCourses courses labeled 0 to numCourses-1. You are given an array prerequisites where prerequisites[i] = [a, b] means you must take course b before course a. Return true if you can finish all courses, false if a cycle makes it impossible.",
       patternKeywords: ["cycle detection", "directed graph", "prerequisites", "topological sort"],
-      solution: `from collections import defaultdict, deque
+      solution: `from typing import List
+from collections import defaultdict, deque
 
-def canFinish(numCourses, prerequisites):
+def canFinish(numCourses: int, prerequisites: List[List[int]]) -> bool:
     graph = defaultdict(list)
     in_degree = {i: 0 for i in range(numCourses)}
     for a, b in prerequisites:
@@ -150,9 +151,10 @@ def canFinish(numCourses, prerequisites):
       prompt:
         "Same as Course Schedule, but return the ordering in which courses should be taken. If it is impossible to finish all courses (due to a cycle), return an empty array.",
       patternKeywords: ["topological order", "cycle detection", "directed graph", "prerequisites"],
-      solution: `from collections import defaultdict, deque
+      solution: `from typing import List
+from collections import defaultdict, deque
 
-def findOrder(numCourses, prerequisites):
+def findOrder(numCourses: int, prerequisites: List[List[int]]) -> List[int]:
     graph = defaultdict(list)
     in_degree = {i: 0 for i in range(numCourses)}
     for a, b in prerequisites:
@@ -219,13 +221,15 @@ def findOrder(numCourses, prerequisites):
       prompt:
         "Given an m x n 2D binary grid of '1's (land) and '0's (water), return the number of islands. An island is surrounded by water and formed by connecting adjacent land cells horizontally or vertically.",
       patternKeywords: ["connected components", "flood fill", "DFS", "grid traversal"],
-      solution: `def numIslands(grid):
+      solution: `from typing import List
+
+def numIslands(grid: List[List[str]]) -> int:
     if not grid:
         return 0
     rows, cols = len(grid), len(grid[0])
     count = 0
 
-    def dfs(r, c):
+    def dfs(r: int, c: int) -> None:
         if r < 0 or r >= rows or c < 0 or c >= cols or grid[r][c] != '1':
             return
         grid[r][c] = '0'
@@ -297,13 +301,14 @@ def findOrder(numCourses, prerequisites):
       prompt:
         "Given an m x n matrix of heights, water can flow to adjacent cells with equal or lower height. The Pacific ocean borders the top and left edges; the Atlantic borders the bottom and right edges. Return all cells from which water can flow to both oceans.",
       patternKeywords: ["multi-source BFS", "reverse flow", "reachability", "grid traversal"],
-      solution: `from collections import deque
+      solution: `from typing import List
+from collections import deque
 
-def pacificAtlantic(heights):
+def pacificAtlantic(heights: List[List[int]]) -> List[List[int]]:
     rows, cols = len(heights), len(heights[0])
     pac, atl = set(), set()
 
-    def bfs(starts, visited):
+    def bfs(starts: List[tuple], visited: set) -> None:
         queue = deque(starts)
         visited.update(starts)
         while queue:
@@ -366,10 +371,11 @@ def pacificAtlantic(heights):
       prompt:
         "You are given a network of n nodes labeled 1 to n, a list of travel times as directed edges times[i] = (u, v, w), and a source node k. Return the minimum time for all nodes to receive the signal, or -1 if impossible.",
       patternKeywords: ["shortest path", "Dijkstra", "weighted graph", "minimum distance"],
-      solution: `import heapq
+      solution: `from typing import List
+import heapq
 from collections import defaultdict
 
-def networkDelayTime(times, n, k):
+def networkDelayTime(times: List[List[int]], n: int, k: int) -> int:
     graph = defaultdict(list)
     for u, v, w in times:
         graph[u].append((v, w))

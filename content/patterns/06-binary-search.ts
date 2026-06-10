@@ -73,8 +73,9 @@ return left`,
         "Koko loves to eat bananas. There are n piles of bananas, the ith pile has piles[i] bananas. Koko can decide her bananas-per-hour eating speed of k. Each hour, she chooses a pile and eats k bananas from it. If the pile has fewer than k bananas, she eats all of them and will not eat any more bananas during this hour. Koko wants to finish all the bananas before the guards come back. The guards will be back in h hours. Return the minimum integer k such that she can eat all the bananas within h hours.",
       patternKeywords: ["minimum speed", "hours constraint", "feasibility check", "search space"],
       solution: `import math
+from typing import List
 
-def minEatingSpeed(piles, h):
+def minEatingSpeed(piles: List[int], h: int) -> int:
     left, right = 1, max(piles)
 
     while left < right:
@@ -152,7 +153,9 @@ def minEatingSpeed(piles, h):
       prompt:
         "There is an integer array nums sorted in ascending order (with distinct values). Prior to being passed to your function, nums is possibly rotated at an unknown pivot index k such that the resulting array is [nums[k], nums[k+1], ..., nums[n-1], nums[0], nums[1], ..., nums[k-1]]. Given the array nums after the possible rotation and an integer target, return the index of target if it is in nums, or -1 if it is not in nums. You must write an algorithm with O(log n) runtime complexity.",
       patternKeywords: ["rotated sorted", "pivot", "one half sorted", "which side"],
-      solution: `def search(nums, target):
+      solution: `from typing import List
+
+def search(nums: List[int], target: int) -> int:
     left, right = 0, len(nums) - 1
 
     while left <= right:
@@ -246,7 +249,9 @@ def minEatingSpeed(piles, h):
       prompt:
         "Given an integer array nums and an integer k, split nums into k non-empty subarrays such that the largest sum of any subarray is minimized. Return the minimized largest sum of the split.",
       patternKeywords: ["minimize maximum", "split subarrays", "feasibility check", "answer space"],
-      solution: `def splitArray(nums, k):
+      solution: `from typing import List
+
+def splitArray(nums: List[int], k: int) -> int:
     left, right = max(nums), sum(nums)
 
     while left < right:
@@ -346,7 +351,9 @@ def minEatingSpeed(piles, h):
       prompt:
         "Given an n x n matrix where each of the rows and columns is sorted in ascending order, return the kth smallest element in the matrix. Note that it is the kth smallest element in the sorted order, not the kth distinct element.",
       patternKeywords: ["kth smallest", "sorted matrix", "value space search", "count elements"],
-      solution: `def kthSmallest(matrix, k):
+      solution: `from typing import List
+
+def kthSmallest(matrix: List[List[int]], k: int) -> int:
     n = len(matrix)
     left, right = matrix[0][0], matrix[n-1][n-1]
 
@@ -462,7 +469,9 @@ def minEatingSpeed(piles, h):
       prompt:
         "A conveyor belt has packages that must be shipped from one port to another within days days. The ith package on the conveyor belt has a weight of weights[i]. Each day, we load the ship with packages in the order given by weights. We may not load more weight than the maximum weight capacity of the ship. Return the least weight capacity of the ship that will result in all the packages on the conveyor belt being shipped within days days.",
       patternKeywords: ["minimum capacity", "days constraint", "feasibility check", "answer space"],
-      solution: `def shipWithinDays(weights, days):
+      solution: `from typing import List
+
+def shipWithinDays(weights: List[int], days: int) -> int:
     left, right = max(weights), sum(weights)
 
     while left < right:

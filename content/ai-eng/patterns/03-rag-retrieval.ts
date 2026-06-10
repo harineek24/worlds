@@ -56,8 +56,9 @@ score = sum(tf.get(term, 0) for term in query_terms)`,
         "Given a query embedding vector and a list of document embedding vectors (as lists of floats), return the indices of the top-k documents most similar to the query, ranked by cosine similarity.",
       patternKeywords: ["embeddings", "cosine similarity", "top-k", "vector search"],
       solution: `import numpy as np
+from typing import List
 
-def top_k_indices(query, docs, k):
+def top_k_indices(query: List[float], docs: List[List[float]], k: int) -> List[int]:
     q = np.array(query)
     sims = []
     for d in docs:
@@ -123,7 +124,9 @@ def top_k_indices(query, docs, k):
       prompt:
         "Given a long string of text, a chunk size (in words), and an overlap size (in words), split the text into overlapping chunks suitable for embedding and indexing. Each chunk after the first should start `overlap` words before where the previous chunk ended.",
       patternKeywords: ["chunking", "overlap", "preprocessing", "context window"],
-      solution: `def chunk_text(text, chunk_size, overlap):
+      solution: `from typing import List
+
+def chunk_text(text: str, chunk_size: int, overlap: int) -> List[str]:
     words = text.split()
     chunks = []
     start = 0
@@ -198,8 +201,10 @@ def top_k_indices(query, docs, k):
       prompt:
         "Given a list of documents with a precomputed sparse (BM25) score and a dense (embedding cosine similarity) score for each, normalize both score sets to [0, 1] and combine them with a weighted sum to produce a final hybrid ranking. Return document indices sorted by the combined score, descending.",
       patternKeywords: ["hybrid search", "BM25", "dense retrieval", "score fusion"],
-      solution: `def hybrid_rank(bm25_scores, dense_scores, alpha=0.5):
-    def normalize(scores):
+      solution: `from typing import List
+
+def hybrid_rank(bm25_scores: List[float], dense_scores: List[float], alpha: float = 0.5) -> List[int]:
+    def normalize(scores: List[float]) -> List[float]:
         lo, hi = min(scores), max(scores)
         if hi == lo:
             return [0.0 for _ in scores]
@@ -273,7 +278,9 @@ def top_k_indices(query, docs, k):
       prompt:
         "You retrieved a candidate pool of documents using a fast bi-encoder (vector similarity), but you want to improve precision with a slower, more accurate cross-encoder reranker. Given the original candidate document indices and a list of cross-encoder relevance scores (one per candidate, same order), return the top-n document indices reordered by the reranker's scores.",
       patternKeywords: ["reranking", "cross-encoder", "two-stage retrieval", "precision"],
-      solution: `def rerank(candidate_ids, rerank_scores, n):
+      solution: `from typing import List, Any
+
+def rerank(candidate_ids: List[Any], rerank_scores: List[float], n: int) -> List[Any]:
     paired = list(zip(candidate_ids, rerank_scores))
     paired.sort(key=lambda pair: pair[1], reverse=True)
     return [doc_id for doc_id, _ in paired[:n]]`,
@@ -337,7 +344,9 @@ def top_k_indices(query, docs, k):
       prompt:
         "You're evaluating a retrieval system against a labeled dataset. For each query you have the set of ground-truth relevant document IDs and the ranked list of document IDs the retriever returned. Implement recall@k, averaged across all queries: for each query, recall@k is the fraction of that query's relevant documents that appear in the top-k retrieved results.",
       patternKeywords: ["retrieval evaluation", "recall@k", "ground truth", "ranking metrics"],
-      solution: `def recall_at_k(retrieved_lists, relevant_sets, k):
+      solution: `from typing import List, Set, Any
+
+def recall_at_k(retrieved_lists: List[List[Any]], relevant_sets: List[Set[Any]], k: int) -> float:
     total_recall = 0.0
     for retrieved, relevant in zip(retrieved_lists, relevant_sets):
         if not relevant:

@@ -56,30 +56,34 @@ while top <= bottom and left <= right:
       prompt:
         "Given an m x n matrix, return all elements of the matrix in spiral order.",
       patternKeywords: ["spiral", "layer by layer", "boundaries", "clockwise", "shrink"],
-      solution: `result = []
-top, bottom = 0, len(matrix) - 1
-left, right = 0, len(matrix[0]) - 1
+      solution: `from typing import List
 
-while top <= bottom and left <= right:
-    for c in range(left, right + 1):
-        result.append(matrix[top][c])
-    top += 1
 
-    for r in range(top, bottom + 1):
-        result.append(matrix[r][right])
-    right -= 1
+def spiralOrder(matrix: List[List[int]]) -> List[int]:
+    result = []
+    top, bottom = 0, len(matrix) - 1
+    left, right = 0, len(matrix[0]) - 1
 
-    if top <= bottom:
-        for c in range(right, left - 1, -1):
-            result.append(matrix[bottom][c])
-        bottom -= 1
+    while top <= bottom and left <= right:
+        for c in range(left, right + 1):
+            result.append(matrix[top][c])
+        top += 1
 
-    if left <= right:
-        for r in range(bottom, top - 1, -1):
-            result.append(matrix[r][left])
-        left += 1
+        for r in range(top, bottom + 1):
+            result.append(matrix[r][right])
+        right -= 1
 
-return result`,
+        if top <= bottom:
+            for c in range(right, left - 1, -1):
+                result.append(matrix[bottom][c])
+            bottom -= 1
+
+        if left <= right:
+            for r in range(bottom, top - 1, -1):
+                result.append(matrix[r][left])
+            left += 1
+
+    return result`,
       solutionExplanation: [
         "I maintain four boundary pointers: top, bottom, left, right. Each iteration of the while loop processes one full ring of the spiral — the outermost layer — then shrinks the boundaries inward.",
         "I traverse left-to-right along the top row, then top-to-bottom along the right column, then right-to-left along the bottom row, then bottom-to-top along the left column. After each direction, I shrink the corresponding boundary.",
@@ -128,15 +132,15 @@ return result`,
       },
       blanks: [
         {
-          line: "for c in range(left, right + 1):",
+          line: "    for c in range(left, right + 1):",
           answer: "for c in range(left, right + 1):",
         },
         {
-          line: "if top <= ___:",
+          line: "        if top <= ___:",
           answer: "bottom",
         },
         {
-          line: "if left <= ___:",
+          line: "        if left <= ___:",
           answer: "right",
         },
       ],
@@ -148,14 +152,18 @@ return result`,
       prompt:
         "You are given an n x n 2D matrix representing an image, rotate the image by 90 degrees clockwise. You have to rotate the image in-place.",
       patternKeywords: ["rotate", "in-place", "transpose", "reverse", "90 degrees"],
-      solution: `n = len(matrix)
-# Step 1: Transpose
-for i in range(n):
-    for j in range(i + 1, n):
-        matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
-# Step 2: Reverse each row
-for row in matrix:
-    row.reverse()`,
+      solution: `from typing import List
+
+
+def rotate(matrix: List[List[int]]) -> None:
+    n = len(matrix)
+    # Step 1: Transpose
+    for i in range(n):
+        for j in range(i + 1, n):
+            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]
+    # Step 2: Reverse each row
+    for row in matrix:
+        row.reverse()`,
       solutionExplanation: [
         "A 90-degree clockwise rotation is equivalent to two simpler operations: first transpose the matrix (flip across the main diagonal), then reverse each row.",
         "The transpose swaps matrix[i][j] with matrix[j][i] for all i < j. I only iterate over the upper triangle (j starts at i+1) to avoid double-swapping back to the original.",
@@ -201,15 +209,15 @@ for row in matrix:
       },
       blanks: [
         {
-          line: "for j in range(___ + 1, n):",
+          line: "        for j in range(___ + 1, n):",
           answer: "i",
         },
         {
-          line: "matrix[i][j], matrix[j][i] = matrix[j][i], ___",
+          line: "            matrix[i][j], matrix[j][i] = matrix[j][i], ___",
           answer: "matrix[i][j]",
         },
         {
-          line: "row.___",
+          line: "        row.___",
           answer: "reverse()",
         },
       ],
@@ -221,30 +229,34 @@ for row in matrix:
       prompt:
         "Given an m x n integer matrix, if an element is 0, set its entire row and column to 0's. Do it in-place.",
       patternKeywords: ["in-place", "zero out", "flags", "constant space", "mark rows and columns"],
-      solution: `m, n = len(matrix), len(matrix[0])
-first_row_zero = any(matrix[0][j] == 0 for j in range(n))
-first_col_zero = any(matrix[i][0] == 0 for i in range(m))
+      solution: `from typing import List
 
-# Use first row and first col as flags
-for i in range(1, m):
-    for j in range(1, n):
-        if matrix[i][j] == 0:
-            matrix[i][0] = 0
+
+def setZeroes(matrix: List[List[int]]) -> None:
+    m, n = len(matrix), len(matrix[0])
+    first_row_zero = any(matrix[0][j] == 0 for j in range(n))
+    first_col_zero = any(matrix[i][0] == 0 for i in range(m))
+
+    # Use first row and first col as flags
+    for i in range(1, m):
+        for j in range(1, n):
+            if matrix[i][j] == 0:
+                matrix[i][0] = 0
+                matrix[0][j] = 0
+
+    # Zero out cells based on flags
+    for i in range(1, m):
+        for j in range(1, n):
+            if matrix[i][0] == 0 or matrix[0][j] == 0:
+                matrix[i][j] = 0
+
+    # Zero out first row and first col if needed
+    if first_row_zero:
+        for j in range(n):
             matrix[0][j] = 0
-
-# Zero out cells based on flags
-for i in range(1, m):
-    for j in range(1, n):
-        if matrix[i][0] == 0 or matrix[0][j] == 0:
-            matrix[i][j] = 0
-
-# Zero out first row and first col if needed
-if first_row_zero:
-    for j in range(n):
-        matrix[0][j] = 0
-if first_col_zero:
-    for i in range(m):
-        matrix[i][0] = 0`,
+    if first_col_zero:
+        for i in range(m):
+            matrix[i][0] = 0`,
       solutionExplanation: [
         "The naive approach uses O(m+n) extra space to store which rows and columns need zeroing. I can do O(1) by repurposing the first row and first column as those flag arrays.",
         "First I save whether the first row and first column themselves contain any zeros — because I'm about to overwrite them as flags, and I need to remember their original state.",
@@ -301,15 +313,15 @@ if first_col_zero:
       },
       blanks: [
         {
-          line: "first_row_zero = any(matrix[0][j] == 0 for j in range(n))",
+          line: "    first_row_zero = any(matrix[0][j] == 0 for j in range(n))",
           answer: "any(matrix[0][j] == 0 for j in range(n))",
         },
         {
-          line: "matrix[i][0] = ___",
+          line: "                matrix[i][0] = ___",
           answer: "0",
         },
         {
-          line: "if matrix[i][0] == 0 or matrix[0][j] == ___:",
+          line: "            if matrix[i][0] == 0 or matrix[0][j] == ___:",
           answer: "0",
         },
       ],

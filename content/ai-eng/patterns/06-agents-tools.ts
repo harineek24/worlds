@@ -87,7 +87,9 @@ def retry_with_backoff(max_retries=3, base_delay=1):
       prompt:
         "The model returns a JSON object describing a tool call: {'name': str, 'arguments': dict}. Given a registry mapping tool names to callables, write a function that dispatches the call and returns the tool's result, or a clear error string if the tool name isn't registered.",
       patternKeywords: ["function calling", "dispatch", "registry", "error handling"],
-      solution: `def dispatch_tool_call(call, registry):
+      solution: `from typing import Any, Callable
+
+def dispatch_tool_call(call: dict, registry: dict[str, Callable]) -> Any:
     name = call["name"]
     args = call.get("arguments", {})
     if name not in registry:
@@ -154,7 +156,9 @@ def retry_with_backoff(max_retries=3, base_delay=1):
       prompt:
         "Implement the core step function of a ReAct-style agent: given the running scratchpad of (thought, action, observation) tuples and a question, the model produces a thought and either an action+input or a final answer. Write the loop that runs until 'finish' is chosen or a max step count is hit, returning the final answer or a fallback string.",
       patternKeywords: ["ReAct", "think-act-observe", "scratchpad", "termination condition"],
-      solution: `def run_react(question, llm_step, tools, max_steps=5):
+      solution: `from typing import Callable
+
+def run_react(question: str, llm_step: Callable, tools: dict[str, Callable], max_steps: int = 5) -> str:
     scratchpad = []
     for step in range(max_steps):
         thought, action, action_input = llm_step(question, scratchpad)
@@ -238,8 +242,9 @@ def retry_with_backoff(max_retries=3, base_delay=1):
         "Given a high-level goal and a planner function that returns raw subtask strings (possibly with stray whitespace, numbering like '1.', or duplicates), write a function that produces a clean, ordered, deduplicated list of subtasks ready to be executed sequentially.",
       patternKeywords: ["task decomposition", "planning", "deduplication", "preprocessing"],
       solution: `import re
+from typing import Callable
 
-def decompose_task(goal, planner_fn):
+def decompose_task(goal: str, planner_fn: Callable[[str], list[str]]) -> list[str]:
     raw_steps = planner_fn(goal)
     seen = set()
     subtasks = []
@@ -314,7 +319,9 @@ def decompose_task(goal, planner_fn):
       prompt:
         "You have a router/orchestrator agent and a set of specialist agents (e.g., 'researcher', 'coder', 'writer'), each exposed as a callable that takes a task string and returns a result string. Given a router function that classifies a task into one of the specialist names (or 'unknown'), write the handoff function that routes the task, handles an unrecognized specialist, and returns both the chosen specialist's name and its output.",
       patternKeywords: ["multi-agent", "orchestration", "handoff", "routing"],
-      solution: `def handoff(task, router_fn, specialists, default="researcher"):
+      solution: `from typing import Callable
+
+def handoff(task: str, router_fn: Callable[[str], str], specialists: dict[str, Callable[[str], str]], default: str = "researcher") -> tuple[str, str]:
     chosen = router_fn(task)
     if chosen not in specialists:
         chosen = default
@@ -386,9 +393,10 @@ def decompose_task(goal, planner_fn):
       patternKeywords: ["retry", "exponential backoff", "transient vs permanent errors", "decorator"],
       solution: `import time
 from functools import wraps
+from typing import Callable
 
-def retry_with_backoff(transient_exceptions, max_retries=3, base_delay=1):
-    def decorator(fn):
+def retry_with_backoff(transient_exceptions: tuple[type[Exception], ...], max_retries: int = 3, base_delay: float = 1) -> Callable:
+    def decorator(fn: Callable) -> Callable:
         @wraps(fn)
         def wrapper(*args, **kwargs):
             for attempt in range(max_retries):

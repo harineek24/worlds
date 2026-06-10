@@ -48,14 +48,15 @@ while left < right:
       prompt:
         "A phrase is a palindrome if, after converting all uppercase letters to lowercase and removing all non-alphanumeric characters, it reads the same forward and backward. Given a string s, return true if it is a palindrome, or false otherwise.",
       patternKeywords: ["symmetric", "forward and backward", "same from both ends"],
-      solution: `s = [c.lower() for c in s if c.isalnum()]
-left, right = 0, len(s) - 1
-while left < right:
-    if s[left] != s[right]:
-        return False
-    left += 1
-    right -= 1
-return True`,
+      solution: `def isPalindrome(s: str) -> bool:
+    s = [c.lower() for c in s if c.isalnum()]
+    left, right = 0, len(s) - 1
+    while left < right:
+        if s[left] != s[right]:
+            return False
+        left += 1
+        right -= 1
+    return True`,
       solutionExplanation: [
         "First I clean the input — lowercase everything and strip out anything that isn't a letter or digit. The expression [c.lower() for c in s if c.isalnum()] is a Python list comprehension that performs two operations on a string s:",
         "Filters: It iterates through every character c in the string s and keeps only those where c.isalnum() is True (alphanumeric characters: letters and numbers). Transforms: For each kept character, it converts it to lowercase using c.lower()This gives me a pure sequence to compare. I use a list comprehension here instead of a for-loop that builds a list manually, because it's a single expression — more readable, and Python can optimize the construction slightly better for simple filters like this.",
@@ -92,12 +93,12 @@ return True`,
         ],
       },
       blanks: [
-        { line: `s = [c.lower() for c in s if c.___()]`, answer: "isalnum" },
-        { line: `left, right = ___, len(s) - 1`, answer: "0" },
-        { line: `while left ___ right:`, answer: "<" },
-        { line: `if s[left] ___ s[right]:`, answer: "!=" },
-        { line: `left ___ 1`, answer: "+=" },
-        { line: `right ___ 1`, answer: "-=" },
+        { line: `    s = [c.lower() for c in s if c.___()]`, answer: "isalnum" },
+        { line: `    left, right = ___, len(s) - 1`, answer: "0" },
+        { line: `    while left ___ right:`, answer: "<" },
+        { line: `        if s[left] ___ s[right]:`, answer: "!=" },
+        { line: `        left ___ 1`, answer: "+=" },
+        { line: `        right ___ 1`, answer: "-=" },
       ],
       explanationBlanks: [
         {
@@ -138,15 +139,18 @@ return True`,
       prompt:
         "Given a 1-indexed array of integers that is already sorted in non-decreasing order, find two numbers that add up to a specific target. Return their indices (1-indexed). You may not use the same element twice. There is exactly one solution. Use only O(1) extra space.",
       patternKeywords: ["sorted array", "pair", "target sum", "O(1) space"],
-      solution: `left, right = 0, len(numbers) - 1
-while left < right:
-    s = numbers[left] + numbers[right]
-    if s == target:
-        return [left + 1, right + 1]
-    elif s < target:
-        left += 1
-    else:
-        right -= 1`,
+      solution: `from typing import List
+
+def twoSum(numbers: List[int], target: int) -> List[int]:
+    left, right = 0, len(numbers) - 1
+    while left < right:
+        s = numbers[left] + numbers[right]
+        if s == target:
+            return [left + 1, right + 1]
+        elif s < target:
+            left += 1
+        else:
+            right -= 1`,
       solutionExplanation: [
         "I start with the widest possible window — leftmost and rightmost elements. This gives me the full range to work with. I use a while loop instead of a for loop because the termination condition is dynamic — the two pointers move at different rates depending on what we find at each step, so I need a condition check rather than a fixed iteration count.",
         "I sum the two values the pointers point at and store the result in a local variable `s`. This is the candidate answer for this window — computing it once and reusing it avoids recalculating in each branch of the if-elif-else.",
@@ -171,11 +175,11 @@ while left < right:
         ],
       },
       blanks: [
-        { line: `left, right = ___, len(numbers) - 1`, answer: "0" },
-        { line: `s = numbers[___] + numbers[___]`, answer: "left, right" },
-        { line: `if s == target: return [left + ___, right + ___]`, answer: "1, 1" },
-        { line: `elif s < target: ___ += 1`, answer: "left" },
-        { line: `else: ___ -= 1`, answer: "right" },
+        { line: `    left, right = ___, len(numbers) - 1`, answer: "0" },
+        { line: `        s = numbers[___] + numbers[___]`, answer: "left, right" },
+        { line: `        if s == target: return [left + ___, right + ___]`, answer: "1, 1" },
+        { line: `        elif s < target: ___ += 1`, answer: "left" },
+        { line: `        else: ___ -= 1`, answer: "right" },
       ],
       explanationBlanks: [
         {
@@ -208,16 +212,19 @@ while left < right:
       prompt:
         "You are given an integer array height of length n. There are n vertical lines drawn such that the two endpoints of the ith line are (i, 0) and (i, height[i]). Find two lines that together with the x-axis form a container that holds the most water. Return the maximum amount of water a container can store.",
       patternKeywords: ["maximize area", "two boundaries", "width shrinks as you move inward"],
-      solution: `left, right = 0, len(height) - 1
-max_water = 0
-while left < right:
-    water = min(height[left], height[right]) * (right - left)
-    max_water = max(max_water, water)
-    if height[left] < height[right]:
-        left += 1
-    else:
-        right -= 1
-return max_water`,
+      solution: `from typing import List
+
+def maxArea(height: List[int]) -> int:
+    left, right = 0, len(height) - 1
+    max_water = 0
+    while left < right:
+        water = min(height[left], height[right]) * (right - left)
+        max_water = max(max_water, water)
+        if height[left] < height[right]:
+            left += 1
+        else:
+            right -= 1
+    return max_water`,
       solutionExplanation: [
         "I start at the widest possible container — outermost walls. Width can only decrease from here, so I need to find height gains that compensate. I use a while loop instead of a for loop because both pointers move independently toward each other — neither has a fixed step size, so a condition-based loop is the right tool.",
         "I initialize `max_water = 0` as a plain integer rather than using `float('-inf')` — because area is always non-negative here, 0 is a safe and semantically clear starting value.",
@@ -256,12 +263,12 @@ return max_water`,
         ],
       },
       blanks: [
-        { line: `left, right = ___, len(height) - 1`, answer: "0" },
-        { line: `water = min(height[left], height[right]) * (right - ___)`, answer: "left" },
-        { line: `max_water = max(___, water)`, answer: "max_water" },
-        { line: `if height[left] ___ height[right]:`, answer: "<" },
-        { line: `___ += 1`, answer: "left" },
-        { line: `___ -= 1`, answer: "right" },
+        { line: `    left, right = ___, len(height) - 1`, answer: "0" },
+        { line: `        water = min(height[left], height[right]) * (right - ___)`, answer: "left" },
+        { line: `        max_water = max(___, water)`, answer: "max_water" },
+        { line: `        if height[left] ___ height[right]:`, answer: "<" },
+        { line: `            ___ += 1`, answer: "left" },
+        { line: `            ___ -= 1`, answer: "right" },
       ],
       explanationBlanks: [
         {
@@ -302,27 +309,30 @@ return max_water`,
       prompt:
         "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i, j, and k are all distinct indices and nums[i] + nums[j] + nums[k] == 0. The solution set must not contain duplicate triplets.",
       patternKeywords: ["triplets", "sum to zero", "unique combinations", "sorted"],
-      solution: `nums.sort()
-result = []
-for i in range(len(nums) - 2):
-    if i > 0 and nums[i] == nums[i - 1]:
-        continue
-    left, right = i + 1, len(nums) - 1
-    while left < right:
-        s = nums[i] + nums[left] + nums[right]
-        if s == 0:
-            result.append([nums[i], nums[left], nums[right]])
-            while left < right and nums[left] == nums[left + 1]:
+      solution: `from typing import List
+
+def threeSum(nums: List[int]) -> List[List[int]]:
+    nums.sort()
+    result = []
+    for i in range(len(nums) - 2):
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue
+        left, right = i + 1, len(nums) - 1
+        while left < right:
+            s = nums[i] + nums[left] + nums[right]
+            if s == 0:
+                result.append([nums[i], nums[left], nums[right]])
+                while left < right and nums[left] == nums[left + 1]:
+                    left += 1
+                while left < right and nums[right] == nums[right - 1]:
+                    right -= 1
                 left += 1
-            while left < right and nums[right] == nums[right - 1]:
                 right -= 1
-            left += 1
-            right -= 1
-        elif s < 0:
-            left += 1
-        else:
-            right -= 1
-return result`,
+            elif s < 0:
+                left += 1
+            else:
+                right -= 1
+    return result`,
       solutionExplanation: [
         "I sort the array first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which allocates a new list. Since we don't need to preserve the original order for this problem, in-place is the right call. Sorting is also what makes two pointers viable: it gives us directionality so that 'sum too small → move left rightward' and 'sum too large → move right leftward' are provably correct moves.",
         "I iterate over each element as the fixed anchor using a for loop with `range(len(nums) - 2)` — I stop at len-2 because I need at least two more elements to the right for the pair. A for loop is correct here because the anchor advances exactly one position per outer iteration — no conditional step size.",
@@ -366,12 +376,12 @@ return result`,
         ],
       },
       blanks: [
-        { line: `if i > 0 and nums[i] == nums[___ - 1]:`, answer: "i" },
-        { line: `left, right = i + ___, len(nums) - 1`, answer: "1" },
-        { line: `s = nums[i] + nums[___] + nums[___]`, answer: "left, right" },
-        { line: `while left < right and nums[left] == nums[left + ___]:`, answer: "1" },
-        { line: `elif s < 0: ___ += 1`, answer: "left" },
-        { line: `else: ___ -= 1`, answer: "right" },
+        { line: `        if i > 0 and nums[i] == nums[___ - 1]:`, answer: "i" },
+        { line: `        left, right = i + ___, len(nums) - 1`, answer: "1" },
+        { line: `            s = nums[i] + nums[___] + nums[___]`, answer: "left, right" },
+        { line: `                while left < right and nums[left] == nums[left + ___]:`, answer: "1" },
+        { line: `            elif s < 0: ___ += 1`, answer: "left" },
+        { line: `            else: ___ -= 1`, answer: "right" },
       ],
       explanationBlanks: [
         {
@@ -408,17 +418,20 @@ return result`,
       prompt:
         "Given an integer array nums, return the number of triplets chosen from the array that can make triangles if we take them as side lengths. A valid triangle requires that the sum of any two sides must be greater than the third side.",
       patternKeywords: ["triangle inequality", "count triplets", "sorted sides", "longest side"],
-      solution: `nums.sort()
-count = 0
-for k in range(len(nums) - 1, 1, -1):
-    left, right = 0, k - 1
-    while left < right:
-        if nums[left] + nums[right] > nums[k]:
-            count += right - left
-            right -= 1
-        else:
-            left += 1
-return count`,
+      solution: `from typing import List
+
+def triangleNumber(nums: List[int]) -> int:
+    nums.sort()
+    count = 0
+    for k in range(len(nums) - 1, 1, -1):
+        left, right = 0, k - 1
+        while left < right:
+            if nums[left] + nums[right] > nums[k]:
+                count += right - left
+                right -= 1
+            else:
+                left += 1
+    return count`,
       solutionExplanation: [
         "I sort first using `.sort()` — in-place, O(1) extra space — rather than `sorted()` which would allocate a new list. The key insight after sorting: for a triple (a ≤ b ≤ c), only one inequality matters: a + b > c. The other two are automatically satisfied because c is the largest. This reduces a 3-condition check to one.",
         "I fix the largest side using `k` as the outer loop variable, iterating backward with `range(len(nums) - 1, 1, -1)`. I use a for loop for the outer iteration because `k` always advances by exactly one position — unlike the inner two pointers which move conditionally. Starting from the right ensures the fixed element is always the true maximum of the triple.",
@@ -449,12 +462,12 @@ return count`,
         ],
       },
       blanks: [
-        { line: `for k in range(len(nums) - 1, ___, -1):`, answer: "1" },
-        { line: `left, right = 0, k - ___`, answer: "1" },
-        { line: `if nums[left] + nums[right] ___ nums[k]:`, answer: ">" },
-        { line: `count += right - ___`, answer: "left" },
-        { line: `___ -= 1`, answer: "right" },
-        { line: `else: ___ += 1`, answer: "left" },
+        { line: `    for k in range(len(nums) - 1, ___, -1):`, answer: "1" },
+        { line: `        left, right = 0, k - ___`, answer: "1" },
+        { line: `            if nums[left] + nums[right] ___ nums[k]:`, answer: ">" },
+        { line: `                count += right - ___`, answer: "left" },
+        { line: `                ___ -= 1`, answer: "right" },
+        { line: `            else: ___ += 1`, answer: "left" },
       ],
       explanationBlanks: [
         {
@@ -487,14 +500,17 @@ return count`,
       prompt:
         "Given an integer array nums, move all 0s to the end of it while maintaining the relative order of the non-zero elements. You must do this in-place without making a copy of the array.",
       patternKeywords: ["in-place", "relative order", "partition", "write pointer"],
-      solution: `write = 0
-for read in range(len(nums)):
-    if nums[read] != 0:
-        nums[write] = nums[read]
-        write += 1
-while write < len(nums):
-    nums[write] = 0
-    write += 1`,
+      solution: `from typing import List
+
+def moveZeroes(nums: List[int]) -> None:
+    write = 0
+    for read in range(len(nums)):
+        if nums[read] != 0:
+            nums[write] = nums[read]
+            write += 1
+    while write < len(nums):
+        nums[write] = 0
+        write += 1`,
       solutionExplanation: [
         "I use a `write` pointer initialized to 0 — a plain integer, not a list index object or sentinel. It tracks the next position to place a non-zero value and only advances when we've actually written something, so it always points at the first unfilled slot. I use a for loop for the read pointer — `for read in range(len(nums))` — because the read pointer advances exactly one step per element regardless of what it finds. Only the write pointer moves conditionally.",
         "Every time the read pointer finds a non-zero value, I copy it to `nums[write]` using direct index assignment rather than `list.append` or any other method — because the constraint is in-place with no extra list, I'm reusing the existing array slots. Non-zeros are compacted to the front in their original relative order because I copy them left-to-right without rearranging.",
@@ -525,12 +541,12 @@ while write < len(nums):
         ],
       },
       blanks: [
-        { line: `___ = 0`, answer: "write" },
-        { line: `for read in range(len(___)):`, answer: "nums" },
-        { line: `if nums[read] ___ 0:`, answer: "!=" },
-        { line: `nums[___] = nums[read]`, answer: "write" },
-        { line: `___ += 1`, answer: "write" },
-        { line: `nums[write] = ___`, answer: "0" },
+        { line: `    ___ = 0`, answer: "write" },
+        { line: `    for read in range(len(___)):`, answer: "nums" },
+        { line: `        if nums[read] ___ 0:`, answer: "!=" },
+        { line: `            nums[___] = nums[read]`, answer: "write" },
+        { line: `            ___ += 1`, answer: "write" },
+        { line: `        nums[write] = ___`, answer: "0" },
       ],
       explanationBlanks: [
         {
@@ -555,17 +571,20 @@ while write < len(nums):
       prompt:
         "Given an array nums with n objects colored red, white, or blue (represented as 0, 1, and 2), sort them in-place so that objects of the same color are adjacent, with the colors in the order red (0), white (1), and blue (2). You must solve this without using the library sort function.",
       patternKeywords: ["three-way partition", "in-place sort", "Dutch National Flag", "three pointers"],
-      solution: `low, mid, high = 0, 0, len(nums) - 1
-while mid <= high:
-    if nums[mid] == 0:
-        nums[low], nums[mid] = nums[mid], nums[low]
-        low += 1
-        mid += 1
-    elif nums[mid] == 1:
-        mid += 1
-    else:
-        nums[mid], nums[high] = nums[high], nums[mid]
-        high -= 1`,
+      solution: `from typing import List
+
+def sortColors(nums: List[int]) -> None:
+    low, mid, high = 0, 0, len(nums) - 1
+    while mid <= high:
+        if nums[mid] == 0:
+            nums[low], nums[mid] = nums[mid], nums[low]
+            low += 1
+            mid += 1
+        elif nums[mid] == 1:
+            mid += 1
+        else:
+            nums[mid], nums[high] = nums[high], nums[mid]
+            high -= 1`,
       solutionExplanation: [
         "I initialize three pointers in one tuple assignment: `low, mid, high = 0, 0, len(nums) - 1`. This is idiomatic Python for multi-variable initialization — cleaner than three separate lines and makes the starting state of all three regions visible at once. The regions are: everything before `low` is confirmed 0s, `low` to `mid-1` is confirmed 1s, `mid` to `high` is unknown, after `high` is confirmed 2s. I start with the entire array unknown.",
         "I use a while loop with condition `mid <= high` — not `mid < high` — because when `mid == high` there's still one unknown element at that position that needs to be classified. The loop terminates when `mid` passes `high`, meaning the unknown region is empty.",
@@ -598,13 +617,13 @@ while mid <= high:
         ],
       },
       blanks: [
-        { line: `low, mid, high = 0, 0, len(nums) - ___`, answer: "1" },
-        { line: `while mid ___ high:`, answer: "<=" },
-        { line: `if nums[mid] == ___:`, answer: "0" },
-        { line: `nums[low], nums[mid] = nums[___], nums[___]`, answer: "mid, low" },
-        { line: `elif nums[mid] == ___: mid += 1`, answer: "1" },
-        { line: `nums[mid], nums[high] = nums[___], nums[___]`, answer: "high, mid" },
-        { line: `___ -= 1`, answer: "high" },
+        { line: `    low, mid, high = 0, 0, len(nums) - ___`, answer: "1" },
+        { line: `    while mid ___ high:`, answer: "<=" },
+        { line: `        if nums[mid] == ___:`, answer: "0" },
+        { line: `            nums[low], nums[mid] = nums[___], nums[___]`, answer: "mid, low" },
+        { line: `        elif nums[mid] == ___: mid += 1`, answer: "1" },
+        { line: `            nums[mid], nums[high] = nums[___], nums[___]`, answer: "high, mid" },
+        { line: `            ___ -= 1`, answer: "high" },
       ],
       explanationBlanks: [
         {

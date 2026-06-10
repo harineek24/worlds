@@ -68,7 +68,9 @@ def dfs(node):
       prompt:
         "Given the root of a binary tree, return its maximum depth. A binary tree's maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.",
       patternKeywords: ["depth", "height", "tree", "recursion", "bottom-up"],
-      solution: `def maxDepth(root):
+      solution: `from typing import Optional
+
+def maxDepth(root: Optional[TreeNode]) -> int:
     if not root:
         return 0
     left = maxDepth(root.left)
@@ -149,7 +151,9 @@ def dfs(node):
       prompt:
         "Given the root of a binary tree and an integer targetSum, return true if the tree has a root-to-leaf path such that adding up all the values along the path equals targetSum.",
       patternKeywords: ["path", "leaf", "target", "top-down", "pass down"],
-      solution: `def hasPathSum(root, targetSum):
+      solution: `from typing import Optional
+
+def hasPathSum(root: Optional[TreeNode], targetSum: int) -> bool:
     if not root:
         return False
     if not root.left and not root.right:
@@ -229,8 +233,10 @@ def dfs(node):
       prompt:
         "Given the root of a binary tree, determine if it is a valid binary search tree (BST). A valid BST has: the left subtree of a node containing only nodes with keys strictly less than the node's key, the right subtree containing only nodes with keys strictly greater, and both subtrees also being valid BSTs.",
       patternKeywords: ["BST", "bounds", "constraints", "top-down", "pass down"],
-      solution: `def isValidBST(root):
-    def dfs(node, lo, hi):
+      solution: `from typing import Optional
+
+def isValidBST(root: Optional[TreeNode]) -> bool:
+    def dfs(node: Optional[TreeNode], lo: float, hi: float) -> bool:
         if not node:
             return True
         if not (lo < node.val < hi):
@@ -283,10 +289,10 @@ def dfs(node):
         },
       ],
       blanks: [
-        { line: `def dfs(node, lo, ___):`, answer: "hi" },
-        { line: `    if not (___ < node.val < hi):`, answer: "lo" },
+        { line: `    def dfs(node, lo, ___):`, answer: "hi" },
+        { line: `        if not (___ < node.val < hi):`, answer: "lo" },
         {
-          line: `    return dfs(node.left, lo, ___) and dfs(node.right, ___, hi)`,
+          line: `        return dfs(node.left, lo, ___) and dfs(node.right, ___, hi)`,
           answer: "node.val",
         },
         {
@@ -303,10 +309,12 @@ def dfs(node):
       prompt:
         "Given the root of a binary tree, return the length of the diameter of the tree. The diameter is the length of the longest path between any two nodes. This path may or may not pass through the root. The length of a path is the number of edges between nodes.",
       patternKeywords: ["diameter", "depth", "global max", "bottom-up", "nonlocal"],
-      solution: `def diameterOfBinaryTree(root):
+      solution: `from typing import Optional
+
+def diameterOfBinaryTree(root: Optional[TreeNode]) -> int:
     diameter = [0]
 
-    def dfs(node):
+    def dfs(node: Optional[TreeNode]) -> int:
         if not node:
             return 0
         left = dfs(node.left)
@@ -389,10 +397,12 @@ def dfs(node):
       prompt:
         "Given the root of a binary tree and an integer targetSum, return all root-to-leaf paths where the sum of the node values equals targetSum. Each path should be returned as a list of node values.",
       patternKeywords: ["backtracking", "all paths", "collect", "path", "leaf"],
-      solution: `def pathSum(root, targetSum):
+      solution: `from typing import Optional, List
+
+def pathSum(root: Optional[TreeNode], targetSum: int) -> List[List[int]]:
     result = []
 
-    def dfs(node, remaining, path):
+    def dfs(node: Optional[TreeNode], remaining: int, path: List[int]) -> None:
         if not node:
             return
         path.append(node.val)

@@ -82,7 +82,9 @@ def parse_judge_score(judge_output: str) -> int:
       prompt:
         "You're given a list of (prediction, expected) pairs from running a prompt against a regression test set. Write a function that returns the fraction of predictions that exactly match their expected answer (case-insensitive, ignoring leading/trailing whitespace).",
       patternKeywords: ["exact match", "regression suite", "accuracy", "normalization"],
-      solution: `def eval_exact_match(pairs):
+      solution: `from typing import List, Tuple
+
+def eval_exact_match(pairs: List[Tuple[str, str]]) -> float:
     if not pairs:
         return 0.0
     correct = 0

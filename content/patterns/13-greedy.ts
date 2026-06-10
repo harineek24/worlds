@@ -48,12 +48,13 @@ for x in arr:
       prompt:
         "You are given an array prices where prices[i] is the price of a given stock on the ith day. You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock. Return the maximum profit you can achieve. If you cannot achieve any profit, return 0.",
       patternKeywords: ["maximize profit", "single transaction", "best time", "buy low sell high"],
-      solution: `min_price = float('inf')
-max_profit = 0
-for price in prices:
-    min_price = min(min_price, price)
-    max_profit = max(max_profit, price - min_price)
-return max_profit`,
+      solution: `def maxProfit(prices: List[int]) -> int:
+    min_price = float('inf')
+    max_profit = 0
+    for price in prices:
+        min_price = min(min_price, price)
+        max_profit = max(max_profit, price - min_price)
+    return max_profit`,
       solutionExplanation: [
         "I'm tracking the minimum price seen so far as I scan left to right. At every new price, I ask: if I had bought at the cheapest point so far and sold today, what's my profit? That's the greedy insight — I always want to buy as cheap as possible before the current day.",
         "I update max_profit at each step with price - min_price. I never need to look back because any optimal buy must be to the left of the sell, and I've already tracked the best buy to the left.",
@@ -100,15 +101,15 @@ return max_profit`,
       },
       blanks: [
         {
-          line: "min_price = ___",
+          line: "    min_price = ___",
           answer: "float('inf')",
         },
         {
-          line: "min_price = ___(min_price, price)",
+          line: "    min_price = ___(min_price, price)",
           answer: "min",
         },
         {
-          line: "max_profit = ___(max_profit, price - min_price)",
+          line: "    max_profit = ___(max_profit, price - min_price)",
           answer: "max",
         },
       ],
@@ -120,17 +121,18 @@ return max_profit`,
       prompt:
         "There are n gas stations along a circular route. You are given two integer arrays gas and cost where gas[i] is the amount of gas at station i and cost[i] is the cost to travel from station i to its next station. Return the starting station index if you can travel the circuit once in the clockwise direction, otherwise return -1.",
       patternKeywords: ["circular route", "starting point", "total gas", "feasibility"],
-      solution: `total_tank = 0
-curr_tank = 0
-start = 0
-for i in range(len(gas)):
-    diff = gas[i] - cost[i]
-    total_tank += diff
-    curr_tank += diff
-    if curr_tank < 0:
-        start = i + 1
-        curr_tank = 0
-return start if total_tank >= 0 else -1`,
+      solution: `def canCompleteCircuit(gas: List[int], cost: List[int]) -> int:
+    total_tank = 0
+    curr_tank = 0
+    start = 0
+    for i in range(len(gas)):
+        diff = gas[i] - cost[i]
+        total_tank += diff
+        curr_tank += diff
+        if curr_tank < 0:
+            start = i + 1
+            curr_tank = 0
+    return start if total_tank >= 0 else -1`,
       solutionExplanation: [
         "First the feasibility check: if total gas across all stations is less than total cost, it's impossible to complete the circuit regardless of starting point. I track total_tank for this check at the end.",
         "If a solution exists, I find it greedily. I maintain curr_tank as I scan. If curr_tank goes negative after station i, then stations 0 through i are all invalid starting points — any path through them would drain the tank before reaching i+1. So I reset and try starting from i+1.",
@@ -177,15 +179,15 @@ return start if total_tank >= 0 else -1`,
       },
       blanks: [
         {
-          line: "if curr_tank < 0:",
+          line: "        if curr_tank < 0:",
           answer: "if curr_tank < 0:",
         },
         {
-          line: "    start = ___",
+          line: "            start = ___",
           answer: "i + 1",
         },
         {
-          line: "return start if ___ >= 0 else -1",
+          line: "    return start if ___ >= 0 else -1",
           answer: "total_tank",
         },
       ],
@@ -197,12 +199,13 @@ return start if total_tank >= 0 else -1`,
       prompt:
         "You are given an integer array nums. You are initially positioned at the first index of the array. Each element in the array represents your maximum jump length at that position. Return true if you can reach the last index, or false otherwise.",
       patternKeywords: ["reach", "maximum jump", "reachable", "can you get there"],
-      solution: `max_reach = 0
-for i in range(len(nums)):
-    if i > max_reach:
-        return False
-    max_reach = max(max_reach, i + nums[i])
-return True`,
+      solution: `def canJump(nums: List[int]) -> bool:
+    max_reach = 0
+    for i in range(len(nums)):
+        if i > max_reach:
+            return False
+        max_reach = max(max_reach, i + nums[i])
+    return True`,
       solutionExplanation: [
         "I track max_reach: the furthest index reachable given all positions visited so far. The greedy idea is simple — at every position, I update the reachability frontier.",
         "If I ever encounter index i that is beyond max_reach, I'm stuck. I could not have gotten here legitimately. Return False immediately.",
@@ -249,15 +252,15 @@ return True`,
       },
       blanks: [
         {
-          line: "if i > ___:",
+          line: "        if i > ___:",
           answer: "max_reach",
         },
         {
-          line: "    return ___",
+          line: "            return ___",
           answer: "False",
         },
         {
-          line: "max_reach = max(max_reach, ___ + ___[___])",
+          line: "        max_reach = max(max_reach, ___ + ___[___])",
           answer: "i + nums[i]",
         },
       ],
@@ -269,15 +272,16 @@ return True`,
       prompt:
         "You are given a 0-indexed array of integers nums of length n. You are initially positioned at nums[0]. Each element nums[i] represents the maximum length of a forward jump from index i. Return the minimum number of jumps to reach nums[n - 1].",
       patternKeywords: ["minimum jumps", "fewest steps", "reach last index", "BFS levels"],
-      solution: `jumps = 0
-curr_end = 0
-farthest = 0
-for i in range(len(nums) - 1):
-    farthest = max(farthest, i + nums[i])
-    if i == curr_end:
-        jumps += 1
-        curr_end = farthest
-return jumps`,
+      solution: `def jump(nums: List[int]) -> int:
+    jumps = 0
+    curr_end = 0
+    farthest = 0
+    for i in range(len(nums) - 1):
+        farthest = max(farthest, i + nums[i])
+        if i == curr_end:
+            jumps += 1
+            curr_end = farthest
+    return jumps`,
       solutionExplanation: [
         "I think of this as BFS layers. Each jump is one level. curr_end marks where the current BFS level ends — the farthest index reached by the previous jump.",
         "As I scan each index in the current level, I track farthest: the furthest index reachable from anywhere in this level. That farthest becomes the end of the next level.",
@@ -322,15 +326,15 @@ return jumps`,
       },
       blanks: [
         {
-          line: "farthest = max(farthest, ___ + ___[___])",
+          line: "        farthest = max(farthest, ___ + ___[___])",
           answer: "i + nums[i]",
         },
         {
-          line: "if i == ___:",
+          line: "        if i == ___:",
           answer: "curr_end",
         },
         {
-          line: "    curr_end = ___",
+          line: "            curr_end = ___",
           answer: "farthest",
         },
       ],
@@ -342,16 +346,17 @@ return jumps`,
       prompt:
         "You are given a string s. We want to partition the string into as many parts as possible so that each letter appears in at most one part. Return a list of integers representing the size of these parts.",
       patternKeywords: ["partition", "each letter once", "non-overlapping", "last occurrence"],
-      solution: `last = {c: i for i, c in enumerate(s)}
-result = []
-start = 0
-end = 0
-for i, c in enumerate(s):
-    end = max(end, last[c])
-    if i == end:
-        result.append(end - start + 1)
-        start = i + 1
-return result`,
+      solution: `def partitionLabels(s: str) -> List[int]:
+    last = {c: i for i, c in enumerate(s)}
+    result = []
+    start = 0
+    end = 0
+    for i, c in enumerate(s):
+        end = max(end, last[c])
+        if i == end:
+            result.append(end - start + 1)
+            start = i + 1
+    return result`,
       solutionExplanation: [
         "First I build a map of each character's last occurrence. This tells me: if I include character c in a partition, that partition must extend at least to last[c] to keep all occurrences of c together.",
         "I scan left to right, greedily extending the current partition's boundary to max(end, last[c]) for each character. If any character in my current window appears later, the window must grow to include it.",
@@ -400,15 +405,15 @@ return result`,
       },
       blanks: [
         {
-          line: "last = {c: i for i, c in enumerate(___))",
+          line: "    last = {c: i for i, c in enumerate(___))",
           answer: "s",
         },
         {
-          line: "end = max(end, last[___])",
+          line: "        end = max(end, last[___])",
           answer: "c",
         },
         {
-          line: "if i == ___:",
+          line: "        if i == ___:",
           answer: "end",
         },
       ],

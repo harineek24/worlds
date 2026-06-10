@@ -375,15 +375,16 @@ def call_with_json_retry(call_model, prompt, max_retries=2):
       patternKeywords: ["prompt injection", "untrusted input", "delimiters", "security"],
       solution: `import re
 
-INJECTION_PATTERNS = [
-    r"ignore (all )?(previous|above) instructions",
-    r"disregard (all )?(previous|above)",
-    r"system\\s*:",
-    r"you are now",
-    r"new instructions:",
-]
 
-def sanitize_untrusted_text(text):
+def sanitize_untrusted_text(text: str) -> tuple[str, list[str]]:
+    INJECTION_PATTERNS = [
+        r"ignore (all )?(previous|above) instructions",
+        r"disregard (all )?(previous|above)",
+        r"system\\s*:",
+        r"you are now",
+        r"new instructions:",
+    ]
+
     flagged = []
     for pattern in INJECTION_PATTERNS:
         if re.search(pattern, text, re.IGNORECASE):
@@ -421,11 +422,11 @@ def sanitize_untrusted_text(text):
         ],
       },
       blanks: [
-        { line: `r"ignore (all )?(previous|above) ___"`, answer: "instructions" },
-        { line: `if re.search(pattern, text, re.___):`, answer: "IGNORECASE" },
-        { line: `flagged.append(___)`, answer: "pattern" },
-        { line: `wrapped = f"<untrusted_data>\\n{text}\\n</___>"`, answer: "untrusted_data" },
-        { line: `return wrapped, ___`, answer: "flagged" },
+        { line: `        r"ignore (all )?(previous|above) ___"`, answer: "instructions" },
+        { line: `        if re.search(pattern, text, re.___):`, answer: "IGNORECASE" },
+        { line: `            flagged.append(___)`, answer: "pattern" },
+        { line: `    wrapped = f"<untrusted_data>\\n{text}\\n</___>"`, answer: "untrusted_data" },
+        { line: `    return wrapped, ___`, answer: "flagged" },
       ],
       explanationBlanks: [
         {

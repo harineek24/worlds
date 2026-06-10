@@ -60,7 +60,9 @@ freq[arr[left]] -= 1`,
       prompt:
         "Given an array of integers and a positive integer k, find the maximum sum of any contiguous subarray of exactly size k.",
       patternKeywords: ["contiguous subarray", "fixed size", "maximum sum", "exactly k"],
-      solution: `def max_sum_subarray(arr, k):
+      solution: `from typing import List
+
+def maxSumSubarray(arr: List[int], k: int) -> int:
     window_sum = sum(arr[:k])
     max_sum = window_sum
     for right in range(k, len(arr)):
@@ -91,10 +93,10 @@ freq[arr[left]] -= 1`,
         ],
       },
       blanks: [
-        { line: `window_sum = sum(arr[:___])`, answer: "k" },
-        { line: `for right in range(___, len(arr)):`, answer: "k" },
-        { line: `window_sum += arr[right] - arr[right - ___]`, answer: "k" },
-        { line: `max_sum = max(___, window_sum)`, answer: "max_sum" },
+        { line: `    window_sum = sum(arr[:___])`, answer: "k" },
+        { line: `    for right in range(___, len(arr)):`, answer: "k" },
+        { line: `        window_sum += arr[right] - arr[right - ___]`, answer: "k" },
+        { line: `        max_sum = max(___, window_sum)`, answer: "max_sum" },
       ],
       explanationBlanks: [
         {
@@ -119,7 +121,9 @@ freq[arr[left]] -= 1`,
       prompt:
         "There are several cards arranged in a row, and each card has an associated number of points. You may pick exactly k cards from either the front or back of the row. Your score is the sum of the points of the cards you have picked. Given the integer array cardPoints and the integer k, return the maximum score you can obtain.",
       patternKeywords: ["pick from either end", "exactly k cards", "complement window", "minimize middle"],
-      solution: `def max_score(cardPoints, k):
+      solution: `from typing import List
+
+def maxScore(cardPoints: List[int], k: int) -> int:
     n = len(cardPoints)
     total = sum(cardPoints)
     window_size = n - k
@@ -158,11 +162,11 @@ freq[arr[left]] -= 1`,
         ],
       },
       blanks: [
-        { line: `window_size = n - ___`, answer: "k" },
-        { line: `window_sum = sum(cardPoints[:___])`, answer: "window_size" },
-        { line: `window_sum += cardPoints[right] - cardPoints[right - ___]`, answer: "window_size" },
-        { line: `min_sum = min(___, window_sum)`, answer: "min_sum" },
-        { line: `return total - ___`, answer: "min_sum" },
+        { line: `    window_size = n - ___`, answer: "k" },
+        { line: `    window_sum = sum(cardPoints[:___])`, answer: "window_size" },
+        { line: `        window_sum += cardPoints[right] - cardPoints[right - ___]`, answer: "window_size" },
+        { line: `        min_sum = min(___, window_sum)`, answer: "min_sum" },
+        { line: `    return total - ___`, answer: "min_sum" },
       ],
       explanationBlanks: [
         {
@@ -191,9 +195,10 @@ freq[arr[left]] -= 1`,
       prompt:
         "Given an integer array nums and an integer k, find the maximum sum of a subarray of length k that contains only distinct elements. If no such subarray exists, return 0.",
       patternKeywords: ["distinct elements", "fixed length k", "maximum sum", "uniqueness constraint"],
-      solution: `from collections import defaultdict
+      solution: `from typing import List
+from collections import defaultdict
 
-def max_sum_distinct(nums, k):
+def maxSumDistinct(nums: List[int], k: int) -> int:
     freq = defaultdict(int)
     window_sum = 0
     max_sum = 0
@@ -241,11 +246,11 @@ def max_sum_distinct(nums, k):
         ],
       },
       blanks: [
-        { line: `freq[nums[right]] += ___`, answer: "1" },
-        { line: `if right - left + 1 == ___:`, answer: "k" },
-        { line: `if len(freq) == ___:`, answer: "k" },
-        { line: `max_sum = max(___, window_sum)`, answer: "max_sum" },
-        { line: `if freq[nums[left]] == 0: del freq[nums[___]]`, answer: "left" },
+        { line: `        freq[nums[right]] += ___`, answer: "1" },
+        { line: `        if right - left + 1 == ___:`, answer: "k" },
+        { line: `            if len(freq) == ___:`, answer: "k" },
+        { line: `                max_sum = max(___, window_sum)`, answer: "max_sum" },
+        { line: `            if freq[nums[left]] == 0: del freq[nums[___]]`, answer: "left" },
       ],
       explanationBlanks: [
         {
@@ -274,7 +279,7 @@ def max_sum_distinct(nums, k):
       prompt:
         "Given a string s, find the length of the longest substring without repeating characters.",
       patternKeywords: ["substring", "no repeating characters", "longest", "frequency map"],
-      solution: `def length_of_longest_substring(s):
+      solution: `def lengthOfLongestSubstring(s: str) -> int:
     freq = {}
     left = 0
     max_len = 0
@@ -329,11 +334,11 @@ def max_sum_distinct(nums, k):
         ],
       },
       blanks: [
-        { line: `freq[s[right]] = freq.get(s[right], ___) + 1`, answer: "0" },
-        { line: `while freq[s[right]] > ___:`, answer: "1" },
-        { line: `freq[s[left]] -= ___`, answer: "1" },
-        { line: `left += ___`, answer: "1" },
-        { line: `max_len = max(max_len, right - left + ___)`, answer: "1" },
+        { line: `        freq[s[right]] = freq.get(s[right], ___) + 1`, answer: "0" },
+        { line: `        while freq[s[right]] > ___:`, answer: "1" },
+        { line: `            freq[s[left]] -= ___`, answer: "1" },
+        { line: `            left += ___`, answer: "1" },
+        { line: `        max_len = max(max_len, right - left + ___)`, answer: "1" },
       ],
       explanationBlanks: [
         {
@@ -362,7 +367,7 @@ def max_sum_distinct(nums, k):
       prompt:
         "You are given a string s and an integer k. You can choose any character of the string and change it to any other uppercase English character. You can perform this operation at most k times. Return the length of the longest substring containing the same letter you can get after performing the above operations.",
       patternKeywords: ["at most k replacements", "longest window", "dominant character", "max frequency"],
-      solution: `def character_replacement(s, k):
+      solution: `def characterReplacement(s: str, k: int) -> int:
     freq = {}
     left = 0
     max_freq = 0
@@ -412,12 +417,12 @@ def max_sum_distinct(nums, k):
         ],
       },
       blanks: [
-        { line: `freq[s[right]] = freq.get(s[right], ___) + 1`, answer: "0" },
-        { line: `max_freq = max(___, freq[s[right]])`, answer: "max_freq" },
-        { line: `while (right - left + 1) - max_freq > ___:`, answer: "k" },
-        { line: `freq[s[left]] -= ___`, answer: "1" },
-        { line: `left += ___`, answer: "1" },
-        { line: `max_len = max(max_len, right - ___ + 1)`, answer: "left" },
+        { line: `        freq[s[right]] = freq.get(s[right], ___) + 1`, answer: "0" },
+        { line: `        max_freq = max(___, freq[s[right]])`, answer: "max_freq" },
+        { line: `        while (right - left + 1) - max_freq > ___:`, answer: "k" },
+        { line: `            freq[s[left]] -= ___`, answer: "1" },
+        { line: `            left += ___`, answer: "1" },
+        { line: `        max_len = max(max_len, right - ___ + 1)`, answer: "left" },
       ],
       explanationBlanks: [
         {

@@ -63,8 +63,10 @@ for i in range(1, rows+1):
       prompt:
         "Climbing Stairs: You are climbing a staircase with n steps. Each time you can climb 1 or 2 steps. In how many distinct ways can you reach the top? Counting Bits: Given an integer n, return an array ans of length n+1 where ans[i] is the number of 1s in the binary representation of i.",
       patternKeywords: ["Fibonacci", "recurrence", "base case", "bit manipulation"],
-      solution: `# Climbing Stairs
-def climbStairs(n):
+      solution: `from typing import List
+
+# Climbing Stairs
+def climbStairs(n: int) -> int:
     if n <= 2:
         return n
     prev2, prev1 = 1, 2
@@ -74,7 +76,7 @@ def climbStairs(n):
     return prev1
 
 # Counting Bits
-def countBits(n):
+def countBits(n: int) -> List[int]:
     dp = [0] * (n + 1)
     for i in range(1, n+1):
         dp[i] = dp[i >> 1] + (i & 1)
@@ -136,7 +138,7 @@ def countBits(n):
       prompt:
         "A robot is on an m x n grid at the top-left corner. It can only move right or down. How many unique paths are there to reach the bottom-right corner?",
       patternKeywords: ["2D DP", "grid", "paths", "combinatorics"],
-      solution: `def uniquePaths(m, n):
+      solution: `def uniquePaths(m: int, n: int) -> int:
     dp = [[1] * n for _ in range(m)]
     for i in range(1, m):
         for j in range(1, n):
@@ -186,7 +188,9 @@ def countBits(n):
       prompt:
         "Given an integer array nums, return the length of the longest strictly increasing subsequence.",
       patternKeywords: ["subsequence", "LIS", "optimization", "nested loop DP"],
-      solution: `def lengthOfLIS(nums):
+      solution: `from typing import List
+
+def lengthOfLIS(nums: List[int]) -> int:
     n = len(nums)
     dp = [1] * n
     for i in range(1, n):
@@ -247,7 +251,9 @@ def countBits(n):
       prompt:
         "Given a string s and a dictionary of strings wordDict, return true if s can be segmented into a space-separated sequence of one or more dictionary words.",
       patternKeywords: ["string DP", "segmentation", "substring check", "boolean DP"],
-      solution: `def wordBreak(s, wordDict):
+      solution: `from typing import List
+
+def wordBreak(s: str, wordDict: List[str]) -> bool:
     word_set = set(wordDict)
     n = len(s)
     dp = [False] * (n + 1)
@@ -314,7 +320,7 @@ def countBits(n):
       prompt:
         "A message containing letters A-Z can be encoded as '1' to '26'. Given a string s of digits, return the number of ways to decode it. '0' cannot map to any letter, and leading zeros in a two-digit number are invalid.",
       patternKeywords: ["string DP", "decoding", "two choices", "validity check"],
-      solution: `def numDecodings(s):
+      solution: `def numDecodings(s: str) -> int:
     n = len(s)
     dp = [0] * (n + 1)
     dp[0] = 1

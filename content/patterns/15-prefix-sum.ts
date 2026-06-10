@@ -53,16 +53,17 @@ prefix[right + 1] - prefix[left]`,
       prompt:
         "Given an array of integers nums and an integer k, return the total number of subarrays whose sum equals k.",
       patternKeywords: ["subarray sum", "count subarrays", "running sum", "hashmap", "complement"],
-      solution: `from collections import defaultdict
-count = 0
-running_sum = 0
-seen = defaultdict(int)
-seen[0] = 1
-for num in nums:
-    running_sum += num
-    count += seen[running_sum - k]
-    seen[running_sum] += 1
-return count`,
+      solution: `def subarraySum(nums: list[int], k: int) -> int:
+    from collections import defaultdict
+    count = 0
+    running_sum = 0
+    seen = defaultdict(int)
+    seen[0] = 1
+    for num in nums:
+        running_sum += num
+        count += seen[running_sum - k]
+        seen[running_sum] += 1
+    return count`,
       solutionExplanation: [
         "I maintain a running sum as I scan left to right. At each position, running_sum is the sum from index 0 to here.",
         "I want to know: how many times has (running_sum - k) appeared as a running sum before? If running_sum_at_j - running_sum_at_i == k, then the subarray from i+1 to j sums to k. The hashmap seen stores exactly those previous running sums.",
@@ -117,15 +118,15 @@ return count`,
       },
       blanks: [
         {
-          line: "seen[___] = 1",
+          line: "    seen[___] = 1",
           answer: "0",
         },
         {
-          line: "count += seen[running_sum - ___]",
+          line: "        count += seen[running_sum - ___]",
           answer: "k",
         },
         {
-          line: "seen[___] += 1",
+          line: "        seen[___] += 1",
           answer: "running_sum",
         },
       ],
@@ -137,17 +138,18 @@ return count`,
       prompt:
         "Given a string word, return the sum of the number of vowels in every substring of word. A vowel is one of 'a', 'e', 'i', 'o', 'u'.",
       patternKeywords: ["count vowels", "substrings", "prefix sum", "contribution"],
-      solution: `vowels = set('aeiou')
-n = len(word)
-prefix = [0] * (n + 1)
-for i in range(n):
-    prefix[i + 1] = prefix[i] + (1 if word[i] in vowels else 0)
+      solution: `def countVowels(word: str) -> int:
+    vowels = set('aeiou')
+    n = len(word)
+    prefix = [0] * (n + 1)
+    for i in range(n):
+        prefix[i + 1] = prefix[i] + (1 if word[i] in vowels else 0)
 
-total = 0
-for i in range(n):
-    for j in range(i, n):
-        total += prefix[j + 1] - prefix[i]
-return total`,
+    total = 0
+    for i in range(n):
+        for j in range(i, n):
+            total += prefix[j + 1] - prefix[i]
+    return total`,
       solutionExplanation: [
         "I build a prefix sum array where prefix[i] is the number of vowels in word[0..i-1]. This lets me answer 'how many vowels in word[i..j]?' in O(1) as prefix[j+1] - prefix[i].",
         "I then iterate over all (i, j) pairs to sum up vowel counts for every substring. With prefix sums, each query is O(1), so the total is O(n²) rather than O(n³).",
@@ -193,11 +195,11 @@ return total`,
       },
       blanks: [
         {
-          line: "prefix[i + 1] = prefix[i] + (1 if word[i] in ___ else 0)",
+          line: "        prefix[i + 1] = prefix[i] + (1 if word[i] in ___ else 0)",
           answer: "vowels",
         },
         {
-          line: "total += prefix[___ + 1] - prefix[___]",
+          line: "            total += prefix[___ + 1] - prefix[___]",
           answer: "j + 1] - prefix[i",
         },
       ],

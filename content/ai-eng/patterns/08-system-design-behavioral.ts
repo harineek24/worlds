@@ -225,7 +225,9 @@ class RAGSystem:
       prompt:
         "Your team gets a report that the production chatbot has started giving confidently wrong answers about a product feature that was working fine last week. Walk me through how you'd debug this.",
       patternKeywords: ["debugging checklist", "root cause analysis", "regression", "RAG vs. model"],
-      solution: `def debug_hallucination(report):
+      solution: `from typing import Any
+
+def debug_hallucination(report: str) -> dict[str, Any]:
     checks = [
         ("retrieval", "did the retrieved context actually contain the right info?"),
         ("recency", "was the doc index updated/changed recently?"),

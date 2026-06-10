@@ -61,15 +61,17 @@ if len(heap) > k:
       prompt:
         "Given an integer array nums and an integer k, return the kth largest element in the array. Note that it is the kth largest element in sorted order, not the kth distinct element. Can you solve it without sorting?",
       patternKeywords: ["kth largest", "top k", "stream", "rank"],
-      solution: `import heapq
+      solution: `from typing import List
+import heapq
 
-def findKthLargest(nums, k):
-    heap = []
-    for num in nums:
-        heapq.heappush(heap, num)
-        if len(heap) > k:
-            heapq.heappop(heap)
-    return heap[0]`,
+class Solution:
+    def findKthLargest(self, nums: List[int], k: int) -> int:
+        heap = []
+        for num in nums:
+            heapq.heappush(heap, num)
+            if len(heap) > k:
+                heapq.heappop(heap)
+        return heap[0]`,
       solutionExplanation: [
         "I maintain a min-heap of exactly k elements. The invariant is: at all times, the heap holds the k largest elements seen so far. `import heapq` is used rather than sorting because the heap maintains order incrementally — each push/pop is O(log k). Sorting the whole list after every insertion would be O(n log n) per step.",
         "For each new number I push it onto the heap. If the heap now has k+1 elements, one of them is too small to be in the top-k — and because it's a min-heap, the smallest is at the root. I pop it immediately. `heapq.heappush` and `heapq.heappop` are chosen over maintaining a sorted list because they preserve the heap invariant in O(log k) instead of O(k) for an insertion into a sorted list.",
@@ -112,10 +114,10 @@ def findKthLargest(nums, k):
         },
       ],
       blanks: [
-        { line: `heapq.heappush(___, num)`, answer: "heap" },
-        { line: `if len(heap) > ___:`, answer: "k" },
-        { line: `heapq.heappop(___)`, answer: "heap" },
-        { line: `return ___[0]`, answer: "heap" },
+        { line: `            heapq.heappush(___, num)`, answer: "heap" },
+        { line: `            if len(heap) > ___:`, answer: "k" },
+        { line: `                heapq.heappop(___)`, answer: "heap" },
+        { line: `        return ___[0]`, answer: "heap" },
       ],
     },
 
@@ -126,16 +128,18 @@ def findKthLargest(nums, k):
       prompt:
         "Given an array of points where points[i] = [xi, yi], and an integer k, return the k closest points to the origin (0, 0). The distance is the Euclidean distance. You may return the answer in any order.",
       patternKeywords: ["k closest", "distance", "top k", "priority"],
-      solution: `import heapq
+      solution: `from typing import List
+import heapq
 
-def kClosest(points, k):
-    heap = []
-    for x, y in points:
-        dist = x * x + y * y
-        heapq.heappush(heap, (-dist, x, y))
-        if len(heap) > k:
-            heapq.heappop(heap)
-    return [[x, y] for _, x, y in heap]`,
+class Solution:
+    def kClosest(self, points: List[List[int]], k: int) -> List[List[int]]:
+        heap = []
+        for x, y in points:
+            dist = x * x + y * y
+            heapq.heappush(heap, (-dist, x, y))
+            if len(heap) > k:
+                heapq.heappop(heap)
+        return [[x, y] for _, x, y in heap]`,
       solutionExplanation: [
         "I want to keep the k smallest distances, but Python's `heapq` is a min-heap only — it always surfaces the smallest element. If I store distances as-is, `heappop` would evict the closest points, which is backwards for this problem.",
         "The fix: `heapq.heappush(heap, -dist, x, y)` — negate the distance before pushing. Python's `heapq` has no max-heap mode and no `key=` parameter, so negating values is the idiomatic way to turn a min-heap into a max-heap without writing a custom class. The root is now the farthest point among the k candidates.",
@@ -174,10 +178,10 @@ def kClosest(points, k):
         },
       ],
       blanks: [
-        { line: `dist = x * x + ___`, answer: "y * y" },
-        { line: `heapq.heappush(heap, (___, x, y))`, answer: "-dist" },
-        { line: `if len(heap) > ___:`, answer: "k" },
-        { line: `return [[x, y] for ___, x, y in heap]`, answer: "_" },
+        { line: `            dist = x * x + ___`, answer: "y * y" },
+        { line: `            heapq.heappush(heap, (___, x, y))`, answer: "-dist" },
+        { line: `            if len(heap) > ___:`, answer: "k" },
+        { line: `        return [[x, y] for ___, x, y in heap]`, answer: "_" },
       ],
     },
 
@@ -188,17 +192,19 @@ def kClosest(points, k):
       prompt:
         "Given a sorted integer array arr, two integers k and x, return the k closest integers to x in the array. The result should also be sorted in ascending order. If there is a tie, prefer the smaller elements.",
       patternKeywords: ["k closest", "sorted array", "binary search", "window"],
-      solution: `import bisect
+      solution: `from typing import List
+import bisect
 
-def findClosestElements(arr, k, x):
-    lo, hi = 0, len(arr) - k
-    while lo < hi:
-        mid = (lo + hi) // 2
-        if x - arr[mid] > arr[mid + k] - x:
-            lo = mid + 1
-        else:
-            hi = mid
-    return arr[lo:lo + k]`,
+class Solution:
+    def findClosestElements(self, arr: List[int], k: int, x: int) -> List[int]:
+        lo, hi = 0, len(arr) - k
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if x - arr[mid] > arr[mid + k] - x:
+                lo = mid + 1
+            else:
+                hi = mid
+        return arr[lo:lo + k]`,
       solutionExplanation: [
         "I'm binary-searching for the left boundary of the best window of k elements. The search space is indices 0 through len(arr)-k — those are all valid starting positions for a window of width k. This problem uses `bisect` (binary search) rather than `heapq` because the array is already sorted — we can exploit that structure directly instead of building a heap.",
         "At each mid, I compare two distances: how far x is from the left edge of the window (arr[mid]) vs. how far x is from the element just beyond the right edge (arr[mid+k]). This tells me whether the window should slide right or stay. The `//` integer division for `mid` is deliberate — it avoids floating-point and matches Python's floor semantics.",
@@ -233,10 +239,10 @@ def findClosestElements(arr, k, x):
         },
       ],
       blanks: [
-        { line: `lo, hi = 0, len(arr) - ___`, answer: "k" },
-        { line: `if x - arr[mid] ___ arr[mid + k] - x:`, answer: ">" },
-        { line: `lo = mid + ___`, answer: "1" },
-        { line: `return arr[lo:lo + ___]`, answer: "k" },
+        { line: `        lo, hi = 0, len(arr) - ___`, answer: "k" },
+        { line: `            if x - arr[mid] ___ arr[mid + k] - x:`, answer: ">" },
+        { line: `                lo = mid + ___`, answer: "1" },
+        { line: `        return arr[lo:lo + ___]`, answer: "k" },
       ],
     },
 
@@ -247,25 +253,27 @@ def findClosestElements(arr, k, x):
       prompt:
         "You are given an array of k linked-lists lists, each linked-list is sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.",
       patternKeywords: ["merge", "k lists", "sorted", "min heap", "linked list"],
-      solution: `import heapq
+      solution: `from typing import List, Optional
+import heapq
 
-def mergeKLists(lists):
-    heap = []
-    for i, node in enumerate(lists):
-        if node:
-            heapq.heappush(heap, (node.val, i, node))
+class Solution:
+    def mergeKLists(self, lists: List[Optional[ListNode]]) -> Optional[ListNode]:
+        heap = []
+        for i, node in enumerate(lists):
+            if node:
+                heapq.heappush(heap, (node.val, i, node))
 
-    dummy = ListNode(0)
-    curr = dummy
+        dummy = ListNode(0)
+        curr = dummy
 
-    while heap:
-        val, i, node = heapq.heappop(heap)
-        curr.next = node
-        curr = curr.next
-        if node.next:
-            heapq.heappush(heap, (node.next.val, i, node.next))
+        while heap:
+            val, i, node = heapq.heappop(heap)
+            curr.next = node
+            curr = curr.next
+            if node.next:
+                heapq.heappush(heap, (node.next.val, i, node.next))
 
-    return dummy.next`,
+        return dummy.next`,
       solutionExplanation: [
         "I seed the heap with the head of each list — one representative per list. `import heapq` is used here because we're repeatedly extracting the global minimum across k live cursors — exactly what a heap is built for. A naive scan across all k list heads each iteration would be O(nk); the heap reduces that to O(n log k). The heap tuple is (value, list_index, node). I include list_index as a tiebreaker because Python will try to compare nodes if values are equal, and ListNode isn't comparable — the tuple comparison short-circuits at list_index before reaching node.",
         "I use a dummy head node to simplify the linked list construction — I never have to special-case the first node. This is a standard Python idiom for building linked lists: start with a throwaway node, then return dummy.next.",
@@ -319,11 +327,11 @@ def mergeKLists(lists):
         },
       ],
       blanks: [
-        { line: `heapq.heappush(heap, (node.val, ___, node))`, answer: "i" },
-        { line: `val, i, node = heapq.heappop(___)`, answer: "heap" },
-        { line: `if node.___:`, answer: "next" },
+        { line: `                heapq.heappush(heap, (node.val, ___, node))`, answer: "i" },
+        { line: `            val, i, node = heapq.heappop(___)`, answer: "heap" },
+        { line: `            if node.___:`, answer: "next" },
         {
-          line: `heapq.heappush(heap, (node.next.val, i, ___))`,
+          line: `                heapq.heappush(heap, (node.next.val, i, ___))`,
           answer: "node.next",
         },
       ],
@@ -340,10 +348,10 @@ def mergeKLists(lists):
 
 class MedianFinder:
     def __init__(self):
-        self.lo = []  # max-heap (lower half) — store negated
-        self.hi = []  # min-heap (upper half)
+        self.lo: list[int] = []  # max-heap (lower half) — store negated
+        self.hi: list[int] = []  # min-heap (upper half)
 
-    def addNum(self, num):
+    def addNum(self, num: int) -> None:
         heapq.heappush(self.lo, -num)
         # Balance: ensure lo's max <= hi's min
         if self.hi and -self.lo[0] > self.hi[0]:
@@ -354,7 +362,7 @@ class MedianFinder:
         elif len(self.hi) > len(self.lo):
             heapq.heappush(self.lo, -heapq.heappop(self.hi))
 
-    def findMedian(self):
+    def findMedian(self) -> float:
         if len(self.lo) > len(self.hi):
             return -self.lo[0]
         return (-self.lo[0] + self.hi[0]) / 2`,

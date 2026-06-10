@@ -50,7 +50,9 @@ export const backtracking: Pattern = {
       prompt:
         "Given an integer array of unique elements, return all possible subsets (the power set). The solution set must not contain duplicate subsets.",
       patternKeywords: ["backtracking", "subsets", "recursion", "combinations"],
-      solution: `def subsets(nums):
+      solution: `from typing import List
+
+def subsets(nums: List[int]) -> List[List[int]]:
     result = []
 
     def backtrack(start, path):
@@ -135,7 +137,9 @@ export const backtracking: Pattern = {
       prompt:
         "Given n pairs of parentheses, write a function to generate all combinations of well-formed parentheses.",
       patternKeywords: ["backtracking", "string-building", "pruning", "recursion"],
-      solution: `def generate_parenthesis(n):
+      solution: `from typing import List
+
+def generate_parenthesis(n: int) -> List[str]:
     result = []
 
     def backtrack(path, open_count, close_count):
@@ -232,7 +236,9 @@ export const backtracking: Pattern = {
       prompt:
         "Given an array of distinct integers `candidates` and a target integer `target`, return all unique combinations of candidates where the chosen numbers sum to target. The same number may be chosen from candidates an unlimited number of times.",
       patternKeywords: ["backtracking", "combinations", "sum", "reuse"],
-      solution: `def combination_sum(candidates, target):
+      solution: `from typing import List
+
+def combination_sum(candidates: List[int], target: int) -> List[List[int]]:
     result = []
 
     def backtrack(start, path, remaining):
@@ -325,7 +331,9 @@ export const backtracking: Pattern = {
       prompt:
         "Given an m×n grid of characters and a string word, return true if word exists in the grid. The word can be constructed from letters of sequentially adjacent cells (horizontally or vertically). The same cell may not be used more than once.",
       patternKeywords: ["backtracking", "dfs", "grid", "visited"],
-      solution: `def exist(board, word):
+      solution: `from typing import List
+
+def exist(board: List[List[str]], word: str) -> bool:
     rows, cols = len(board), len(board[0])
 
     def dfs(r, c, index):
@@ -427,7 +435,9 @@ export const backtracking: Pattern = {
       prompt:
         "Given a string s, partition s such that every substring of the partition is a palindrome. Return all possible palindrome partitioning of s.",
       patternKeywords: ["backtracking", "palindrome", "string", "partitioning"],
-      solution: `def partition(s):
+      solution: `from typing import List
+
+def partition(s: str) -> List[List[str]]:
     result = []
 
     def is_palindrome(sub):
