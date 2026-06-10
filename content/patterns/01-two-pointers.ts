@@ -257,7 +257,7 @@ return max_water`,
       },
       blanks: [
         { line: `left, right = ___, len(height) - 1`, answer: "0" },
-        { line: `water = min(height[left], height[right]) * (___ - ___)`, answer: "right, left" },
+        { line: `water = min(height[left], height[right]) * (right - ___)`, answer: "left" },
         { line: `max_water = max(___, water)`, answer: "max_water" },
         { line: `if height[left] ___ height[right]:`, answer: "<" },
         { line: `___ += 1`, answer: "left" },

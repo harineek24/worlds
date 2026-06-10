@@ -18,7 +18,12 @@ export default function FillBlank({
     <div className="flex flex-col gap-3">
       {blanks.map((blank, i) => {
         const parts = blank.line.split("___")
-        const isCorrect = answers[i]?.trim() === blank.answer
+        const numInputs = parts.length - 1
+        const answerParts = blank.answer.split(",").map((a) => a.trim())
+        const inputValues = (answers[i] ?? "").split("|||")
+        const isCorrect =
+          numInputs === answerParts.length &&
+          answerParts.every((a, k) => (inputValues[k] ?? "").trim() === a)
         return (
           <div key={i} className="font-mono text-sm flex items-center flex-wrap gap-1">
             {parts.map((part, j) => (
@@ -26,8 +31,13 @@ export default function FillBlank({
                 <span className="text-[#c8a97e]">{part}</span>
                 {j < parts.length - 1 && (
                   <input
-                    value={answers[i] ?? ""}
-                    onChange={(e) => onChange(i, e.target.value)}
+                    value={inputValues[j] ?? ""}
+                    onChange={(e) => {
+                      const next = [...inputValues]
+                      next[j] = e.target.value
+                      while (next.length < numInputs) next.push("")
+                      onChange(i, next.join("|||"))
+                    }}
                     disabled={submitted}
                     className={`w-24 px-2 py-0.5 rounded text-center font-mono text-sm outline-none border transition-colors ${
                       !submitted

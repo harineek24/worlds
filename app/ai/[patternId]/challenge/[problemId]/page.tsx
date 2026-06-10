@@ -44,7 +44,11 @@ export default function AiChallengePage({
     : []
 
   const codeCorrect = showCode
-    ? problem.blanks.filter((b, i) => codeAnswers[i]?.trim() === b.answer).length
+    ? problem.blanks.filter((b, i) => {
+        const answerParts = b.answer.split(",").map((a) => a.trim())
+        const inputValues = (codeAnswers[i] ?? "").split("|||")
+        return answerParts.every((a, k) => (inputValues[k] ?? "").trim() === a)
+      }).length
     : 0
   const explCorrect = showExplanation
     ? validExplBlanks.filter((b, i) => explAnswers[i]?.trim() === b.answer).length
