@@ -42,36 +42,48 @@ export const investagent: Project = {
   ],
   workflowSummary: [
     {
-      line: "It starts with the user passing in a list of stock tickers, like AAPL or MSFT, on the command line or through the ___ dashboard.",
-      answer: "Streamlit",
+      line: "It starts with build_workflow() constructing a LangGraph ___, fanning the run out from __start__ into all six analyst nodes (value, growth, contrarian, technical, fundamental, sentiment) in parallel rather than running them one after another.",
+      answer: "StateGraph",
     },
     {
-      line: "Each of the six analyst agents then runs a Think-Act-Observe loop, autonomously choosing to call tools like get_financial_metrics or get_prices rather than following a fixed sequence, capped at ___ tool calls per agent per ticker to stay within free API rate limits.",
-      answer: "four",
+      line: "Each analyst is its own ReAct loop with a registry of seven tools — get_prices, get_financial_metrics, get_company_news, get_insider_trades, get_recommendations, get_sec_financial_facts, and get_sec_recent_filings — and the LLM decides for itself which ones to call, capped at MAX_ITERATIONS = ___ to stay inside Groq's free rate limits.",
+      answer: "4",
     },
     {
-      line: "Price data and fundamentals come from ___, a free Python library that wraps Yahoo Finance, while structured filing data like revenue and net income comes from the SEC EDGAR API.",
-      answer: "yfinance",
+      line: "Raw OHLCV price history is never dumped into the prompt; a helper called _summarize_prices() condenses it down to latest close, period return, EMAs, RSI, volatility, and the last five closes so each tool call stays cheap in ___.",
+      answer: "tokens",
     },
     {
-      line: "Once every analyst has produced a bullish, neutral, or bearish signal, an Agreement Check node measures consensus and only routes to a debate step if fewer than ___ percent of analysts agree.",
-      answer: "60",
+      line: "All six analyst nodes wire into a single ___ Check node, which for each ticker counts how many analysts agree on the majority signal (bullish/neutral/bearish) and averages that fraction across every ticker into one agreement score.",
+      answer: "Agreement",
     },
     {
-      line: "During the debate, an LLM moderator reads each analyst's reasoning and weighs it against that analyst's historical accuracy, which is pulled from a ___ database that persists every past decision.",
-      answer: "SQLite",
+      line: "That score feeds a LangGraph conditional edge — should_debate() — which routes to the Debate node only when agreement drops below AGREEMENT_THRESHOLD = ___, otherwise it skips straight to the Risk Manager to save tokens.",
+      answer: "0.6",
     },
     {
-      line: "After the debate, a Risk Manager node enforces position-sizing limits before handing off to the Portfolio Manager, which is itself a multi-turn ___ agent that can call more tools if it needs additional data before deciding.",
-      answer: "ReAct",
+      line: "Inside the Debate node, a single LLM call per ticker plays a 'senior investment committee moderator,' reading every non-PM, non-risk analyst's reasoning plus each agent's historical accuracy from get_all_agent_accuracies(), then returns strict JSON with a synthesis, a leaning, and a confidence_adjustment ranging from -20 to +___.",
+      answer: "20",
     },
     {
-      line: "To keep costs at zero while still getting good reasoning where it matters, the system uses model routing so analysts run on a fast model while the debate and portfolio manager steps use a smarter model, both served through ___'s free tier.",
-      answer: "Groq",
+      line: "The Risk Manager node runs next regardless of whether a debate happened: it prices every ticker, sums cash plus existing position value into a total portfolio value, and caps any single ticker's exposure at ___ percent of that total before computing a remaining_limit_usd per ticker.",
+      answer: "20",
     },
     {
-      line: "The final BUY, SELL, or HOLD decision for each ticker is written back into the memory database so future debates and the portfolio manager can weight signals by each agent's track record, and a separate backtester module can replay this whole pipeline historically to evaluate ___ performance.",
-      answer: "portfolio",
+      line: "The Portfolio Manager is also a ReAct agent, but multi-turn and capped at MAX_PM_ITERATIONS = 3 — it reads the analyst signals, the debate summary if one exists, the risk limits, and past decisions for that ticker from memory before emitting a final buy/sell/hold action with a quantity.",
+      answer: "3",
+    },
+    {
+      line: "Model routing is handled by a single AGENT_MODEL_TIER dict: all six analysts plus the Risk Manager run on the 'fast' tier, while only the Portfolio Manager (and the Debate moderator, which reuses the PM's model) runs on the 'smart' tier — on Groq that's llama-3.1-8b-instant for fast and llama-3.3-70b-versatile for ___.",
+      answer: "smart",
+    },
+    {
+      line: "If an LLM call ever errors out — e.g. a rate limit — the analysts and Portfolio Manager fall back to rule-based logic instead of failing the run: analysts use P/E, ROE, growth and price return, while the PM falls back to a confidence-weighted majority vote of the other agents' signals.",
+      answer: "majority",
+    },
+    {
+      line: "Every decision gets persisted by save_decision() into a SQLite database with three tables — decisions, runs, and agent_scores — and a later process can fill in price_after_30d and an outcome column so get_all_agent_accuracies() can compute each agent's real hit rate for the ___ next time.",
+      answer: "debate",
     },
   ],
   technicalQuestions: [

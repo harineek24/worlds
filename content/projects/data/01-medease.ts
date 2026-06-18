@@ -82,7 +82,19 @@ export const medEase: Project = {
       answer: "RxNorm",
     },
     {
-      line: "All of this, patients, doctors, summaries, medications, consultation sessions, and clinic billing data, is persisted in a ___ database hosted on Neon, with the backend deployed on Render and the frontend on Vercel.",
+      line: "The clinic-admin portal includes a full billing pipeline built on the Stedi healthcare API: eligibility_service checks coverage via EDI 270/271, claims_service submits professional claims as 837P and checks status with 276/277, and era_service retrieves 835 remittance advice showing how a claim was actually ___.",
+      answer: "paid",
+    },
+    {
+      line: "Every one of those Stedi-backed services is written with a live and a simulated mode, returning the exact same response shape either way, so the billing UI works identically whether or not a real ___ key is configured.",
+      answer: "STEDI_API_KEY",
+    },
+    {
+      line: "There's also an insurance_discovery_service that can find a patient's active coverage from demographics alone, name, date of birth, gender, and address, with no member ID required, and a coding_service that provides a searchable ___-10 and CPT code database for claims entry.",
+      answer: "ICD",
+    },
+    {
+      line: "All of this, patients, doctors, summaries, medications, consultation sessions, and clinic billing/claims data, is persisted in a ___ database hosted on Neon, with the backend deployed on Render and the frontend on Vercel.",
       answer: "PostgreSQL",
     },
   ],
@@ -126,6 +138,16 @@ export const medEase: Project = {
       question: "The README mentions SQLite but the actual backend code uses PostgreSQL, why the discrepancy, and what would you do about it?",
       answer:
         "That's a real gap I'd clean up, the database layer evolved from an early SQLite prototype to PostgreSQL on Neon (with psycopg2 and RealDictCursor) once the app needed to run on Render instead of locally, since SQLite's file-based storage doesn't survive across serverless/ephemeral deployments or concurrent connections well. The code even has a comment noting that Postgres returns datetime and Decimal objects that need explicit serialization, which SQLite didn't require, that's a good example of a deployment constraint driving an architecture change after the fact. The fix is simply updating the README to reflect Postgres as the source of truth.",
+    },
+    {
+      question: "Walk me through the billing/claims side of the clinic admin portal.",
+      answer:
+        "It's a set of services that wrap the Stedi healthcare API to handle the standard EDI claim lifecycle: eligibility_service checks a patient's coverage before a visit (270/271), insurance_discovery_service can find that coverage from just demographics if the patient doesn't know their member ID, claims_service submits the actual professional claim as an 837P and polls status via 276/277, and era_service pulls back the 835 remittance advice once the payer has adjudicated it, showing exactly what was paid versus billed. coding_service backs the claim-entry UI with a searchable ICD-10/CPT lookup so staff aren't typing codes from memory.",
+    },
+    {
+      question: "Why does every Stedi service have a 'simulated' mode instead of just requiring the real API key?",
+      answer:
+        "Stedi requires a provider account and API key, which isn't something every reviewer or demo environment will have. By making every service check os.getenv('STEDI_API_KEY') and fall back to a simulated branch that returns the same dict shape, the entire billing portal stays fully demoable, including realistic copay/deductible numbers per payer and mock claim statuses, without ever touching real PHI or a live clearinghouse. It also means the frontend code never has to know which mode it's in.",
     },
   ],
 }
