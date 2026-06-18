@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname, useParams } from "next/navigation"
 import { patterns } from "@/content"
 import { aiTopics } from "@/content/ai-eng"
+import { projects } from "@/content/projects"
 
 const DIFFICULTY_DOT: Record<string, string> = {
   easy: "bg-[#2d6a2d]",
@@ -15,8 +16,10 @@ export default function Sidebar() {
   const params = useParams()
   const pathname = usePathname()
   const isAi = pathname?.startsWith("/ai/")
+  const isProjects = pathname?.startsWith("/projects/")
   const activePattern = params?.patternId as string
   const activeProblem = params?.problemId as string
+  const activeProject = params?.projectId as string
 
   return (
     <aside className="w-60 min-h-screen bg-[#1a1208] border-r border-[#5c3d1e] flex flex-col py-8 px-4 shrink-0">
@@ -107,6 +110,27 @@ export default function Sidebar() {
                 </div>
               )}
             </div>
+          )
+        })}
+      </nav>
+
+      <p className="text-[#a0845c] text-xs uppercase tracking-widest mb-6 mt-8 font-mono">My Projects</p>
+
+      <nav className="flex flex-col gap-1">
+        {projects.map((p) => {
+          const isActive = isProjects && activeProject === p.id
+          return (
+            <Link
+              key={p.id}
+              href={`/projects/${p.id}/study`}
+              className={`text-sm px-3 py-2 rounded font-mono transition-colors block ${
+                isActive
+                  ? "bg-[#5c3d1e] text-[#f5e6c8]"
+                  : "text-[#a0845c] hover:text-[#f5e6c8] hover:bg-[#2a1f0e]"
+              }`}
+            >
+              {p.name}
+            </Link>
           )
         })}
       </nav>
