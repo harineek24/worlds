@@ -42,6 +42,78 @@ for x in arr:
 
   problems: [
     {
+      id: "max-value",
+      title: "Maximum Value in Array",
+      difficulty: "easy",
+      prompt:
+        "You are given a list of numbers nums. Return the largest value in the list. Do not use the built-in max() function — track the best value yourself in a single pass.",
+      patternKeywords: ["largest element", "running best", "single pass", "track max so far"],
+      solution: `def max_value(nums: List[int]) -> int:
+    max_val = -float('inf')
+    for num in nums:
+        if num > max_val:
+            max_val = num
+    return max_val`,
+      solutionExplanation: [
+        "This is the greedy template in its purest form: keep a running best, and at each element make the locally optimal update. I initialize max_val to -float('inf') so that any real number in the list beats it — the first element is guaranteed to become the initial maximum.",
+        "Then one pass: for each num, I ask 'is this bigger than the best I've seen so far?' If yes, it becomes the new best. I never need to revisit earlier elements — the running max already summarizes everything to my left.",
+        "A tempting alternative is to sort ascending and return the last element, but sorting is O(n log n) and mutates or copies the list. The single scan is O(n) time and O(1) space — you can't beat it, since every element must be looked at at least once.",
+        "Syntax — why max_val and not max: naming the variable max would shadow Python's built-in max() function for the rest of the scope, so a later call like max(a, b) would crash with 'int is not callable'. Never name variables after builtins — max, min, sum, list, and dict are common traps.",
+      ],
+      explanationBlanks: [
+        {
+          line: "This is the greedy template in its purest form: keep a running best, and at each element make the locally optimal update. I initialize max_val to ___ so that any real number in the list beats it — the first element is guaranteed to become the initial maximum.",
+          answer: "-float('inf')",
+        },
+        {
+          line: "Then one pass: for each num, I ask 'is this bigger than the best I've seen so far?' If yes, it becomes the new best. I never need to revisit earlier elements — the running ___ already summarizes everything to my left.",
+          answer: "max",
+        },
+        {
+          line: "A tempting alternative is to sort ascending and return the last element, but sorting is ___ and mutates or copies the list. The single scan is O(n) time and O(1) space — you can't beat it, since every element must be looked at at least once.",
+          answer: "O(n log n)",
+        },
+        {
+          line: "Syntax — why max_val and not max: naming the variable max would ___ Python's built-in max() function for the rest of the scope, so a later call like max(a, b) would crash with 'int is not callable'. Never name variables after builtins — max, min, sum, list, and dict are common traps.",
+          answer: "shadow",
+        },
+      ],
+      testCase: {
+        input: "nums = [3, -1, 7, 2, 7, 5]",
+        expected: "7",
+        trace: [
+          "num=3: 3 > -inf → max_val=3",
+          "num=-1: -1 > 3? no → max_val=3",
+          "num=7: 7 > 3 → max_val=7",
+          "num=2: 2 > 7? no → max_val=7",
+          "num=7: 7 > 7? no → max_val=7",
+          "num=5: 5 > 7? no → return 7",
+        ],
+        traceExplanations: [
+          "3 beats -infinity, as any first element must. It becomes our running maximum.",
+          "-1 is smaller than 3, so the running maximum is untouched. Negative numbers are handled correctly because we started at -inf, not 0.",
+          "7 beats 3 — new best. This is the greedy update: commit to the better value the moment we see it.",
+          "2 can't beat 7. Nothing to do.",
+          "The duplicate 7 is not strictly greater than 7, so no update — the strict > comparison means ties change nothing.",
+          "5 can't beat 7 either. The scan ends and the running maximum, 7, is the answer.",
+        ],
+      },
+      blanks: [
+        {
+          line: "    max_val = ___",
+          answer: "-float('inf')",
+        },
+        {
+          line: "        if num > ___:",
+          answer: "max_val",
+        },
+        {
+          line: "    return ___",
+          answer: "max_val",
+        },
+      ],
+    },
+    {
       id: "buy-sell-stock",
       title: "Best Time to Buy and Sell Stock",
       difficulty: "easy",
