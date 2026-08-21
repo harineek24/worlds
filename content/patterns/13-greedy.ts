@@ -114,6 +114,81 @@ for x in arr:
       ],
     },
     {
+      id: "longest-word",
+      title: "Longest Word in a Sentence",
+      difficulty: "easy",
+      prompt:
+        "You are given a string sentence containing words separated by spaces. Return the longest word in the sentence. If multiple words tie for the longest length, return the first one.",
+      patternKeywords: ["longest word", "split on spaces", "running best", "compare lengths"],
+      solution: `def longest_word(sentence: str) -> str:
+    words = sentence.split()
+    longest = words[0]
+    for word in words:
+        if len(word) > len(longest):
+            longest = word
+    return longest`,
+      solutionExplanation: [
+        "Same greedy shape as finding the max of a list, but the items are words and the comparison key is len(). First I split the sentence on whitespace to get the list of words.",
+        "I initialize longest to words[0] — the first word — instead of an empty string sentinel. Since every candidate comes from the same list, the first element is a valid starting best, and it also makes the tie-breaking behavior fall out naturally.",
+        "Then one pass: each word is compared by length against the running best, and replaces it only when strictly longer. Splitting is O(n) over the characters and the scan is O(k) over the words, so the whole thing is linear in the sentence length.",
+        "Syntax — why > and not >=: with strict >, a later word that merely ties the current best does not replace it, so the first longest word wins. With >=, ties would overwrite and you'd return the last longest word instead. The comparison operator is where the tie-breaking rule lives — pick it to match the spec, don't leave it to chance.",
+      ],
+      explanationBlanks: [
+        {
+          line: "Same greedy shape as finding the max of a list, but the items are words and the comparison key is ___. First I split the sentence on whitespace to get the list of words.",
+          answer: "len()",
+        },
+        {
+          line: "I initialize longest to ___ — the first word — instead of an empty string sentinel. Since every candidate comes from the same list, the first element is a valid starting best, and it also makes the tie-breaking behavior fall out naturally.",
+          answer: "words[0]",
+        },
+        {
+          line: "Then one pass: each word is compared by length against the running best, and replaces it only when strictly ___. Splitting is O(n) over the characters and the scan is O(k) over the words, so the whole thing is linear in the sentence length.",
+          answer: "longer",
+        },
+        {
+          line: "Syntax — why > and not >=: with strict >, a later word that merely ties the current best does not replace it, so the ___ longest word wins. With >=, ties would overwrite and you'd return the last longest word instead. The comparison operator is where the tie-breaking rule lives — pick it to match the spec, don't leave it to chance.",
+          answer: "first",
+        },
+      ],
+      testCase: {
+        input: 'sentence = "the quick brown fox jumped high"',
+        expected: '"jumped"',
+        trace: [
+          'split → ["the", "quick", "brown", "fox", "jumped", "high"], longest="the"',
+          'word="the": 3 > 3? no',
+          'word="quick": 5 > 3 → longest="quick"',
+          'word="brown": 5 > 5? no',
+          'word="fox": 3 > 5? no',
+          'word="jumped": 6 > 5 → longest="jumped"',
+          'word="high": 4 > 6? no → return "jumped"',
+        ],
+        traceExplanations: [
+          "split() breaks the sentence on whitespace. The running best starts as the first word, \"the\".",
+          "\"the\" is compared against itself — 3 is not strictly greater than 3, so nothing changes. Starting from words[0] makes this first comparison a harmless no-op.",
+          "\"quick\" has 5 letters, beating 3. It becomes the new longest.",
+          "\"brown\" also has 5 letters, but 5 > 5 is false — the tie goes to the earlier word, \"quick\". This is the strict > at work.",
+          "\"fox\" is shorter. No update.",
+          "\"jumped\" has 6 letters, a new best.",
+          "\"high\" can't beat 6. The scan ends and \"jumped\" is the answer.",
+        ],
+      },
+      blanks: [
+        {
+          line: "    words = sentence.___()",
+          answer: "split",
+        },
+        {
+          line: "        if len(word) > ___:",
+          answer: "len(longest)",
+        },
+        {
+          line: "            longest = ___",
+          answer: "word",
+        },
+      ],
+    },
+    {
       id: "buy-sell-stock",
       title: "Best Time to Buy and Sell Stock",
       difficulty: "easy",
